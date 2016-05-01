@@ -8,7 +8,7 @@ class CustomFlask(Flask):
     """Custom version of Flask with our bells and whistles."""
 
     def __init__(self, import_name, config_file=None, debug=None,
-                 use_flask_uuid=True, use_debug_toolbar=True,
+                 use_flask_uuid=False, use_debug_toolbar=False,
                  *args, **kwargs):
         """Create an instance of Flask app.
 
