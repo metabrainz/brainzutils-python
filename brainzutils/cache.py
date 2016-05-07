@@ -14,7 +14,7 @@ More information about memcached can be found at https://memcached.org/.
 """
 from pymemcache.client.hash import HashClient
 from functools import wraps
-from pytools import locks
+from brainzutils import locks
 import tempfile
 import datetime
 import os.path

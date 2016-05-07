@@ -4,7 +4,7 @@ import os.path
 import shutil
 import signal
 import time
-from pytools import locks
+from brainzutils import locks
 from multiprocessing import Process
 
 

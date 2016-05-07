@@ -1,5 +1,5 @@
 import unittest
-from pytools import flask
+from brainzutils import flask
 
 
 class FlaskTestCase(unittest.TestCase):

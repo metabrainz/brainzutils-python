@@ -1,15 +1,15 @@
 #!/usr/bin/env python
 
 from setuptools import setup, find_packages
-from pytools import __version__
+from brainzutils import __version__
 
 setup(
-    name="pytools",
+    name="brainzutils",
     version=__version__,
     description="Python tools for MetaBrainz projects",
     author="MetaBrainz Foundation",
     author_email="support@metabrainz.org",
-    py_modules=["pytools"],
+    py_modules=["brainzutils"],
     packages=find_packages(),
     install_requires=open("requirements.txt").read().split(),
 )

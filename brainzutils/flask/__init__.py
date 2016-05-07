@@ -1,7 +1,7 @@
 from flask import Flask
 from flask_uuid import FlaskUUID
 from flask_debugtoolbar import DebugToolbarExtension
-from pytools.flask import loggers
+from brainzutils.flask import loggers
 
 
 class CustomFlask(Flask):

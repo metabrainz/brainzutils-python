@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import unittest
 import datetime
-from pytools import cache
+from brainzutils import cache
 from pymemcache.client.hash import HashClient
 
 
