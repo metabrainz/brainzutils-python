@@ -71,6 +71,9 @@ class CustomFlask(Flask):
                     'level': 'WARNING',  # optional
                  }
         """
-        loggers.add_file_handler(self, **file_config)
-        loggers.add_email_handler(self, **email_config)
-        loggers.add_sentry(self, **sentry_config)
+        if file_config:
+            loggers.add_file_handler(self, **file_config)
+        if email_config:
+            loggers.add_email_handler(self, **email_config)
+        if sentry_config:
+            loggers.add_sentry(self, **sentry_config)
