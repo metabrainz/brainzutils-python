@@ -49,7 +49,7 @@ class CustomFlask(Flask):
         Args:
             file_config (dict): Dictionary with the following structure:
                 {
-                    'filename': 'log.py',
+                    'filename': 'log.txt',
                     'max_bytes': 512 * 1024,  # optional
                     'backup_count': 100,      # optional
                  }
