@@ -1,57 +1,62 @@
 """
-This module serves as an interface for memcached.
+This module serves as an interface for Redis.
 
 Module needs to be initialized before use! See init() function.
 
-It basically is a wrapper for pymemcache package with additional
+It basically is a wrapper for redis package with additional
 functionality and tweaks specific to serve our needs.
 
 There's also support for namespacing, which simplifies management of different
 versions of data saved in the cache. You can invalidate whole namespace using
 invalidate_namespace() function. See its description for more info.
 
-More information about memcached can be found at https://memcached.org/.
+More information about Redis can be found at http://redis.io/.
 """
-from pymemcache.client.hash import HashClient
-from functools import wraps
-from brainzutils import locks
+import redis
+import shutil
+import hashlib
+import msgpack
 import tempfile
 import datetime
 import os.path
-import hashlib
-import msgpack
-import shutil
+import re
+from functools import wraps
+from brainzutils import locks
 
-_mc = None  # type: HashClient
+
+_r = None  # type: redis.StrictRedis
 _glob_namespace = None  # type: bytes
 _ns_versions_loc = None  # type: str
+
 
 SHA1_LENGTH = 40
 MAX_KEY_LENGTH = 250
 NS_VERSIONS_LOC_DIR = "namespace_versions"
+NS_REGEX = re.compile('[a-zA-Z0-9_-]+$')
 CONTENT_ENCODING = "utf-8"
 ENCODING_ASCII = "ascii"
 
 
-def init(servers, namespace, ns_versions_loc=None, ignore_exc=False):
-    """Initializes memcached client. Needs to be called before use.
+def init(host="localhost", port=6379, db_number=0, namespace="", ns_versions_loc=None):
+    """Initializes Redis client. Needs to be called before use.
+
+    Namespace versions are stored in a local directory.
 
     Args:
-        servers (list): List of tuples with memcached servers (host (str), port (int)).
+        host (str): Redis server hostname.
+        port (int): Redis port.
+        db_number (int): Redis database number.
         namespace (str): Global namespace that will be prepended to all keys.
         ns_versions_loc (str): Path to directory where namespace versions will
             be stored. If not specified, creates a temporary directory that uses
             global namespace as a reference to make sure availability to multiple
             processes. See NS_VERSIONS_LOC_DIR value in this module and implementation.
-        ignore_exc (bool): Treat exceptions that occur in the underlying
-            library as cache misses.
     """
-    global _mc, _glob_namespace, _ns_versions_loc
-    _mc = HashClient(
-        servers=servers,
-        serializer=_serializer,
-        deserializer=_deserializer,
-        ignore_exc=ignore_exc
+    global _r, _glob_namespace, _ns_versions_loc
+    _r = redis.StrictRedis(
+        host=host,
+        port=port,
+        db=db_number,
     )
 
     _glob_namespace = namespace + ":"
@@ -78,7 +83,7 @@ def delete_ns_versions_dir():
 def init_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
-        if not _mc:
+        if not _r:
             raise RuntimeError("Cache module needs to be initialized before "
                                "use! See documentation for more info.")
         return f(*args, **kwargs)
@@ -100,6 +105,7 @@ def set(key, val, time=0, namespace=None):
     Returns:
         True if stored successfully.
     """
+    # Note that both key and value are encoded before insertion.
     return set_many({key: val}, time, namespace)
 
 
@@ -114,8 +120,8 @@ def get(key, namespace=None):
     Returns:
         Stored value or None if it's not found.
     """
-    result = get_many([key], namespace)
-    return result.get(key)
+    # Note that key is encoded before retrieval request.
+    return get_many([key], namespace).get(key)
 
 
 @init_required
@@ -127,24 +133,31 @@ def delete(key, namespace=None):
         namespace: Optional namespace in which key was defined.
 
     Returns:
-          True if deleted successfully.
+          Number of keys that were deleted.
     """
+    # Note that key is encoded before deletion request.
     return delete_many([key], namespace)
 
 
 @init_required
-def set_many(mapping, time=0, namespace=None):
+def set_many(mapping, time=None, namespace=None):
     """Set multiple keys doing just one query.
 
     Args:
-        mapping: A dict of key/value pairs to set.
-        time: Time to store the keys (in milliseconds).
-        namespace: Namespace for the keys.
+        mapping (dict): A dict of key/value pairs to set.
+        time (int): Time to store the keys (in milliseconds).
+        namespace (str): Namespace for the keys.
 
     Returns:
         True on success.
     """
-    return _mc.set_many(_prep_dict(mapping, namespace), time)
+    # TODO: Fix return value
+    result = _r.mset(_prep_dict(mapping, namespace))
+    if time:
+        for key in _prep_keys_list(list(mapping.keys()), namespace):
+            _r.pexpire(_prep_key(key, namespace), time)
+
+    return result
 
 
 @init_required
@@ -152,28 +165,31 @@ def get_many(keys, namespace=None):
     """Retrieve multiple keys doing just one query.
 
     Args:
-        keys: Array of keys that need to be retrieved.
-        namespace: Namespace for the keys.
+        keys (list): List of keys that need to be retrieved.
+        namespace (str): Namespace for the keys.
 
     Returns:
         A dictionary of key/value pairs that were available.
     """
-    keys_prepd = _prep_list(keys, namespace)
-    result = _mc.get_many(keys_prepd)
-    for key_orig, key_mod in zip(keys, keys_prepd):
-        if key_mod in result:
-            result[key_orig] = _decode_value(result.pop(key_mod))
+    result = {}
+    for i, value in enumerate(_r.mget(_prep_keys_list(keys, namespace))):
+        result[keys[i]] = _decode_val(value)
     return result
 
 
 @init_required
 def delete_many(keys, namespace=None):
-    return _mc.delete_many(_prep_list(keys, namespace))
+    """Delete multiple keys.
+
+    Returns:
+        Number of keys that were deleted.
+    """
+    return _r.delete(*_prep_keys_list(keys, namespace))
 
 
 @init_required
 def flush_all():
-    _mc.flush_all()
+    _r.flushdb()
 
 
 def gen_key(key, *attributes):
@@ -200,8 +216,19 @@ def gen_key(key, *attributes):
     return key
 
 
+def _prep_dict(dictionary, namespace=None):
+    """Wrapper for _prep_key and _encode_val functions that works with dictionaries."""
+    if namespace:
+        namespace_and_version = _append_namespace_version(namespace)
+    else:
+        namespace_and_version = None
+    return {_prep_key(key, namespace_and_version): _encode_val(value)
+            for key, value in dictionary.items()}
+
+
 def _prep_key(key, namespace_and_version=None):
-    """Prepares a key for use with memcached."""
+    """Prepares a key for use with Redis."""
+    # TODO(roman): Check if this is actually required for Redis.
     if namespace_and_version:
         key = "%s:%s" % (namespace_and_version, key)
     if not isinstance(key, bytes):
@@ -210,8 +237,12 @@ def _prep_key(key, namespace_and_version=None):
     return _glob_namespace + key
 
 
-def _prep_list(l, namespace=None):
-    """Wrapper for _prep_key function that works with lists."""
+def _prep_keys_list(l, namespace=None):
+    """Wrapper for _prep_key function that works with lists.
+
+    Returns:
+        Prepared keys in the same order.
+    """
     if namespace:
         namespace_and_version = _append_namespace_version(namespace)
     else:
@@ -219,36 +250,24 @@ def _prep_list(l, namespace=None):
     return [_prep_key(k, namespace_and_version) for k in l]
 
 
-def _prep_dict(dictionary, namespace=None):
-    """Wrapper for _prep_key function that works with dictionaries."""
-    if namespace:
-        namespace_and_version = _append_namespace_version(namespace)
-    else:
-        namespace_and_version = None
-    return {_prep_key(key, namespace_and_version): value
-            for key, value in dictionary.items()}
-
-
 @init_required
 def _append_namespace_version(namespace):
-    version_key = _glob_namespace + namespace.encode(ENCODING_ASCII)
-    version = _mc.get(version_key)
+    version = get_namespace_version(namespace)
     if version is None:  # namespace isn't initialized
-        version = 1
-        _mc.set(version_key, version)  # initializing the namespace
+        version = invalidate_namespace(namespace)
     return "%s:%s" % (namespace, version)
 
 
-def _encode_value(value):
-    if isinstance(value, str):
-        value = value.encode(CONTENT_ENCODING)
-    return value
+def _encode_val(value):
+    if value is None:
+        return value
+    return msgpack.packb(value, use_bin_type=True, default=_msgpack_default)
 
 
-def _decode_value(value):
-    if isinstance(value, bytes):
-        value = value.decode(CONTENT_ENCODING)
-    return value
+def _decode_val(value):
+    if value is None:
+        return value
+    return msgpack.unpackb(value, encoding=CONTENT_ENCODING, ext_hook=_msgpack_ext_hook)
 
 
 ############
@@ -268,6 +287,7 @@ def invalidate_namespace(namespace):
     Returns:
         New version number.
     """
+    validate_namespace(namespace)
     current_version = get_namespace_version(namespace)
     if current_version is None:  # namespace isn't initialized
         new_version = 1
@@ -288,6 +308,7 @@ def get_namespace_version(namespace):
     Returns:
         Namespace version as an integer if it exists, otherwise None.
     """
+    validate_namespace(namespace)
     path = _get_ns_version_file_path(namespace)
     if not os.path.isfile(path):
         return None
@@ -297,6 +318,12 @@ def get_namespace_version(namespace):
             return int(cont.decode(ENCODING_ASCII))
         except ValueError as e:
             raise RuntimeError("Failed to get version of namespace. Error: %s" % e)
+
+
+def validate_namespace(namespace):
+    """Checks that namespace value is supported."""
+    if not NS_REGEX.match(namespace):
+        raise ValueError("Invalid namespace. Must match regex /[a-zA-Z0-9_-]+$/.")
 
 
 def _get_ns_version_file_path(namespace):
@@ -311,20 +338,6 @@ TYPE_DATETIME_CODE = 1
 DATETIME_FORMAT = "%Y%m%dT%H:%M:%S.%f"
 
 
-def _serializer(key, value):
-    if type(value) == str:
-        return _encode_value(value), 1
-    return msgpack.packb(value, use_bin_type=True, default=_msgpack_default), 2
-
-
-def _deserializer(key, value, flags):
-    if flags == 1:
-        return _decode_value(value)
-    if flags == 2:
-        return msgpack.unpackb(value, encoding=CONTENT_ENCODING, ext_hook=_msgpack_ext_hook)
-    raise ValueError("Unknown serialization format.")
-
-
 def _msgpack_default(obj):
     if isinstance(obj, datetime.datetime):
         return msgpack.ExtType(TYPE_DATETIME_CODE, obj.strftime(DATETIME_FORMAT).encode(CONTENT_ENCODING))
@@ -333,5 +346,5 @@ def _msgpack_default(obj):
 
 def _msgpack_ext_hook(code, data):
     if code == TYPE_DATETIME_CODE:
-        return datetime.datetime.strptime(_decode_value(data), DATETIME_FORMAT)
+        return datetime.datetime.strptime(data.decode(CONTENT_ENCODING), DATETIME_FORMAT)
     return msgpack.ExtType(code, data)

@@ -1,18 +1,19 @@
 # -*- coding: utf-8 -*-
+from brainzutils import cache
 import unittest
 import datetime
-from brainzutils import cache
-from pymemcache.client.hash import HashClient
 
 
 class CacheTestCase(unittest.TestCase):
     """Testing our custom wrapper for memcached."""
-    servers = [("127.0.0.1", 11211)]
-    namespace = "CB_TEST"
+    host = "localhost"
+    port = 6379
+    namespace = "NS_TEST"
 
     def setUp(self):
         cache.init(
-            servers=self.servers,
+            host=self.host,
+            port=self.port,
             namespace=self.namespace,
         )
         # Making sure there are no items in cache before we run each test
@@ -21,35 +22,12 @@ class CacheTestCase(unittest.TestCase):
     def tearDown(self):
         cache.delete_ns_versions_dir()
 
-    def test_init(self):
-        cache.init(
-            servers=[],
-            namespace="TEST",
-            ignore_exc=True,
-        )
-        self.assertFalse(cache.set("test", "Hello!"))
-        self.assertFalse(cache.set("test2", {
-            "one": 1,
-            "two": 2,
-        }))
-
-        cache.init(
-            servers=[],
-            namespace="TEST",
-            ignore_exc=False,
-        )
-        with self.assertRaises(Exception):
-            cache.set("test", "Hello!")
-        with self.assertRaises(Exception):
-            cache.set("test2", {
-                "one": 1,
-                "two": 2,
-            })
-
     def test_no_init(self):
-        cache._mc = None
+        cache._r = None
         with self.assertRaises(RuntimeError):
             cache.set("test", "testing")
+        with self.assertRaises(RuntimeError):
+            cache.get("test")
 
     def test_single(self):
         self.assertTrue(cache.set("test2", "Hello!"))
@@ -94,7 +72,7 @@ class CacheTestCase(unittest.TestCase):
         key = "testing"
         self.assertTrue(cache.set(key, u"Пример"))
         self.assertEqual(cache.get(key), u"Пример")
-        self.assertTrue(cache.delete(key))
+        self.assertEqual(cache.delete(key), 1)
         self.assertIsNone(cache.get(key))
 
     def test_delete_with_namespace(self):
@@ -102,7 +80,7 @@ class CacheTestCase(unittest.TestCase):
         namespace = "spaaaaaaace"
         self.assertTrue(cache.set(key, u"Пример", namespace=namespace))
         self.assertEqual(cache.get(key, namespace=namespace), u"Пример")
-        self.assertTrue(cache.delete(key, namespace=namespace))
+        self.assertEqual(cache.delete(key, namespace=namespace), 1)
         self.assertIsNone(cache.get(key, namespace=namespace))
 
     def test_many(self):
@@ -111,8 +89,8 @@ class CacheTestCase(unittest.TestCase):
             "test1": "Hello",
             "test2": "there",
         }
-        self.assertTrue(cache.set_many(mapping, namespace="testing!"))
-        self.assertEqual(cache.get_many(mapping.keys(), namespace="testing!"), mapping)
+        self.assertTrue(cache.set_many(mapping, namespace="testing-1"))
+        self.assertEqual(cache.get_many(list(mapping.keys()), namespace="testing-1"), mapping)
 
         # Without a namespace
         mapping = {
@@ -120,12 +98,17 @@ class CacheTestCase(unittest.TestCase):
             "test2": "good",
         }
         self.assertTrue(cache.set_many(mapping))
-        self.assertEqual(cache.get_many(mapping.keys()), mapping)
+        self.assertEqual(cache.get_many(list(mapping.keys())), mapping)
 
     def test_invalidate_namespace(self):
         namespace = "test"
         self.assertEqual(cache.invalidate_namespace(namespace), 1)
         self.assertEqual(cache.invalidate_namespace(namespace), 2)
+
+        with self.assertRaises(ValueError):
+            cache.invalidate_namespace(u"Тест")
+        with self.assertRaises(ValueError):
+            cache.invalidate_namespace("Hello!")
 
     def test_namespace_version(self):
         name = "test"
@@ -135,54 +118,7 @@ class CacheTestCase(unittest.TestCase):
         self.assertEqual(cache.invalidate_namespace(name), 2)
         self.assertEqual(cache.get_namespace_version(name), 2)
 
-
-class CacheBaseTestCase(unittest.TestCase):
-    """Testing underlying library."""
-    servers = [("127.0.0.1", 11211)]
-    client = HashClient(servers)
-
-    def setUp(self):
-        # Making sure there are no items in cache before we run each test
-        self.client.flush_all()
-
-    def test_single(self):
-        self.client.set('some_key', 'some value')
-        result = self.client.get('some_key')
-        self.assertEqual(result, b'some value')
-
-    def test_single_int(self):
-        # Note that it returns bytes even if you put an integer inside
-        self.client.set('some_int', 42)
-        result = self.client.get('some_int')
-        self.assertEqual(result, b'42')
-
-    def test_single_fancy(self):
-        self.client.set('some_key', u'Пример'.encode(cache.CONTENT_ENCODING))
-        result = self.client.get('some_key')
-        self.assertEqual(result, u'Пример'.encode(cache.CONTENT_ENCODING))
-
-    def test_single_dict(self):
-        self.client.set('some_dict', {
-            "fancy": "yeah",
-            "wow": 11,
-        })
-        result = self.client.get('some_dict')
-        self.assertTrue(result == b"{'wow': 11, 'fancy': 'yeah'}" or
-                        result == b"{'fancy': 'yeah', 'wow': 11}")
-
-    def test_increment(self):
-        key = "key_for_testing"
-
-        # Initially nothing
-        self.assertIsNone(self.client.incr(key, 1))
-        self.assertEqual(self.client.get(key), None)
-
-        self.assertTrue(self.client.set(key, 1))
-        self.assertEqual(self.client.get(key), b'1')
-        self.assertTrue(self.client.incr(key, 1))
-        self.assertEqual(self.client.get(key), b'2')
-        self.assertTrue(self.client.incr(key, 2))
-        self.assertEqual(self.client.get(key), b'4')
-
-
-
+        with self.assertRaises(ValueError):
+            cache.get_namespace_version(u"Тест")
+        with self.assertRaises(ValueError):
+            cache.get_namespace_version("Hello!")
