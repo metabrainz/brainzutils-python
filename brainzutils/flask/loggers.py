@@ -1,6 +1,9 @@
 import logging
 from logging.handlers import RotatingFileHandler, SMTPHandler
-from raven.contrib.flask import Sentry
+import raven.base
+import raven.contrib.flask
+import raven.transport.threaded_requests
+
 
 
 def add_file_handler(app, filename, max_bytes=512 * 1024, backup_count=100):
@@ -48,4 +51,10 @@ def add_sentry(app, dsn, level=logging.WARNING):
     We use Raven as a client for Sentry. More info about Raven is available at
     https://raven.readthedocs.org/.
     """
-    Sentry(app, dsn=dsn, level=level, logging=True)
+    app.config["SENTRY_TRANSPORT"] = raven.transport.threaded_requests.ThreadedRequestsHTTPTransport
+    raven.contrib.flask.Sentry(
+        app=app,
+        dsn=dsn,
+        level=level,
+        logging=True,
+    )
