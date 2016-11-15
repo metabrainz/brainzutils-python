@@ -5,3 +5,4 @@ raven[flask]==5.31.0
 certifi
 redis==2.10.5
 msgpack-python==0.4.7
+requests==2.12.0
