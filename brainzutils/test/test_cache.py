@@ -92,6 +92,12 @@ class CacheTestCase(unittest.TestCase):
         self.assertTrue(cache.set_many(mapping, namespace="testing-1"))
         self.assertEqual(cache.get_many(list(mapping.keys()), namespace="testing-1"), mapping)
 
+        # With another namespace
+        test = cache.get_many(list(mapping.keys()), namespace="testing-2")
+        for key, val in test.items():
+            self.assertIn(key, mapping)
+            self.assertIsNone(val)
+
         # Without a namespace
         mapping = {
             "test1": "What's",
