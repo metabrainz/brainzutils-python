@@ -2,11 +2,12 @@
 from brainzutils import cache
 import unittest
 import datetime
+import os
 
 
 class CacheTestCase(unittest.TestCase):
     """Testing our custom wrapper for memcached."""
-    host = "localhost"
+    host = os.environ.get("REDIS_HOST", "localhost")
     port = 6379
     namespace = "NS_TEST"
 

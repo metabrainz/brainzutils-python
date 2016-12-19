@@ -1,0 +1,13 @@
+# Docker Compose file for testing with Python 2
+version: "2"
+services:
+
+  test:
+    build:
+      context: ..
+      dockerfile: ./test/Dockerfile.py2
+    links:
+      - redis
+
+  redis:
+    image: redis:3.2.1
