@@ -5,7 +5,6 @@ import raven.contrib.flask
 import raven.transport.threaded_requests
 
 
-
 def add_file_handler(app, filename, max_bytes=512 * 1024, backup_count=100):
     """Adds file logging."""
     file_handler = RotatingFileHandler(filename, maxBytes=max_bytes,
@@ -42,7 +41,7 @@ def add_email_handler(app, mail_server, mail_port, mail_from_host,
     app.logger.addHandler(mail_handler)
 
 
-def add_sentry(app, dsn, level=logging.WARNING):
+def add_sentry(app, dsn, level=logging.WARNING, **options):
     """Adds Sentry logging.
 
     Sentry is a realtime event logging and aggregation platform. Additional
@@ -52,6 +51,7 @@ def add_sentry(app, dsn, level=logging.WARNING):
     https://raven.readthedocs.org/.
     """
     app.config["SENTRY_TRANSPORT"] = raven.transport.threaded_requests.ThreadedRequestsHTTPTransport
+    app.config["SENTRY_CONFIG"] = options
     raven.contrib.flask.Sentry(
         app=app,
         dsn=dsn,
