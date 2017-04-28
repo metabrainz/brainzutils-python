@@ -1,10 +1,23 @@
 import logging
 from logging.handlers import RotatingFileHandler, SMTPHandler
+import raven
 import raven.base
 import raven.contrib.flask
 import raven.transport.threaded_requests
 
-sentry_client = None
+
+class MissingRavenClient(raven.Client):
+    """Raven client class that is used as a placeholder.
+    This is done to make sure that calls to functions in the client don't fail
+    even if the client is not initialized. Sentry server might be missing, but
+    we don't want to check if it actually exists in every place exception is
+    captured.
+    """
+    captureException = lambda self, *args, **kwargs: None
+    captureMessage = lambda self, *args, **kwargs: None
+
+
+_sentry_client = MissingRavenClient()  # type: raven.Client
 
 
 def add_file_handler(app, filename, max_bytes=512 * 1024, backup_count=100):
@@ -54,8 +67,8 @@ def add_sentry(app, dsn, level=logging.WARNING, **options):
     """
     app.config["SENTRY_TRANSPORT"] = raven.transport.threaded_requests.ThreadedRequestsHTTPTransport
     app.config["SENTRY_CONFIG"] = options
-    global sentry_client
-    sentry_client = raven.contrib.flask.Sentry(
+    global _sentry_client
+    _sentry_client = raven.contrib.flask.Sentry(
         app=app,
         dsn=dsn,
         level=level,
@@ -64,5 +77,4 @@ def add_sentry(app, dsn, level=logging.WARNING, **options):
 
 
 def get_sentry_client():
-    global sentry_client
-    return sentry_client
+    return _sentry_client
