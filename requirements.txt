@@ -1,8 +1,8 @@
-Flask==0.12.1
+Flask==0.12.2
 Flask-DebugToolbar==0.10.1
 Flask-UUID==0.2
-raven[flask]==6.0.0
+raven[flask]==6.1.0
 certifi
 redis==2.10.5
 msgpack-python==0.4.8
-requests==2.13.0
+requests==2.18.1
