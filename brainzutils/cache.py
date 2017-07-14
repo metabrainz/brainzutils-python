@@ -1,3 +1,4 @@
+# pylint: disable=invalid-name
 """
 This module serves as an interface for Redis.
 
@@ -12,15 +13,15 @@ invalidate_namespace() function. See its description for more info.
 
 More information about Redis can be found at http://redis.io/.
 """
-import redis
+from functools import wraps
 import shutil
 import hashlib
-import msgpack
 import tempfile
 import datetime
 import os.path
 import re
-from functools import wraps
+import redis
+import msgpack
 from brainzutils import locks
 
 
@@ -90,6 +91,7 @@ def init_required(f):
     return decorated
 
 
+# pylint: disable=redefined-builtin
 @init_required
 def set(key, val, time=0, namespace=None):
     """Set a key to a given value.
