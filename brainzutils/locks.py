@@ -19,10 +19,10 @@ def locked_open(filename, mode=M_READ, blocking=True):
     if not blocking:
         flock_flags = flock_flags | fcntl.LOCK_NB
 
-    f = open(filename, open_mode)
+    file = open(filename, open_mode)
     try:
-        fcntl.flock(f, flock_flags)
-        yield f
+        fcntl.flock(file, flock_flags)
+        yield file
     finally:
-        f.flush()
-        fcntl.flock(f, fcntl.LOCK_UN)
+        file.flush()
+        fcntl.flock(file, fcntl.LOCK_UN)

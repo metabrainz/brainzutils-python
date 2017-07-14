@@ -1,11 +1,11 @@
 import unittest
 import tempfile
-import os.path
 import shutil
-import signal
 import time
-from brainzutils import locks
+import os.path
+import signal
 from multiprocessing import Process
+from brainzutils import locks
 
 
 class LockedOpenTestCase(unittest.TestCase):

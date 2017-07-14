@@ -1,3 +1,4 @@
+# pylint: disable=invalid-name
 import logging
 from logging.handlers import RotatingFileHandler, SMTPHandler
 import raven

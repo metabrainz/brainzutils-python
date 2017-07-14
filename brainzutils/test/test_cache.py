@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
-from brainzutils import cache
+# pylint: disable=protected-access
 import unittest
 import datetime
 import os
+from brainzutils import cache
 
 
 class CacheTestCase(unittest.TestCase):
