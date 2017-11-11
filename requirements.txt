@@ -6,3 +6,4 @@ certifi
 redis==2.10.5
 msgpack-python==0.4.8
 requests==2.18.1
+psycopg2==2.7.3.2
