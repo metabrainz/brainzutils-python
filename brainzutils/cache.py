@@ -93,7 +93,7 @@ def init_required(f):
 
 # pylint: disable=redefined-builtin
 @init_required
-def set(key, val, time=0, namespace=None):
+def set(key, val, time=0, namespace=None, encode=True):
     """Set a key to a given value.
 
     Args:
@@ -103,27 +103,34 @@ def set(key, val, time=0, namespace=None):
             number of seconds, or an absolute unix time-since-the-epoch value.
             If set to 0, value will be stored "forever".
         namespace: Optional namespace in which key needs to be defined.
+        encode: True if the value should be encoded with msgpack, False otherwise
 
     Returns:
         True if stored successfully.
     """
     # Note that both key and value are encoded before insertion.
-    return set_many({key: val}, time, namespace)
+    return set_many(
+        mapping={key: val},
+        time=time,
+        namespace=namespace,
+        encode=encode
+    )
 
 
 @init_required
-def get(key, namespace=None):
+def get(key, namespace=None, decode=True):
     """Retrieve an item.
 
     Args:
         key: Key of the item that needs to be retrieved.
         namespace: Optional namespace in which key was defined.
+        decode (bool): True if value should be decoded with msgpack, False otherwise
 
     Returns:
         Stored value or None if it's not found.
     """
     # Note that key is encoded before retrieval request.
-    return get_many([key], namespace).get(key)
+    return get_many([key], namespace, decode).get(key)
 
 
 @init_required
@@ -142,19 +149,20 @@ def delete(key, namespace=None):
 
 
 @init_required
-def set_many(mapping, time=None, namespace=None):
+def set_many(mapping, time=None, namespace=None, encode=True):
     """Set multiple keys doing just one query.
 
     Args:
         mapping (dict): A dict of key/value pairs to set.
         time (int): Time to store the keys (in milliseconds).
         namespace (str): Namespace for the keys.
+        encode: True if the values should be encoded with msgpack, False otherwise
 
     Returns:
         True on success.
     """
     # TODO: Fix return value
-    result = _r.mset(_prep_dict(mapping, namespace))
+    result = _r.mset(_prep_dict(mapping, namespace, encode))
     if time:
         for key in _prep_keys_list(list(mapping.keys()), namespace):
             _r.pexpire(_prep_key(key, namespace), time)
@@ -163,19 +171,20 @@ def set_many(mapping, time=None, namespace=None):
 
 
 @init_required
-def get_many(keys, namespace=None):
+def get_many(keys, namespace=None, decode=True):
     """Retrieve multiple keys doing just one query.
 
     Args:
         keys (list): List of keys that need to be retrieved.
         namespace (str): Namespace for the keys.
+        decode (bool): True if values should be decoded with msgpack, False otherwise
 
     Returns:
         A dictionary of key/value pairs that were available.
     """
     result = {}
     for i, value in enumerate(_r.mget(_prep_keys_list(keys, namespace))):
-        result[keys[i]] = _decode_val(value)
+        result[keys[i]] = _decode_val(value) if decode else value
     return result
 
 
@@ -187,6 +196,20 @@ def delete_many(keys, namespace=None):
         Number of keys that were deleted.
     """
     return _r.delete(*_prep_keys_list(keys, namespace))
+
+
+@init_required
+def increment(key, namespace=None):
+    """ Increment the value for given key using the INCR command.
+
+    Args:
+        key: Key of the item that needs to be incremented
+        namespace: Namespace for the key
+
+    Returns:
+        An integer equal to the value after increment
+    """
+    return _r.incr(_prep_keys_list([key], namespace)[0])
 
 
 @init_required
@@ -218,13 +241,13 @@ def gen_key(key, *attributes):
     return key
 
 
-def _prep_dict(dictionary, namespace=None):
+def _prep_dict(dictionary, namespace=None, encode=True):
     """Wrapper for _prep_key and _encode_val functions that works with dictionaries."""
     if namespace:
         namespace_and_version = _append_namespace_version(namespace)
     else:
         namespace_and_version = None
-    return {_prep_key(key, namespace_and_version): _encode_val(value)
+    return {_prep_key(key, namespace_and_version): _encode_val(value) if encode else value
             for key, value in dictionary.items()}
 
 

@@ -1,13 +1,16 @@
 # -*- coding: utf-8 -*-
 # pylint: disable=protected-access
-import unittest
+
 import datetime
 import os
+import redis
+import unittest
+
 from brainzutils import cache
 
 
 class CacheTestCase(unittest.TestCase):
-    """Testing our custom wrapper for memcached."""
+    """Testing our custom wrapper for redis."""
     host = os.environ.get("REDIS_HOST", "localhost")
     port = 6379
     namespace = "NS_TEST"
@@ -34,6 +37,10 @@ class CacheTestCase(unittest.TestCase):
     def test_single(self):
         self.assertTrue(cache.set("test2", "Hello!"))
         self.assertEqual(cache.get("test2"), "Hello!")
+
+    def test_single_no_encode(self):
+        self.assertTrue(cache.set("no encode", 1, encode=False))
+        self.assertEqual(cache.get("no encode", decode=False), b"1")
 
     def test_single_with_namespace(self):
         self.assertTrue(cache.set("test", 42, namespace="testing"))
@@ -130,3 +137,12 @@ class CacheTestCase(unittest.TestCase):
             cache.get_namespace_version(u"Тест")
         with self.assertRaises(ValueError):
             cache.get_namespace_version("Hello!")
+
+    def test_increment(self):
+        cache.set("a", 1, encode=False)
+        self.assertEqual(cache.increment("a"), 2)
+
+    def test_increment_invalid_value(self):
+        cache.set("a", "not a number")
+        with self.assertRaises(redis.exceptions.ResponseError):
+            cache.increment("a")
