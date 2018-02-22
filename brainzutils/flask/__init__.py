@@ -8,7 +8,7 @@ class CustomFlask(Flask):
     """Custom version of Flask with our bells and whistles."""
 
     def __init__(self, import_name, config_file=None, debug=None,
-                 use_flask_uuid=False, use_debug_toolbar=False,
+                 use_flask_uuid=False,
                  *args, **kwargs):
         """Create an instance of Flask app.
 
@@ -20,8 +20,6 @@ class CustomFlask(Flask):
                 Should be in a form of Python module.
             debug (bool): Override debug value.
             use_flask_uuid (bool): Turn on Flask-UUID extension if set to True.
-            use_debug_toolbar (bool): Turn on Flask-DebugToolbar extension in
-                debug mode if set to True.
         """
         super(CustomFlask, self).__init__(import_name, *args, **kwargs)
         if config_file:
@@ -30,8 +28,18 @@ class CustomFlask(Flask):
             self.debug = debug
         if use_flask_uuid:
             FlaskUUID(self)
-        if use_debug_toolbar and self.debug:
+
+
+    def init_debug_toolbar(self):
+        """This method initializes the Flask-Debug extension toolbar for the
+        Flask app.
+
+        Note that the Flask-Debug extension requires app.debug be true
+        and the SECRET_KEY be defined in app.config.
+        """
+        if self.debug:
             DebugToolbarExtension(self)
+
 
     def init_loggers(self,
                      file_config=None,
