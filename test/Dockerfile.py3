@@ -12,9 +12,13 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends \
                        build-essential \
                        git
-COPY . /code/
+
+COPY requirements.txt  /code/requirements.txt
+COPY requirements_dev.txt /code/requirements_dev.txt
 RUN pip install -r requirements.txt
 RUN pip install -r requirements_dev.txt
+
+COPY . /code/
 
 ENV REDIS_HOST "redis"
 
