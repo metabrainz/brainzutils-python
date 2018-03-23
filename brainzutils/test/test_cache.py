@@ -164,3 +164,12 @@ class CacheKeyTestCase(unittest.TestCase):
         mock_redis.return_value.mset.assert_called_with({expected_key: expected_value})
         mock_redis.return_value.pexpire.assert_not_called()
 
+    @mock.patch('brainzutils.cache.redis.StrictRedis', autospec=True)
+    def test_key_expire(self, mock_redis):
+        cache.init(host='host', port=2, namespace=self.namespace)
+        cache.set('key', 'value', time=30)
+        expected_key = 'NS_TEST:a62f2225bf70bfaccbc7f1ef2a397836717377de'
+        # msgpack encoded value
+        expected_value = '\xc4\x05value'
+        mock_redis.return_value.mset.assert_called_with({expected_key: expected_value})
+        mock_redis.return_value.pexpire.assert_called_with(expected_key, 30000)
