@@ -3,8 +3,10 @@
 
 import datetime
 import os
-import redis
 import unittest
+
+import mock as mock
+import redis
 
 from brainzutils import cache
 
@@ -146,3 +148,19 @@ class CacheTestCase(unittest.TestCase):
         cache.set("a", "not a number")
         with self.assertRaises(redis.exceptions.ResponseError):
             cache.increment("a")
+
+
+class CacheKeyTestCase(unittest.TestCase):
+    namespace = "NS_TEST"
+
+    @mock.patch('brainzutils.cache.redis.StrictRedis', autospec=True)
+    def test_set_key(self, mock_redis):
+        cache.init(host='host', port=2, namespace=self.namespace)
+        cache.set('key', 'value')
+
+        expected_key = 'NS_TEST:a62f2225bf70bfaccbc7f1ef2a397836717377de'
+        # msgpack encoded value
+        expected_value = '\xc4\x05value'
+        mock_redis.return_value.mset.assert_called_with({expected_key: expected_value})
+        mock_redis.return_value.pexpire.assert_not_called()
+
