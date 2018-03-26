@@ -97,12 +97,10 @@ def set(key, val, time=0, namespace=None, encode=True):
     """Set a key to a given value.
 
     Args:
-        key: Key of the item.
+        key (str): Key of the item.
         val: Item's value.
-        time: The time after which this value should expire, either as a delta
-            number of seconds, or an absolute unix time-since-the-epoch value.
-            If set to 0, value will be stored "forever".
-        namespace: Optional namespace in which key needs to be defined.
+        time (int): The time after which this value should expire, in seconds.
+        namespace (str): Optional namespace in which key needs to be defined.
         encode: True if the value should be encoded with msgpack, False otherwise
 
     Returns:
@@ -154,7 +152,7 @@ def set_many(mapping, time=None, namespace=None, encode=True):
 
     Args:
         mapping (dict): A dict of key/value pairs to set.
-        time (int): Time to store the keys (in milliseconds).
+        time (int): The time after which this value should expire, in seconds.
         namespace (str): Namespace for the keys.
         encode: True if the values should be encoded with msgpack, False otherwise
 
@@ -165,7 +163,7 @@ def set_many(mapping, time=None, namespace=None, encode=True):
     result = _r.mset(_prep_dict(mapping, namespace, encode))
     if time:
         for key in _prep_keys_list(list(mapping.keys()), namespace):
-            _r.pexpire(_prep_key(key, namespace), time)
+            _r.pexpire(key, time * 1000)
 
     return result
 
