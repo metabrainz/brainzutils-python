@@ -155,21 +155,35 @@ class CacheKeyTestCase(unittest.TestCase):
 
     @mock.patch('brainzutils.cache.redis.StrictRedis', autospec=True)
     def test_set_key(self, mock_redis):
+        """Test setting a bytes value"""
         cache.init(host='host', port=2, namespace=self.namespace)
-        cache.set('key', 'value')
+        cache.set('key', u'value'.encode('utf-8'))
 
-        expected_key = 'NS_TEST:a62f2225bf70bfaccbc7f1ef2a397836717377de'
+        # Keys are encoded into bytes always
+        expected_key = 'NS_TEST:a62f2225bf70bfaccbc7f1ef2a397836717377de'.encode('utf-8')
         # msgpack encoded value
-        expected_value = '\xc4\x05value'
+        expected_value = b'\xc4\x05value'
+        mock_redis.return_value.mset.assert_called_with({expected_key: expected_value})
+        mock_redis.return_value.pexpire.assert_not_called()
+
+    @mock.patch('brainzutils.cache.redis.StrictRedis', autospec=True)
+    def test_set_key_unicode(self, mock_redis):
+        """Test setting a unicode value"""
+        cache.init(host='host', port=2, namespace=self.namespace)
+        cache.set('key', u'value')
+
+        expected_key = 'NS_TEST:a62f2225bf70bfaccbc7f1ef2a397836717377de'.encode('utf-8')
+        # msgpack encoded value
+        expected_value = b'\xa5value'
         mock_redis.return_value.mset.assert_called_with({expected_key: expected_value})
         mock_redis.return_value.pexpire.assert_not_called()
 
     @mock.patch('brainzutils.cache.redis.StrictRedis', autospec=True)
     def test_key_expire(self, mock_redis):
         cache.init(host='host', port=2, namespace=self.namespace)
-        cache.set('key', 'value', time=30)
-        expected_key = 'NS_TEST:a62f2225bf70bfaccbc7f1ef2a397836717377de'
+        cache.set('key', u'value'.encode('utf-8'), time=30)
+        expected_key = 'NS_TEST:a62f2225bf70bfaccbc7f1ef2a397836717377de'.encode('utf-8')
         # msgpack encoded value
-        expected_value = '\xc4\x05value'
+        expected_value = b'\xc4\x05value'
         mock_redis.return_value.mset.assert_called_with({expected_key: expected_value})
         mock_redis.return_value.pexpire.assert_called_with(expected_key, 30000)
