@@ -5,7 +5,7 @@ from sqlalchemy import func
 from brainzutils.musicbrainz_db.utils import ENTITY_MODELS
 
 
-def get_relationship_info(*, db, target_type, source_type, source_entity_ids, includes_data):
+def get_relationship_info(db, target_type, source_type, source_entity_ids, includes_data):
     """Get information related to relationships between different entities.
 
     Keep in mind that includes_data (dict) is altered to contain the relationship objects
@@ -59,7 +59,7 @@ def _relationship_link_helper(relation, query, source_attr, target_attr, target_
             setdefault(relation_type, []).append(link)
 
 
-def get_tags(*, db, entity_model, tag_model, entity_ids):
+def get_tags(db, entity_model, tag_model, entity_ids):
     """Get tags associated with entities.
 
     Args:

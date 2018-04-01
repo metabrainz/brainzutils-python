@@ -3,7 +3,7 @@ from brainzutils.musicbrainz_db.serialize import serialize_recording
 from brainzutils.musicbrainz_db.test_data import recording_numb_encore_explicit, recording_numb_encore_instrumental
 from brainzutils.musicbrainz_db.tests import setup_cache
 from unittest import TestCase
-from unittest.mock import MagicMock
+from mock import MagicMock
 
 
 class RecordingTestCase(TestCase):

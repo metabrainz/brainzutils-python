@@ -26,7 +26,7 @@ REDIRECT_MODELS = {
 }
 
 
-def get_entities_by_gids(*, query, entity_type, mbids):
+def get_entities_by_gids(query, entity_type, mbids):
     """Get entities using their MBIDs.
 
     An entity can have multiple MBIDs. This function may be passed another

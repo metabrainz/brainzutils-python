@@ -15,7 +15,7 @@ def serialize_relationships(data, source_obj, relationship_objs):
     """
 
     for entity_type in ENTITY_MODELS:
-        relation = f'{entity_type}-rels'
+        relation = '{0}-rels'.format(entity_type)
         if relation in relationship_objs:
             data[relation] = []
             for obj in relationship_objs[relation]:

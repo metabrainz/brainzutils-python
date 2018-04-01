@@ -2,10 +2,9 @@ from contextlib import contextmanager
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, scoped_session, Session
 from sqlalchemy.pool import NullPool
-from typing import Optional
+
 
 engine = None
-Session: Optional[Session] = None  # noqa: F811
 DEFAULT_CACHE_EXPIRATION = 12 * 60 * 60  # seconds (12 hours)
 
 
