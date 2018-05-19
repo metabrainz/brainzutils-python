@@ -1,6 +1,5 @@
 from unittest import TestCase
 from mock import MagicMock
-# from brainzutils.musicbrainz_db.tests import setup_cache
 from brainzutils.musicbrainz_db.test_data import (
     release_numb_encore,
     release_collision_course,
