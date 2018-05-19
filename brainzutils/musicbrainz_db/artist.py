@@ -1,8 +1,7 @@
 from collections import defaultdict
 from sqlalchemy.orm import joinedload
 from mbdata import models
-from brainzutils import cache
-from brainzutils.musicbrainz_db import mb_session, DEFAULT_CACHE_EXPIRATION
+from brainzutils.musicbrainz_db import mb_session
 from brainzutils.musicbrainz_db.helpers import get_relationship_info
 from brainzutils.musicbrainz_db.utils import get_entities_by_gids
 from brainzutils.musicbrainz_db.serialize import serialize_artists
@@ -16,11 +15,7 @@ def get_artist_by_id(mbid):
     Returns:
         Dictionary containing the artist information
     """
-    key = cache.gen_key(mbid)
-    artist = cache.get(key)
-    if not artist:
-        artist = _get_artist_by_id(mbid)
-        cache.set(key=key, val=artist, time=DEFAULT_CACHE_EXPIRATION)
+    artist = _get_artist_by_id(mbid)
     return artist
 
 

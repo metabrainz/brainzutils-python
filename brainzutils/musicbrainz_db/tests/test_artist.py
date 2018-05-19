@@ -2,13 +2,11 @@ from unittest import TestCase
 from mock import MagicMock
 from brainzutils.musicbrainz_db.test_data import artist_linkin_park, artist_jay_z
 from brainzutils.musicbrainz_db import artist as mb_artist
-from brainzutils.musicbrainz_db.tests import setup_cache
 
 
 class ArtistTestCase(TestCase):
 
     def setUp(self):
-        setup_cache()
         mb_artist.mb_session = MagicMock()
         self.mock_db = mb_artist.mb_session.return_value.__enter__.return_value
         self.artist_query = self.mock_db.query.return_value.options.return_value.filter.return_value.all
