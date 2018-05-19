@@ -1,8 +1,7 @@
 from collections import defaultdict
 from mbdata import models
 from sqlalchemy.orm import joinedload
-from brainzutils import cache
-from brainzutils.musicbrainz_db import mb_session, DEFAULT_CACHE_EXPIRATION
+from brainzutils.musicbrainz_db import mb_session
 from brainzutils.musicbrainz_db.includes import check_includes
 from brainzutils.musicbrainz_db.serialize import serialize_releases
 from brainzutils.musicbrainz_db.utils import get_entities_by_gids
@@ -16,11 +15,7 @@ def get_release_by_id(mbid):
     Returns:
         Dictionary containing the release information.
     """
-    key = cache.gen_key(mbid)
-    release = cache.get(key)
-    if not release:
-        release = _get_release_by_id(mbid)
-        cache.set(key=key, val=release, time=DEFAULT_CACHE_EXPIRATION)
+    release = _get_release_by_id(mbid)
     return release
 
 

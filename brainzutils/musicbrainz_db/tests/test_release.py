@@ -1,6 +1,6 @@
 from unittest import TestCase
 from mock import MagicMock
-from brainzutils.musicbrainz_db.tests import setup_cache
+# from brainzutils.musicbrainz_db.tests import setup_cache
 from brainzutils.musicbrainz_db.test_data import (
     release_numb_encore,
     release_collision_course,
@@ -12,7 +12,6 @@ from brainzutils.musicbrainz_db import release as mb_release
 class ReleaseTestCase(TestCase):
 
     def setUp(self):
-        setup_cache()
         mb_release.mb_session = MagicMock()
         self.mock_db = mb_release.mb_session.return_value.__enter__.return_value
         self.release_query = self.mock_db.query.return_value.options.return_value.options.return_value.\
