@@ -64,6 +64,7 @@ def serialize_recording(recording, includes=None):
         data['comment'] = recording.comment
 
     if recording.length:
+        # Divide recording length by 1000 to convert milliseconds into seconds
         data['length'] = recording.length / 1000.0
 
     if recording.video:
