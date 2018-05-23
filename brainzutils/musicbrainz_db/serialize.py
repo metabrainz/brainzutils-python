@@ -52,8 +52,9 @@ def serialize_artist_credit(artist_credit):
     return data
 
 
-def serialize_recording(recording, include={}):
-
+def serialize_recording(recording, includes=None):
+    if includes is None:
+        includes = {}
     data = {
         'id': recording.gid,
         'name': recording.name,
@@ -68,16 +69,16 @@ def serialize_recording(recording, include={}):
     if recording.video:
         data['video'] = True
 
-    if 'artist' in include:
+    if 'artist' in includes:
         data['artist'] = recording.artist_credit.name
-    elif 'artists' in include:
+    elif 'artists' in includes:
         data['artists'] = serialize_artist_credit(recording.artist_credit)
 
-    if 'isrc' in include:
+    if 'isrc' in includes:
         data['isrcs'] = [isrc.isrc for isrc in recording.isrcs]
     
-    if 'relationship_objs' in include:
-        serialize_relationships(data, recording, include['relationship_objs'])
+    if 'relationship_objs' in includes:
+        serialize_relationships(data, recording, includes['relationship_objs'])
 
     return data
 

@@ -1,7 +1,6 @@
 from brainzutils.musicbrainz_db import recording as mb_recording
 from brainzutils.musicbrainz_db.serialize import serialize_recording 
 from brainzutils.musicbrainz_db.test_data import recording_numb_encore_explicit, recording_numb_encore_instrumental
-from brainzutils.musicbrainz_db.tests import setup_cache
 from unittest import TestCase
 from mock import MagicMock
 
@@ -9,7 +8,6 @@ from mock import MagicMock
 class RecordingTestCase(TestCase):
 
     def setUp(self):
-        setup_cache()
         mb_recording.mb_session = MagicMock()
         self.mock_db = mb_recording.mb_session.return_value.__enter__.return_value
         self.recording_query = self.mock_db.query.return_value.options.return_value.\
@@ -19,7 +17,7 @@ class RecordingTestCase(TestCase):
         """ Tests if appropriate recording is returned for a given MBID. """
 
         self.recording_query.return_value = [recording_numb_encore_explicit]
-        recording = mb_recording.get_recording_by_mbid('daccb724-8023-432a-854c-e0accb6c8678', include=['artists'])
+        recording = mb_recording.get_recording_by_mbid('daccb724-8023-432a-854c-e0accb6c8678', includes=['artists'])
 
         self.assertDictEqual(recording,
             {
@@ -48,7 +46,7 @@ class RecordingTestCase(TestCase):
             recording_numb_encore_instrumental]
 
         mbids = ['daccb724-8023-432a-854c-e0accb6c8678', '965b75df-397d-4395-aac8-de11854c4630']
-        recordings = mb_recording.get_many_recordings_by_mbid(mbids, include=['artists'])
+        recordings = mb_recording.get_many_recordings_by_mbid(mbids, includes=['artists'])
 
         self.assertDictEqual(recordings,
             {
