@@ -1,6 +1,5 @@
 from brainzutils import cache
 from brainzutils.musicbrainz_db import mb_session
-from brainzutils.musicbrainz_db.helpers import get_relationship_info
 from brainzutils.musicbrainz_db.includes import check_includes
 from brainzutils.musicbrainz_db.serialize import serialize_recording
 from brainzutils.musicbrainz_db.utils import get_entities_by_gids
@@ -83,15 +82,6 @@ def _fetch_multiple_recordings(mbids, includes=None):
         if 'artists' in includes:
             for recording in recordings.values():
                 includes_data[recording.id]['artists'] = recording.artist_credit.artists
-
-        if 'url-rels' in includes:
-            get_relationship_info(
-                db=db,
-                target_type='url',
-                source_type='recording',
-                source_entity_ids=recording_ids,
-                includes_data=includes_data,
-            )
 
         serial_recordings = {str(mbid): serialize_recording(recordings[mbid], includes_data[recordings[mbid].id]) for mbid in mbids}
 
