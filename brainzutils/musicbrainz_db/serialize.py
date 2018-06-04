@@ -49,3 +49,20 @@ def serialize_recording(recording, includes=None):
         data['isrcs'] = [isrc.isrc for isrc in recording.isrcs]
 
     return data
+
+
+def serialize_artists(artist, includes=None):
+    if includes is None:
+        includes = {}
+    data = {
+        'id': artist.gid,
+        'name': artist.name,
+        'sort_name': artist.sort_name,
+    }
+
+    if 'type' in includes and includes['type']:
+        data['type'] = includes['type'].name
+
+    if 'relationship_objs' in includes:
+        serialize_relationships(data, artist, includes['relationship_objs'])
+    return data
