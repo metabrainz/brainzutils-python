@@ -5,7 +5,6 @@ from sqlalchemy.pool import NullPool
 
 
 engine = None
-DEFAULT_CACHE_EXPIRATION = 12 * 60 * 60  # seconds (12 hours)
 
 
 def init_db_engine(connect_str):
