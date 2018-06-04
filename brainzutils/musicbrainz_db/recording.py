@@ -1,5 +1,5 @@
-from brainzutils import cache
 from brainzutils.musicbrainz_db import mb_session
+from brainzutils.musicbrainz_db.helpers import get_relationship_info
 from brainzutils.musicbrainz_db.includes import check_includes
 from brainzutils.musicbrainz_db.serialize import serialize_recording
 from brainzutils.musicbrainz_db.utils import get_entities_by_gids
@@ -25,7 +25,7 @@ def get_recording_by_mbid(mbid, includes=None):
 
 def get_many_recordings_by_mbid(mbids, includes=None):
     """ Get multiple recordings with MusicBrainz IDs. It fetches recordings
-        using _fetch_multiple_recordings.
+    using fetch_multiple_recordings.
 
     Args:
         mbids (list): list of uuid (MBID(gid)) of the recordings.
@@ -36,6 +36,7 @@ def get_many_recordings_by_mbid(mbids, includes=None):
     """
     if includes is None:
         includes = []
+
     recordings = _fetch_multiple_recordings(mbids, includes)
 
     return recordings
@@ -49,7 +50,12 @@ def _fetch_multiple_recordings(mbids, includes=None):
         includes (list): List of values to be included.
                         For list of possible values visit https://bitbucket.org/lalinsky/mbdata/wiki/API/v1/includes#!recording
     Returns:
-        Dictionary containing the recordings information with MBIDs as keys.
+        Dictionary containing the recording information with MBIDs as keys.
+            - id: Recording mbid
+            - name: Name of the recording
+            - length: length of the recording
+            - artists:
+                - artist information: id, name, credited_name and join_phrase
     """
     if includes is None:
         includes = []
