@@ -182,3 +182,25 @@ def serialize_releases(release, includes=None):
         data['medium-list'] = [serialize_medium(medium, includes={'tracks': medium.tracks})
                                for medium in includes['media']]
     return data
+
+
+def serialize_url(url, includes=None):
+    if includes is None:
+        includes = {}
+    data = {
+        'id': url.gid,
+        'url': url.url,
+    }
+
+    if 'relationship_objs' in includes:
+        serialize_relationships(data, url, includes['relationship_objs'])
+    return data
+
+
+SERIALIZE_ENTITIES = {
+    'artist': serialize_artists,
+    'release_group': serialize_release_groups,
+    'release': serialize_releases,
+    'medium': serialize_medium,
+    'url': serialize_url,
+}
