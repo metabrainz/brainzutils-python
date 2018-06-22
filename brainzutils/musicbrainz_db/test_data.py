@@ -417,3 +417,15 @@ release_collision_course.release_group = releasegroup_collision_course
 release_collision_course.gid = 'f51598f5-4ef9-4b8a-865d-06a077bf78cf'
 release_collision_course.name = 'Collision Course'
 release_collision_course.status = releasestatus_official
+
+release_the_hits_collection_volume_one_1 = Release()
+release_the_hits_collection_volume_one_1.gid = 'f1183a86-36d2-4f1f-ab8f-6f965dc0b033'
+release_the_hits_collection_volume_one_1.name = 'The Hits Collection Volume One'
+
+release_the_hits_collection_volume_one_2 = Release()
+release_the_hits_collection_volume_one_2.gid = '3c535d03-2fcc-467a-8d47-34b3250b8211'
+release_the_hits_collection_volume_one_2.name = 'The Hits Collection Volume One'
+
+release_blueprint = Release()
+release_blueprint.gid = '7111c8bc-8549-4abc-8ab9-db13f65b4a55'
+release_blueprint.name = 'Blueprint 2.1'
