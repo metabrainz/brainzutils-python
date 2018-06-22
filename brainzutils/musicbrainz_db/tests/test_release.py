@@ -1,9 +1,13 @@
 from unittest import TestCase
 from mock import MagicMock
 from brainzutils.musicbrainz_db.test_data import (
+    recording_numb_encore_explicit,
     release_numb_encore,
     release_collision_course,
     release_numb_encore_1,
+    release_blueprint,
+    release_the_hits_collection_volume_one_1,
+    release_the_hits_collection_volume_one_2
 )
 from brainzutils.musicbrainz_db import release as mb_release
 
@@ -39,3 +43,25 @@ class ReleaseTestCase(TestCase):
         self.assertEqual(len(releases), 2)
         self.assertEqual(releases['a64a0467-9d7a-4ffa-90b8-d87d9b41e311']['name'], 'Numb/Encore')
         self.assertEqual(releases['f51598f5-4ef9-4b8a-865d-06a077bf78cf']['name'], 'Collision Course')
+
+    def test_get_releases_using_recording_mbid(self):
+        """Tests if releases are fetched correctly for a given recording MBID"""
+
+        mb_release.recording = MagicMock()
+        mb_release.recording.query.return_value.options.return_value.options.return_value.\
+        options.return_value.filter.return_value.all.return_value = [recording_numb_encore_explicit]
+
+        self.mock_db.query.return_value.join.return_value.join.return_value.join.return_value.\
+        filter.return_value.all.return_value = [
+            release_the_hits_collection_volume_one_1,
+            release_blueprint,
+            release_the_hits_collection_volume_one_2,
+        ]
+
+        releases = mb_release.get_releases_using_recording_mbid('5465ca86-3881-4349-81b2-6efbd3a59451')
+
+        self.assertListEqual(releases, [
+            {'id': 'f1183a86-36d2-4f1f-ab8f-6f965dc0b033', 'name': 'The Hits Collection Volume One'},
+            {'id': '7111c8bc-8549-4abc-8ab9-db13f65b4a55', 'name': 'Blueprint 2.1'},
+            {'id': '3c535d03-2fcc-467a-8d47-34b3250b8211', 'name': 'The Hits Collection Volume One'},
+        ])
