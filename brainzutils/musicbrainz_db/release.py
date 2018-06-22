@@ -1,11 +1,13 @@
 from collections import defaultdict
 from mbdata import models
 from sqlalchemy.orm import joinedload
+from brainzutils.musicbrainz_db import exceptions as mb_exceptions
 from brainzutils.musicbrainz_db import mb_session
 from brainzutils.musicbrainz_db.includes import check_includes
 from brainzutils.musicbrainz_db.serialize import serialize_releases
 from brainzutils.musicbrainz_db.utils import get_entities_by_gids
 from brainzutils.musicbrainz_db.helpers import get_relationship_info
+from brainzutils.musicbrainz_db import recording
 
 
 def get_release_by_id(mbid):
@@ -99,3 +101,25 @@ def get_url_rels_from_releases(releases):
         if 'url-rels' in releases[release_gid]:
             all_url_rels.extend([url_rel for url_rel in releases[release_gid]['url-rels']])
     return all_url_rels
+
+
+def get_releases_using_recording_mbid(recording_mbid):
+    """Returns a list of releases that contain the recording with
+       the given recording MBID.
+    """
+
+    # First fetch the recording so that redirects don't create any problem
+    recording_redirect = recording.get_recording_by_mbid(recording_mbid)
+    recording_mbid = recording_redirect['id']
+    with mb_session() as db:
+        releases = db.query(models.Release).\
+                    join(models.Medium).\
+                    join(models.Track).\
+                    join(models.Recording).\
+                    filter(models.Recording.gid == recording_mbid).all()
+
+        serial_releases = [serialize_releases(release) for release in releases]
+        if not serial_releases:
+            raise mb_exceptions.NoDataFoundException("Couldn't find releases.")
+
+        return serial_releases
