@@ -130,6 +130,6 @@ def get_releases_using_recording_mbid(recording_mbid):
 
         serial_releases = [serialize_releases(release) for release in releases]
         if not serial_releases:
-            raise mb_exceptions.NoDataFoundException("Couldn't find releases.")
+            raise mb_exceptions.NoDataFoundException("Couldn't find release for recording with MBID: %s." % str(recording_mbid))
 
         return serial_releases
