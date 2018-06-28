@@ -106,6 +106,16 @@ def get_url_rels_from_releases(releases):
 def get_releases_using_recording_mbid(recording_mbid):
     """Returns a list of releases that contain the recording with
        the given recording MBID.
+
+       Args:
+           recording_mbid (UUID): recording MBID for which releases are to be fetched.
+
+       Returns:
+           serial_releases (list): list with dictionary elements of following format:
+           {
+               'id': <release MBID>,
+               'name': <release Title>,
+           }
     """
 
     # First fetch the recording so that redirects don't create any problem
