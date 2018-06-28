@@ -8,3 +8,4 @@ msgpack-python==0.4.8
 requests==2.18.1
 SQLAlchemy==1.2.5
 mbdata==2017.6.2
+sqlalchemy-dst

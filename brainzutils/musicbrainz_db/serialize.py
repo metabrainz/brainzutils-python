@@ -1,5 +1,6 @@
 from brainzutils.musicbrainz_db.utils import ENTITY_MODELS
 from mbdata.utils.models import get_link_target
+from sqlalchemy_dst import row2dict
 
 
 def serialize_relationships(data, source_obj, relationship_objs):
@@ -197,10 +198,17 @@ def serialize_url(url, includes=None):
     return data
 
 
+def serialize_editors(editor, includes=None):
+    data = row2dict(editor, exclude_pk=True, exclude={'password', 'ha1'})
+
+    return data
+
+
 SERIALIZE_ENTITIES = {
     'artist': serialize_artists,
     'release_group': serialize_release_groups,
     'release': serialize_releases,
     'medium': serialize_medium,
     'url': serialize_url,
+    'editor': serialize_editors,
 }

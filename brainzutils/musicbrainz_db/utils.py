@@ -11,7 +11,8 @@ ENTITY_MODELS = {
     'event': models.Event,
     'series': models.Series,
     'url': models.URL,
-    'recording':models.Recording,
+    'recording': models.Recording,
+    'editor': models.Editor,
 }
 
 
@@ -58,4 +59,30 @@ def get_entities_by_gids(query, entity_type, mbids):
     if remaining_gids:
         raise mb_exceptions.NoDataFoundException("Couldn't find entities with IDs: {mbids}".format(mbids=remaining_gids))
     
+    return entities
+
+
+def get_entities_by_ids(query, entity_type, ids):
+    """Get entities using their IDs.
+
+    Note that the query may be modified before passing it to this
+    function in order to save queries made to the database.
+
+    Args:
+        query (Query): SQLAlchemy Query object.
+        entity_type (str): Type of entity being queried.
+        ids (list): IDs of the target entities.
+
+    Returns:
+        Dictionary of objects of target entities keyed by their ID.
+    """
+    entity_model = ENTITY_MODELS[entity_type]
+    results = query.filter(entity_model.id in ids).all()
+    remaining_ids = list(set(ids) - {entity.id for entity in results})
+    entities = {entity.id: entity for entity in results}
+
+    if remaining_ids:
+        raise mb_exceptions.NoDataFoundException(
+            "Couldn't find entities with IDs: {ids}".format(ids=remaining_ids))
+
     return entities

@@ -25,6 +25,7 @@ from mbdata.models import (
     Event,
     EventType,
     Track,
+    Editor,
 )
 
 # Place (d71ffe38-5eaf-426b-9a2e-e1f21bc84609) with url-rels, place-rels
@@ -429,3 +430,13 @@ release_the_hits_collection_volume_one_2.name = 'The Hits Collection Volume One'
 release_blueprint = Release()
 release_blueprint.gid = '7111c8bc-8549-4abc-8ab9-db13f65b4a55'
 release_blueprint.name = 'Blueprint 2.1'
+
+editor_dt = datetime.datetime(2014, 12, 1, 14, 6, 42, 321443)
+editor_date = datetime.date(1999, 1, 1)
+
+editor_1 = Editor(id=2323, name="Editor 1", privs=0, member_since=editor_dt, email_confirm_date=editor_dt,
+                  last_login_date=editor_dt, last_updated=editor_dt, deleted=False)
+editor_2 = Editor(id=2324, name="Editor 2", privs=3, email="editor@example.com", website="example.com",
+                  bio="Random\neditor", member_since=editor_dt, email_confirm_date=editor_dt,
+                  last_login_date=editor_dt, last_updated=editor_dt, birth_date=editor_date, deleted=False,
+                  area=area_hameenlinna)
