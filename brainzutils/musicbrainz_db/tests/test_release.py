@@ -48,17 +48,24 @@ class ReleaseTestCase(TestCase):
         """Tests if releases are fetched correctly for a given recording MBID"""
 
         mb_release.recording = MagicMock()
-        mb_release.recording.query.return_value.options.return_value.options.return_value.\
-        options.return_value.filter.return_value.all.return_value = [recording_numb_encore_explicit]
+        mb_release.recording.get_recording_by_mbid.return_value = {
+            'id': 'daccb724-8023-432a-854c-e0accb6c8678',
+            'name': 'Numb/Encore (explicit)',
+            'length': 205.28,
+        }
 
-        self.mock_db.query.return_value.join.return_value.join.return_value.join.return_value.\
-        filter.return_value.all.return_value = [
+        release_query = self.mock_db.query.return_value.join.return_value.join.return_value.join.return_value.\
+                        filter.return_value.all
+        release_query.return_value = [
             release_the_hits_collection_volume_one_1,
             release_blueprint,
             release_the_hits_collection_volume_one_2,
         ]
 
         releases = mb_release.get_releases_using_recording_mbid('5465ca86-3881-4349-81b2-6efbd3a59451')
+
+        mb_release.recording.get_recording_by_mbid.assert_called_once_with('5465ca86-3881-4349-81b2-6efbd3a59451')
+        release_query.assert_called_once()
 
         self.assertListEqual(releases, [
             {'id': 'f1183a86-36d2-4f1f-ab8f-6f965dc0b033', 'name': 'The Hits Collection Volume One'},
