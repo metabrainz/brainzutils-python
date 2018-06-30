@@ -31,7 +31,7 @@ VALID_INCLUDES = {
         "artists", "labels", "recordings", "release-groups", "media", "annotation", "aliases"
     ] + TAG_INCLUDES + RELATION_INCLUDES,
     'artist': ["recordings", "releases", "media", "aliases", "annotation"] + RELATION_INCLUDES + TAG_INCLUDES,
-    'editor': [],  # TODO: Add editor includes
+    'editor': [],  # TODO: List includes here (BU-18)
 }
 
 

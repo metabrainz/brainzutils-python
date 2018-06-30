@@ -49,7 +49,7 @@ class EditorTestCase(TestCase):
         editor = mb_editor.get_editor_by_id(2323)
         self.assertDictEqual(editor, self.editor_1_dict)
 
-    def test_fetch_multiple_artists(self):
+    def test_fetch_multiple_editors(self):
         self.editor_query.return_value = [editor_1, editor_2]
         editors = mb_editor.fetch_multiple_editors([2323, 2324])
         self.assertDictEqual(editors[2323], self.editor_1_dict)
