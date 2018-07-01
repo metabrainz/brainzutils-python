@@ -77,7 +77,7 @@ def get_entities_by_ids(query, entity_type, ids):
         Dictionary of objects of target entities keyed by their ID.
     """
     entity_model = ENTITY_MODELS[entity_type]
-    results = query.filter(entity_model.id in ids).all()
+    results = query.filter(entity_model.id.in_(ids)).all()
     remaining_ids = list(set(ids) - {entity.id for entity in results})
     entities = {entity.id: entity for entity in results}
 

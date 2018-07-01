@@ -38,14 +38,13 @@ def fetch_multiple_editors(editor_ids, includes=None):
     includes_data = defaultdict(dict)
     check_includes('editor', includes)
     with mb_session() as db:
-        query = db.query(models.Editor).\
-                options(joinedload("type"))
+        query = db.query(models.Editor)
         editors = get_entities_by_ids(
             query=query,
             entity_type='editor',
             ids=editor_ids,
         )
         editor_ids = [editor.id for editor in editors.values()]
+        editors = {editor_id: serialize_editors(editors[editor_id], includes_data) for editor_id in editor_ids}
 
-    editors = {editor_id: serialize_editors(editors[editor_id], includes_data) for editor_id in editor_ids}
     return editors
