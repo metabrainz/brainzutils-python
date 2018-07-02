@@ -8,7 +8,7 @@ class EditorTestCase(TestCase):
     def setUp(self):
         mb_editor.mb_session = MagicMock()
         self.mock_db = mb_editor.mb_session.return_value.__enter__.return_value
-        self.editor_query = self.mock_db.query.return_value.options.return_value.filter.return_value.all
+        self.editor_query = self.mock_db.query.return_value.filter.return_value.all
 
         self.editor_1_dict = {
             "id": 2323,
