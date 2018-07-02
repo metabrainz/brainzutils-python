@@ -435,8 +435,10 @@ editor_dt = datetime.datetime(2014, 12, 1, 14, 6, 42, 321443)
 editor_date = datetime.date(1999, 1, 1)
 
 editor_1 = Editor(id=2323, name="Editor 1", privs=0, member_since=editor_dt, email_confirm_date=editor_dt,
-                  last_login_date=editor_dt, last_updated=editor_dt, deleted=False)
+                  last_login_date=editor_dt, last_updated=editor_dt, deleted=False, password="{CLEARTEXT}pass",
+                  ha1="3f3edade87115ce351d63f42d92a1834")
 editor_2 = Editor(id=2324, name="Editor 2", privs=3, email="editor@example.com", website="example.com",
                   bio="Random\neditor", member_since=editor_dt, email_confirm_date=editor_dt,
                   last_login_date=editor_dt, last_updated=editor_dt, birth_date=editor_date, deleted=False,
-                  area=area_hameenlinna)
+                  area=area_hameenlinna, password="$2b$12$2odiKUAGktuwM2J.tp/uZ.54bniapSMjCln3J1TfC6zx74QFuawQ6",
+                  ha1="3f3edade87115ce351d63f42d92a1834")

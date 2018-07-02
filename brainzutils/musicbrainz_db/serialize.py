@@ -198,7 +198,7 @@ def serialize_url(url, includes=None):
     return data
 
 
-def serialize_editors(editor, includes=None):
+def serialize_editor(editor, includes=None):
     data = row2dict(editor, exclude_pk=True, exclude={'password', 'ha1'})
 
     # TODO: Add includes to data here (BU-18)
@@ -212,5 +212,5 @@ SERIALIZE_ENTITIES = {
     'release': serialize_releases,
     'medium': serialize_medium,
     'url': serialize_url,
-    'editor': serialize_editors,
+    'editor': serialize_editor,
 }

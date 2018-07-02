@@ -3,7 +3,7 @@ from sqlalchemy.orm import joinedload
 from mbdata import models
 from brainzutils.musicbrainz_db import mb_session
 from brainzutils.musicbrainz_db.utils import get_entities_by_ids
-from brainzutils.musicbrainz_db.serialize import serialize_editors
+from brainzutils.musicbrainz_db.serialize import serialize_editor
 from brainzutils.musicbrainz_db.includes import check_includes
 
 
@@ -45,6 +45,6 @@ def fetch_multiple_editors(editor_ids, includes=None):
             ids=editor_ids,
         )
         editor_ids = [editor.id for editor in editors.values()]
-        editors = {editor_id: serialize_editors(editors[editor_id], includes_data) for editor_id in editor_ids}
+        editors = {editor_id: serialize_editor(editors[editor_id], includes_data) for editor_id in editor_ids}
 
     return editors
