@@ -206,6 +206,44 @@ def serialize_editor(editor, includes=None):
     return data
 
 
+def serialize_events(event, includes=None):
+    if includes is None:
+        includes = {}
+    data = {
+        'id': event.gid,
+        'name': event.name,
+    }
+    if 'relationship_objs' in includes:
+        serialize_relationships(data, event, includes['relationship_objs'])
+    return data
+
+
+def serialize_places(place, includes=None):
+    if includes is None:
+        includes = {}
+    data = {
+        'id': place.gid,
+        'name': place.name,
+        'address': place.address,
+    }
+
+    if 'type' in includes and includes['type']:
+        data['type'] = includes['type'].name
+
+    if place.coordinates:
+        data['coordinates'] = {
+            'latitude': place.coordinates[0],
+            'longitude': place.coordinates[1],
+        }
+
+    if 'area' in includes and includes['area']:
+        data['area'] = serialize_areas(includes['area'])
+
+    if 'relationship_objs' in includes:
+        serialize_relationships(data, place, includes['relationship_objs'])
+    return data
+
+
 SERIALIZE_ENTITIES = {
     'artist': serialize_artists,
     'release_group': serialize_release_groups,
@@ -213,4 +251,6 @@ SERIALIZE_ENTITIES = {
     'medium': serialize_medium,
     'url': serialize_url,
     'editor': serialize_editor,
+    'place': serialize_places,
+    'event': serialize_events,
 }
