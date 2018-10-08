@@ -244,6 +244,19 @@ def serialize_places(place, includes=None):
     return data
 
 
+def serialize_areas(area, includes=None):
+    if includes is None:
+        includes = {}
+    data = {
+        'id': area.gid,
+        'name': area.name,
+    }
+
+    if 'relationship_objs' in includes:
+        serialize_relationships(data, area, includes['relationship_objs'])
+    return data
+
+
 SERIALIZE_ENTITIES = {
     'artist': serialize_artists,
     'release_group': serialize_release_groups,
@@ -253,4 +266,5 @@ SERIALIZE_ENTITIES = {
     'editor': serialize_editor,
     'place': serialize_places,
     'event': serialize_events,
+    'area': serialize_areas,
 }

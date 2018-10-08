@@ -16,11 +16,7 @@ def get_event_by_id(mbid):
     Returns:
         Dictionary containing the event information.
     """
-    key = cache.gen_key(mbid)
-    event = cache.get(key)
-    if not event:
-        event = _get_event_by_id(mbid)
-        cache.set(key=key, val=event, time=DEFAULT_CACHE_EXPIRATION)
+    event = _get_event_by_id(mbid)
     return event
 
 
@@ -94,4 +90,4 @@ def fetch_multiple_events(mbids, *, includes=None):
                 source_entity_ids=event_ids,
                 includes_data=includes_data,
             )
-    return {str(mbid): to_dict_events(events[mbid], includes_data[events[mbid].id]) for mbid in mbids}
+    return {str(mbid): serialize_events(events[mbid], includes_data[events[mbid].id]) for mbid in mbids}

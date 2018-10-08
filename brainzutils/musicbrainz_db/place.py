@@ -18,11 +18,7 @@ def get_place_by_id(mbid):
     Returns:
         Dictionary containing the place information.
     """
-    key = cache.gen_key(mbid)
-    place = cache.get(key)
-    if not place:
-        place = _get_place_by_id(mbid)
-        cache.set(key=key, val=place, time=DEFAULT_CACHE_EXPIRATION)
+    place = _get_place_by_id(mbid)
     return place_rel.process(place)
 
 
