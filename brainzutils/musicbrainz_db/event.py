@@ -4,7 +4,7 @@ from brainzutils import cache
 from brainzutils.musicbrainz_db import mb_session, DEFAULT_CACHE_EXPIRATION
 from brainzutils.musicbrainz_db.utils import get_entities_by_gids
 from brainzutils.musicbrainz_db.includes import check_includes
-from brainzutils.musicbrainz_db.serialize import to_dict_events
+from brainzutils.musicbrainz_db.serialize import serialize_events
 from brainzutils.musicbrainz_db.helpers import get_relationship_info
 
 
