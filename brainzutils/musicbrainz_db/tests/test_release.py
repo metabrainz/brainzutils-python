@@ -20,9 +20,9 @@ class ReleaseTestCase(TestCase):
         self.release_query = self.mock_db.query.return_value.options.return_value.options.return_value.\
             options.return_value.options.return_value.options.return_value.filter.return_value.all
 
-    def test_get_by_id(self):
+    def test_get_by_mbid(self):
         self.release_query.return_value = [release_numb_encore]
-        release = mb_release.get_release_by_id('16bee711-d7ce-48b0-adf4-51f124bcc0df')
+        release = mb_release.get_release_by_mbid('16bee711-d7ce-48b0-adf4-51f124bcc0df', includes=['media', 'release-groups'])
         self.assertEqual(release["name"], "Numb/Encore")
         self.assertEqual(len(release["medium-list"][0]["track-list"]), 2)
         self.assertDictEqual(release["medium-list"][0]["track-list"][0], {
@@ -37,7 +37,7 @@ class ReleaseTestCase(TestCase):
 
     def test_fetch_multiple_releases(self):
         self.mock_db.query.return_value.filter.return_value.all.return_value = [release_numb_encore_1, release_collision_course]
-        releases = mb_release.fetch_multiple_releases(
+        releases = mb_release._fetch_multiple_releases(
             mbids=['f51598f5-4ef9-4b8a-865d-06a077bf78cf', 'a64a0467-9d7a-4ffa-90b8-d87d9b41e311'],
         )
         self.assertEqual(len(releases), 2)
