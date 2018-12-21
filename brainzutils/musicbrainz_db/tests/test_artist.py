@@ -15,14 +15,13 @@ class TestArtist:
             "id": "f59c5520-5f46-4d2c-b2c4-822eabf53419",
             "name": "Linkin Park",
             "sort_name": "Linkin Park",
-            "type": "Group"
         }
 
     def test_fetch_multiple_artists(self, engine):
         artists = mb_artist.fetch_multiple_artists([
             "f59c5520-5f46-4d2c-b2c4-822eabf53419",
             "f82bcf78-5b69-4622-a5ef-73800768d9ac",
-        ])
+        ], includes=["type"])
         assert artists["f82bcf78-5b69-4622-a5ef-73800768d9ac"] == {
             "id": "f82bcf78-5b69-4622-a5ef-73800768d9ac",
             "name": "JAY‐Z",
