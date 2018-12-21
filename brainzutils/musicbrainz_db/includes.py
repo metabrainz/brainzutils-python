@@ -28,9 +28,9 @@ VALID_INCLUDES = {
     'recording': ["artist", "artists", "isrc"] + TAG_INCLUDES + RELATION_INCLUDES,
     'release_group': ["artists", "media", "releases"] + TAG_INCLUDES + RELATION_INCLUDES,
     'release': [
-        "artists", "labels", "recordings", "release-groups", "media", "annotation", "aliases"
+        "artists", "labels", "recordings", "release-groups", "media", "annotation", "aliases", "comment"
     ] + TAG_INCLUDES + RELATION_INCLUDES,
-    'artist': ["recordings", "releases", "media", "aliases", "annotation"] + RELATION_INCLUDES + TAG_INCLUDES,
+    'artist': ["recordings", "releases", "media", "aliases", "annotation", "comment", "type"] + RELATION_INCLUDES + TAG_INCLUDES,
     'editor': [],  # TODO: List includes here (BU-18)
 }
 
