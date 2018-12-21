@@ -14,6 +14,8 @@ def get_release_by_id(mbid, includes=None, unknown_entities_for_missing=False):
     """Get release with the MusicBrainz ID.
     Args:
         mbid (uuid): MBID(gid) of the release.
+        includes (list): List of values to be included.
+                         For list of possible values see includes.py.
     Returns:
         Dictionary containing the release information.
     """
@@ -73,6 +75,11 @@ def fetch_multiple_releases(mbids, includes=None, unknown_entities_for_missing=F
                 source_entity_ids=release_ids,
                 includes_data=includes_data,
             )
+
+        if 'comment' in includes:
+            for release in releases.values():
+                includes_data[release.id]['comment'] = release.comment
+
         releases = {str(mbid): serialize_releases(releases[mbid], includes_data[releases[mbid].id]) for mbid in mbids}
     return releases
 
