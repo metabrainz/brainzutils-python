@@ -147,6 +147,38 @@ def delete(key, namespace=None):
 
 
 @init_required
+def expire(key, time, namespace=None):
+    """Set the expiration time for an item
+
+    Args:
+        key: Key of the item that needs to be deleted.
+        time: the number of seconds after which the item should expire
+        namespace: Optional namespace in which key was defined.
+
+    Returns:
+          1 if the timeout was set, 0 otherwise
+    """
+    # Note that key is encoded before deletion request.
+    return _r.expireat(_prep_keys_list([key], namespace), time)
+
+
+@init_required
+def expireat(key, timeat, namespace=None):
+    """Set the absolute expiration time for an item
+
+    Args:
+        key: Key of the item that needs to be deleted.
+        timet: the number of seconds since the epoch when the item should expire
+        namespace: Optional namespace in which key was defined.
+
+    Returns:
+          1 if the timeout was set, 0 otherwise
+    """
+    # Note that key is encoded before deletion request.
+    return _r.expireat(_prep_keys_list([key], namespace), timeat)
+
+
+@init_required
 def set_many(mapping, time=None, namespace=None, encode=True):
     """Set multiple keys doing just one query.
 
