@@ -7,11 +7,11 @@
 import time
 from functools import update_wrapper
 from flask import request, g
-import cache
+from brainzutils import cache
 
 # g key for the timeout when limits must be refreshed from cache
-RATELIMIT_REFRESH = 60 # in seconds
-RATELIMIT_TIMEOUT = "rate_limits_timeout"
+ratelimit_refresh = 60 # in seconds
+ratelimit_timeout = "rate_limits_timeout"
 
 # Defaults
 ratelimit_per_token_default = 50
@@ -24,7 +24,7 @@ ratelimit_per_ip_key = "rate_limit_per_ip_limit"
 ratelimit_window_key = "rate_limit_window"
 
 # external functions
-ratelimit_user_verification = None
+ratelimit_user_validation = None
 
 class RateLimit(object):
 
@@ -36,26 +36,26 @@ class RateLimit(object):
     def __init__(self, key_prefix, limit, per):
         current_time = int(time.time())
         self.reset = (current_time // per) * per + per
+        print("cur %d reset %d" % (int(current_time), self.reset)
         self.seconds_before_reset = self.reset - current_time
         self.key = key_prefix + str(self.reset)
         self.limit = limit
         self.per = per
-        cache.increment(self.key)
+        self.current = cache.increment(self.key)
         cache.expireat(self.key, self.reset + self.expiration_window)
-        self.current = p.execute()[0]
 
     remaining = property(lambda x: max(x.limit - x.current, 0))
     over_limit = property(lambda x: x.current > x.limit)
 
 
-def update_rate_limits(per_token, per_ip, window):
+def set_rate_limits(per_token, per_ip, window):
     '''
         Update the current rate limits. This will affect all new rate limiting windows and existing windows will not be changed.
     '''
 
-    cache.set(RATELIMIT_PER_TOKEN_KEY, per_token)
-    cache.set(RATELIMIT_PER_IP_KEY, per_ip)
-    cache.set(RATELIMIT_WINDOW_KEY, window)
+    cache.set(ratelimit_per_token_key, per_token)
+    cache.set(ratelimit_per_ip_key, per_ip)
+    cache.set(ratelimit_window_key, window)
 
 
 def set_user_validation_function(func):
@@ -64,7 +64,8 @@ def set_user_validation_function(func):
         and return a True/False value if this user is a valid user.
     '''
 
-    ratelimit_user_verification = func
+    global ratelimit_user_validation
+    ratelimit_user_validation = func
 
 
 def inject_x_rate_headers(response):
@@ -98,7 +99,7 @@ def set_rate_limits(per_ip, per_token, window):
 
 
 def check_limit_freshness():
-    limits_timeout = getattr(g, '_' + RATELIMIT_TIMEOUT, 0)
+    limits_timeout = getattr(g, '_' + ratelimit_timeout, 0)
     if time.time() <= limits_timeout:
         return
 
@@ -120,7 +121,7 @@ def check_limit_freshness():
         value = ratelimit_window_default
     setattr(g, '_' + ratelimit_window_key, value)
 
-    setattr(g, '_' + RATELIMIT_TIMEOUT, int(time.time()) + RATELIMIT_REFRESH)
+    setattr(g, '_' + ratelimit_timeout, int(time.time()) + ratelimit_refresh)
 
 
 def get_per_ip_limits():
@@ -147,18 +148,22 @@ def get_rate_limit_data(request):
     '''
 
     # If a user verification function is provided, parse the Authorization header and try to look up that user
-    if ratelimit_user_verification:
+    if ratelimit_user_validation:
         auth_header = request.headers.get('Authorization')
         if auth_header:
             auth_token = auth_header[6:]
-            is_valid = ratelimit_user_verification(auth_token)
+            print("got auth header: %s" % auth_token)
+            is_valid = ratelimit_user_validation(auth_token)
             if is_valid:
                 values = get_per_token_limits()
                 values['key'] = auth_token
                 return values
+    else:
+        print("no user verification")
 
     # no valid auth token provided. Look for a remote addr header provided a the proxy
     # or if that isn't available use the IP address from the header
+    # TODO: use UWSGI vars to catch the right one
     ip = request.headers.get('X-LB-Remote-Addr')
     if not ip:
         ip = request.remote_addr
@@ -172,6 +177,7 @@ def ratelimit():
     def decorator(f):
         def rate_limited(*args, **kwargs):
             data = get_rate_limit_data(request)
+            print("rate limit data", data)
             key = 'rate-limit/%s/' % data['key']
             rlimit = RateLimit(key, data['limit'], data['window'])
             g._view_rate_limit = rlimit
