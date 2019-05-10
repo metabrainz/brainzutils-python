@@ -145,10 +145,6 @@ def delete(key, namespace=None):
     # Note that key is encoded before deletion request.
     return delete_many([key], namespace)
 
-# TODO: only here for testing purposes
-@init_required
-def ttl(key, namespace=None):
-    return _r.pttl(_prep_keys_list([key], namespace))
 
 @init_required
 def expire(key, time, namespace=None):
@@ -163,7 +159,7 @@ def expire(key, time, namespace=None):
           True if the timeout was set, False otherwise
     """
     # Note that key is encoded before deletion request.
-    return _r.pexpire(_prep_keys_list([key], namespace), time * 1000)
+    return _r.pexpire(_prep_key(key, namespace), time * 1000)
 
 
 @init_required
@@ -179,7 +175,7 @@ def expireat(key, timeat, namespace=None):
           True if the timeout was set, False otherwise
     """
     # Note that key is encoded before deletion request.
-    return _r.pexpireat(_prep_keys_list([key], namespace), timeat * 1000)
+    return _r.pexpireat(_prep_key(key, namespace), timeat * 1000)
 
 
 @init_required
@@ -199,6 +195,7 @@ def set_many(mapping, time=None, namespace=None, encode=True):
     result = _r.mset(_prep_dict(mapping, namespace, encode))
     if time:
         for key in _prep_keys_list(list(mapping.keys()), namespace):
+            print("pexpire: '%s'" % key)
             _r.pexpire(key, time * 1000)
 
     return result
@@ -293,7 +290,6 @@ def _prep_key(key, namespace_and_version=None):
     if not isinstance(key, bytes):
         key = key.encode(ENCODING_ASCII, errors='xmlcharrefreplace')
     key = hashlib.sha1(key).hexdigest().encode(ENCODING_ASCII)
-    print("prep key: '%s'" % (_glob_namespace + key))
     return _glob_namespace + key
 
 
