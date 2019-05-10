@@ -145,6 +145,10 @@ def delete(key, namespace=None):
     # Note that key is encoded before deletion request.
     return delete_many([key], namespace)
 
+# TODO: only here for testing purposes
+@init_required
+def ttl(key, namespace=None):
+    return _r.pttl(_prep_keys_list([key], namespace))
 
 @init_required
 def expire(key, time, namespace=None):
@@ -156,10 +160,10 @@ def expire(key, time, namespace=None):
         namespace: Optional namespace in which key was defined.
 
     Returns:
-          1 if the timeout was set, 0 otherwise
+          True if the timeout was set, False otherwise
     """
     # Note that key is encoded before deletion request.
-    return _r.expireat(_prep_keys_list([key], namespace), time)
+    return _r.pexpire(_prep_keys_list([key], namespace), time * 1000)
 
 
 @init_required
@@ -168,14 +172,14 @@ def expireat(key, timeat, namespace=None):
 
     Args:
         key: Key of the item that needs to be deleted.
-        timet: the number of seconds since the epoch when the item should expire
+        timeat: the number of seconds since the epoch when the item should expire
         namespace: Optional namespace in which key was defined.
 
     Returns:
-          1 if the timeout was set, 0 otherwise
+          True if the timeout was set, False otherwise
     """
     # Note that key is encoded before deletion request.
-    return _r.expireat(_prep_keys_list([key], namespace), timeat)
+    return _r.pexpireat(_prep_keys_list([key], namespace), timeat * 1000)
 
 
 @init_required
@@ -289,6 +293,7 @@ def _prep_key(key, namespace_and_version=None):
     if not isinstance(key, bytes):
         key = key.encode(ENCODING_ASCII, errors='xmlcharrefreplace')
     key = hashlib.sha1(key).hexdigest().encode(ENCODING_ASCII)
+    print("prep key: '%s'" % (_glob_namespace + key))
     return _glob_namespace + key
 
 

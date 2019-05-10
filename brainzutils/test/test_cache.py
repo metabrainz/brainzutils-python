@@ -4,6 +4,7 @@
 import datetime
 import os
 import unittest
+from time import sleep, time
 
 import mock as mock
 import redis
@@ -148,6 +149,21 @@ class CacheTestCase(unittest.TestCase):
         cache.set("a", "not a number")
         with self.assertRaises(redis.exceptions.ResponseError):
             cache.increment("a")
+
+    def test_expire(self):
+        cache.set("a", 1, time = 2)
+        self.assertEqual(cache.get("a"), 1)
+        print("ttl: %d" % cache.ttl("a"))
+        self.assertEqual(cache.expire("a", 1), True)
+        sleep(2.1)
+        self.assertEqual(cache.get("a"), None)
+
+
+#    def test_expireat(self):
+#        cache.set("a", 1, time = 100, encode = False)
+#        self.assertEqual(cache.expireat("a", int(time() + 1)), True)
+#        sleep(2.1)
+#        self.assertEqual(cache.get("a"), None)
 
 
 class CacheKeyTestCase(unittest.TestCase):
