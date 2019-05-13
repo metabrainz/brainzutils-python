@@ -153,8 +153,7 @@ def get_rate_limit_data(request):
 
     # no valid auth token provided. Look for a remote addr header provided a the proxy
     # or if that isn't available use the IP address from the header
-    # TODO: use UWSGI vars to catch the right one
-    ip = request.headers.get('X-LB-Remote-Addr')
+    ip = request.environ.get('REMOTE_ADDR', None)
     if not ip:
         ip = request.remote_addr
 
