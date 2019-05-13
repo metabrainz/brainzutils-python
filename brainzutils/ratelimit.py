@@ -36,7 +36,6 @@ class RateLimit(object):
     def __init__(self, key_prefix, limit, per):
         current_time = int(time.time())
         self.reset = (current_time // per) * per + per
-        print("cur %d reset %d" % (int(current_time), self.reset)
         self.seconds_before_reset = self.reset - current_time
         self.key = key_prefix + str(self.reset)
         self.limit = limit
@@ -48,16 +47,6 @@ class RateLimit(object):
     over_limit = property(lambda x: x.current > x.limit)
 
 
-def set_rate_limits(per_token, per_ip, window):
-    '''
-        Update the current rate limits. This will affect all new rate limiting windows and existing windows will not be changed.
-    '''
-
-    cache.set(ratelimit_per_token_key, per_token)
-    cache.set(ratelimit_per_ip_key, per_ip)
-    cache.set(ratelimit_window_key, window)
-
-
 def set_user_validation_function(func):
     '''
         The function passed to this method should accept on argument, the Authorization header contents
@@ -66,6 +55,15 @@ def set_user_validation_function(func):
 
     global ratelimit_user_validation
     ratelimit_user_validation = func
+
+
+def set_rate_limits(per_token, per_ip, window):
+    '''
+        Update the current rate limits. This will affect all new rate limiting windows and existing windows will not be changed.
+    '''
+    cache.set(ratelimit_per_token_key, per_token)
+    cache.set(ratelimit_per_ip_key, per_ip)
+    cache.set(ratelimit_window_key, window)
 
 
 def inject_x_rate_headers(response):
@@ -90,12 +88,6 @@ def get_view_rate_limit():
 def on_over_limit(limit):
     return 'You have exceeded your rate limit. See the X-RateLimit-* response headers for more ' \
            'information on your current rate limit.\n', 429
-
-
-def set_rate_limits(per_ip, per_token, window):
-    cache.set(ratelimit_per_token_key, per_token)
-    cache.set(ratelimit_per_ip_key, per_ip)
-    cache.set(ratelimit_window_key, window)
 
 
 def check_limit_freshness():
@@ -152,14 +144,12 @@ def get_rate_limit_data(request):
         auth_header = request.headers.get('Authorization')
         if auth_header:
             auth_token = auth_header[6:]
-            print("got auth header: %s" % auth_token)
             is_valid = ratelimit_user_validation(auth_token)
             if is_valid:
                 values = get_per_token_limits()
                 values['key'] = auth_token
                 return values
-    else:
-        print("no user verification")
+
 
     # no valid auth token provided. Look for a remote addr header provided a the proxy
     # or if that isn't available use the IP address from the header
@@ -177,7 +167,6 @@ def ratelimit():
     def decorator(f):
         def rate_limited(*args, **kwargs):
             data = get_rate_limit_data(request)
-            print("rate limit data", data)
             key = 'rate-limit/%s/' % data['key']
             rlimit = RateLimit(key, data['limit'], data['window'])
             g._view_rate_limit = rlimit
