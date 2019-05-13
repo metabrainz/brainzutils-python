@@ -27,6 +27,63 @@ ratelimit_window_key = "rate_limit_window"
 # external functions
 ratelimit_user_validation = None
 
+'''
+    HOW TO USE THIS MODULE:
+
+    This module defines a set of function that allows your to add ratelimiting to your
+    flask app. There are three values to know and set:
+
+       per_token_limit - The number of requests that are allowed for a caller who is 
+            setting an 
+               Authorization: Token <auth token>
+            header. This limit can be different than the limit for rate limiting on an IP basis.
+
+       per_ip_limit - The number of requests that are allowed for a caller who is not
+            providing an Authorization header and is rate limited on their IP address.
+
+       ratelimit_window - The window, in number of seconds, how long long the limits
+            above are applied for. 
+
+    To add ratelimit capabilities to your flask app, follow these steps:
+
+    1. During app creation add these lines:
+
+          from brainzutils.ratelimit import ratelimit, inject_x_rate_headers
+
+          @app.after_request
+          def after_request_callbacks(response):
+              return inject_x_rate_headers(response)
+
+    2. Then apply the ratelimit() decorator to any function that should be rate limited:
+
+         @app.route('/')
+         @ratelimit()
+         def index():
+             return '<html><body>test</body></html>'
+
+    3. The default rate limits are defined above (see comment Defaults). If you want to set different
+       rate limits, which can be also done dynamically without restarting the application, call
+       the set_rate_limits function:
+
+          from brainzutils.ratelimit import set_rate_limits
+
+          set_rate_limits(per_token_limit, per_ip_limit, rate_limit_window)
+
+    4. To enable token based rate limiting, callers need to pass the Authorization header (see above)
+       and the application needs to provide a user validation function:
+
+          from brainzutils.ratelimit import set_user_validation_function
+
+          def validate_user(user):
+              if user == valid_user:
+                  return True
+              return False
+
+         set_user_validation_function(validate_user)
+
+'''
+
+
 class RateLimit(object):
     '''
         This Ratelimit object is created when a request is started (via the ratelimit decorator)
