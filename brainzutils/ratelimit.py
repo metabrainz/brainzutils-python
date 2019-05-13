@@ -4,6 +4,7 @@
 #
 # http://flask.pocoo.org/snippets/70/
 #
+from __future__ import absolute_import
 import time
 from functools import update_wrapper
 from flask import request, g
@@ -27,6 +28,11 @@ ratelimit_window_key = "rate_limit_window"
 ratelimit_user_validation = None
 
 class RateLimit(object):
+    '''
+        This Ratelimit object is created when a request is started (via the ratelimit decorator)
+        and is stored in the flask's request context so that the results can be injected into
+        the response headers before the request is over.
+    '''
 
     # From the docs:
     # We also give the key extra expiration_window seconds time to expire in cache so that badly
@@ -82,15 +88,27 @@ def inject_x_rate_headers(response):
 
 
 def get_view_rate_limit():
+    '''
+        Helper function to fetch the ratelimit limits from the flask context
+    '''
     return getattr(g, '_view_rate_limit', None)
 
 
 def on_over_limit(limit):
+    ''' 
+        Set a nice and readable error message for over the limit requests.
+    '''
     return 'You have exceeded your rate limit. See the X-RateLimit-* response headers for more ' \
            'information on your current rate limit.\n', 429
 
 
 def check_limit_freshness():
+    '''
+        This function checks to see if the values we have cached in the current request context
+        are still fresh enough. If they've existed longer than the timeout value, refresh from
+        the cache. This allows us to not check the limits for each request, saving cache traffic.
+    '''
+
     limits_timeout = getattr(g, '_' + ratelimit_timeout, 0)
     if time.time() <= limits_timeout:
         return
@@ -117,6 +135,9 @@ def check_limit_freshness():
 
 
 def get_per_ip_limits():
+    '''
+        Fetch the per IP limits from context/cache
+    '''
     check_limit_freshness()
     return {
             'limit':   getattr(g, '_' + ratelimit_per_ip_key),
@@ -125,6 +146,9 @@ def get_per_ip_limits():
 
 
 def get_per_token_limits():
+    '''
+        Fetch the per token limits from context/cache
+    '''
     check_limit_freshness()
     return {
             'limit':   getattr(g, '_' + ratelimit_per_token_key),
@@ -163,6 +187,10 @@ def get_rate_limit_data(request):
 
 
 def ratelimit():
+    '''
+        This is the decorator that should be applied to all view functions that should be 
+        rate limited.
+    '''
     def decorator(f):
         def rate_limited(*args, **kwargs):
             data = get_rate_limit_data(request)
