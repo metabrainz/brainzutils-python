@@ -195,7 +195,6 @@ def set_many(mapping, time=None, namespace=None, encode=True):
     result = _r.mset(_prep_dict(mapping, namespace, encode))
     if time:
         for key in _prep_keys_list(list(mapping.keys()), namespace):
-            print("pexpire: '%s'" % key)
             _r.pexpire(key, time * 1000)
 
     return result
