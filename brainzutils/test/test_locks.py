@@ -81,7 +81,7 @@ class LockedOpenTestCase(unittest.TestCase):
 
             p_other.join(1)
             p_blocker.terminate()
-            time.sleep(0.1)
+            time.sleep(.3)
 
             self.assertFalse(p_other.is_alive())
             self.assertEqual(p_other.exitcode, 0)
