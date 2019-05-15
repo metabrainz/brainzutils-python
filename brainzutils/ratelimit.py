@@ -4,6 +4,7 @@
 #
 # http://flask.pocoo.org/snippets/70/
 #
+from __future__ import absolute_import
 import time
 from functools import update_wrapper
 from flask import request, g
@@ -26,7 +27,69 @@ ratelimit_window_key = "rate_limit_window"
 # external functions
 ratelimit_user_validation = None
 
+'''
+    HOW TO USE THIS MODULE:
+
+    This module defines a set of function that allows your to add ratelimiting to your
+    flask app. There are three values to know and set:
+
+       per_token_limit - The number of requests that are allowed for a caller who is 
+            setting an 
+               Authorization: Token <auth token>
+            header. This limit can be different than the limit for rate limiting on an IP basis.
+
+       per_ip_limit - The number of requests that are allowed for a caller who is not
+            providing an Authorization header and is rate limited on their IP address.
+
+       ratelimit_window - The window, in number of seconds, how long long the limits
+            above are applied for. 
+
+    To add ratelimit capabilities to your flask app, follow these steps:
+
+    1. During app creation add these lines:
+
+          from brainzutils.ratelimit import ratelimit, inject_x_rate_headers
+
+          @app.after_request
+          def after_request_callbacks(response):
+              return inject_x_rate_headers(response)
+
+    2. Then apply the ratelimit() decorator to any function that should be rate limited:
+
+         @app.route('/')
+         @ratelimit()
+         def index():
+             return '<html><body>test</body></html>'
+
+    3. The default rate limits are defined above (see comment Defaults). If you want to set different
+       rate limits, which can be also done dynamically without restarting the application, call
+       the set_rate_limits function:
+
+          from brainzutils.ratelimit import set_rate_limits
+
+          set_rate_limits(per_token_limit, per_ip_limit, rate_limit_window)
+
+    4. To enable token based rate limiting, callers need to pass the Authorization header (see above)
+       and the application needs to provide a user validation function:
+
+          from brainzutils.ratelimit import set_user_validation_function
+
+          def validate_user(user):
+              if user == valid_user:
+                  return True
+              return False
+
+         set_user_validation_function(validate_user)
+
+'''
+
+
 class RateLimit(object):
+    '''
+        This Ratelimit object is created when a request is started (via the ratelimit decorator)
+        and is stored in the flask's request context so that the results can be injected into
+        the response headers before the request is over.
+    '''
 
     # From the docs:
     # We also give the key extra expiration_window seconds time to expire in cache so that badly
@@ -36,7 +99,6 @@ class RateLimit(object):
     def __init__(self, key_prefix, limit, per):
         current_time = int(time.time())
         self.reset = (current_time // per) * per + per
-        print("cur %d reset %d" % (int(current_time), self.reset)
         self.seconds_before_reset = self.reset - current_time
         self.key = key_prefix + str(self.reset)
         self.limit = limit
@@ -48,16 +110,6 @@ class RateLimit(object):
     over_limit = property(lambda x: x.current > x.limit)
 
 
-def set_rate_limits(per_token, per_ip, window):
-    '''
-        Update the current rate limits. This will affect all new rate limiting windows and existing windows will not be changed.
-    '''
-
-    cache.set(ratelimit_per_token_key, per_token)
-    cache.set(ratelimit_per_ip_key, per_ip)
-    cache.set(ratelimit_window_key, window)
-
-
 def set_user_validation_function(func):
     '''
         The function passed to this method should accept on argument, the Authorization header contents
@@ -66,6 +118,15 @@ def set_user_validation_function(func):
 
     global ratelimit_user_validation
     ratelimit_user_validation = func
+
+
+def set_rate_limits(per_token, per_ip, window):
+    '''
+        Update the current rate limits. This will affect all new rate limiting windows and existing windows will not be changed.
+    '''
+    cache.set(ratelimit_per_token_key, per_token)
+    cache.set(ratelimit_per_ip_key, per_ip)
+    cache.set(ratelimit_window_key, window)
 
 
 def inject_x_rate_headers(response):
@@ -84,21 +145,27 @@ def inject_x_rate_headers(response):
 
 
 def get_view_rate_limit():
+    '''
+        Helper function to fetch the ratelimit limits from the flask context
+    '''
     return getattr(g, '_view_rate_limit', None)
 
 
 def on_over_limit(limit):
+    ''' 
+        Set a nice and readable error message for over the limit requests.
+    '''
     return 'You have exceeded your rate limit. See the X-RateLimit-* response headers for more ' \
            'information on your current rate limit.\n', 429
 
 
-def set_rate_limits(per_ip, per_token, window):
-    cache.set(ratelimit_per_token_key, per_token)
-    cache.set(ratelimit_per_ip_key, per_ip)
-    cache.set(ratelimit_window_key, window)
-
-
 def check_limit_freshness():
+    '''
+        This function checks to see if the values we have cached in the current request context
+        are still fresh enough. If they've existed longer than the timeout value, refresh from
+        the cache. This allows us to not check the limits for each request, saving cache traffic.
+    '''
+
     limits_timeout = getattr(g, '_' + ratelimit_timeout, 0)
     if time.time() <= limits_timeout:
         return
@@ -125,6 +192,9 @@ def check_limit_freshness():
 
 
 def get_per_ip_limits():
+    '''
+        Fetch the per IP limits from context/cache
+    '''
     check_limit_freshness()
     return {
             'limit':   getattr(g, '_' + ratelimit_per_ip_key),
@@ -133,6 +203,9 @@ def get_per_ip_limits():
 
 
 def get_per_token_limits():
+    '''
+        Fetch the per token limits from context/cache
+    '''
     check_limit_freshness()
     return {
             'limit':   getattr(g, '_' + ratelimit_per_token_key),
@@ -152,19 +225,16 @@ def get_rate_limit_data(request):
         auth_header = request.headers.get('Authorization')
         if auth_header:
             auth_token = auth_header[6:]
-            print("got auth header: %s" % auth_token)
             is_valid = ratelimit_user_validation(auth_token)
             if is_valid:
                 values = get_per_token_limits()
                 values['key'] = auth_token
                 return values
-    else:
-        print("no user verification")
+
 
     # no valid auth token provided. Look for a remote addr header provided a the proxy
     # or if that isn't available use the IP address from the header
-    # TODO: use UWSGI vars to catch the right one
-    ip = request.headers.get('X-LB-Remote-Addr')
+    ip = request.environ.get('REMOTE_ADDR', None)
     if not ip:
         ip = request.remote_addr
 
@@ -174,10 +244,13 @@ def get_rate_limit_data(request):
 
 
 def ratelimit():
+    '''
+        This is the decorator that should be applied to all view functions that should be 
+        rate limited.
+    '''
     def decorator(f):
         def rate_limited(*args, **kwargs):
             data = get_rate_limit_data(request)
-            print("rate limit data", data)
             key = 'rate-limit/%s/' % data['key']
             rlimit = RateLimit(key, data['limit'], data['window'])
             g._view_rate_limit = rlimit

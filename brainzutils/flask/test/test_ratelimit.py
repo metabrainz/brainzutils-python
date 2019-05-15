@@ -41,7 +41,7 @@ class RatelimitTestCase(unittest.TestCase):
         """
 
         # Three per token requests, three per IP requests in max 10 seconds
-        set_rate_limits(self.max_ip_requests, self.max_token_requests, self.ratelimit_window)
+        set_rate_limits(self.max_token_requests, self.max_ip_requests, self.ratelimit_window)
 
         # create an app
         app = flask.CustomFlask(__name__)
@@ -67,37 +67,52 @@ class RatelimitTestCase(unittest.TestCase):
             print("X-RateLimit-Reset-In", response.headers['X-RateLimit-Reset-In'])
             print()
 
+
+        def make_requests(client, nominal_num_requests, token = None):
+
+            print("===== make %d requests" % nominal_num_requests)
+            # make one more than the allowed number of requests to catch the 429
+            num_requests = nominal_num_requests + 1
+
+            # make a specified number of requests
+            while True:
+                reset_time = 0
+                restart = False
+                for i in range(num_requests):
+                    if token:
+                        response = client.get('/', headers={'Authorization': token})
+                    else:
+                        response = client.get('/')
+                    if reset_time == 0:
+                        reset_time = response.headers['X-RateLimit-Reset']
+
+                    if reset_time != response.headers['X-RateLimit-Reset']:
+                        # Whoops, we didn't get our tests done before the window expired. start over.
+                        restart = True
+
+                        # when restarting we need to do one request less, since the current requests counts to the new window
+                        num_requests = nominal_num_requests
+                        break
+
+                    if i == num_requests - 1:
+                        self.assertEqual(response.status_code, 429)
+                    else:
+                        self.assertEqual(response.status_code, 200)
+                        self.assertEqual(int(response.headers['X-RateLimit-Remaining']), num_requests - i - 2)
+                    print_headers(response)
+
+                    sleep(1.1)
+
+                if not restart:
+                    break
+
         client = app.test_client()
 
-        response = client.get('/')
-        print_headers(response)
-        self.assertEqual(int(response.headers['X-RateLimit-Remaining']), self.max_ip_requests - 1)
-        self.assertEqual(int(response.headers['X-RateLimit-Reset-In']), self.ratelimit_window)
-        self.assertEqual(response.status_code, 200)
-        sleep(.1)
+        # Make a pile of requests based on IP address
+        make_requests(client, self.max_ip_requests)
 
-        for i in range(self.max_ip_requests - 1):
-            response = client.get('/')
-            print_headers(response)
-            self.assertEqual(int(response.headers['X-RateLimit-Remaining']), self.max_ip_requests - 1 - i)
-            self.assertEqual(response.status_code, 200)
-            sleep(.1)
-
-        response = client.get('/')
-        print_headers(response)
-        self.assertEqual(response.status_code, 429)
-
+        # Set a user token and make requests based on the token
         cache.flush_all()
         set_user_validation_function(validate_user)
-        set_rate_limits(self.max_ip_requests, self.max_token_requests, self.ratelimit_window)
-
-        for i in range(self.max_token_requests):
-            response = client.get('/', headers={'Authorization': valid_user})
-            print_headers(response)
-            self.assertEqual(int(response.headers['X-RateLimit-Remaining']), self.max_token_requests - 1 - i)
-            self.assertEqual(response.status_code, 200)
-            sleep(.1)
-
-        response = client.get('/')
-        print_headers(response)
-        self.assertEqual(response.status_code, 429)
+        set_rate_limits(self.max_token_requests, self.max_ip_requests, self.ratelimit_window)
+        make_requests(client, self.max_token_requests, token="Token %s" % valid_user)
