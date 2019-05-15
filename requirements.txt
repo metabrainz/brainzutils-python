@@ -9,5 +9,5 @@ redis==2.10.5
 msgpack-python==0.4.8
 requests==2.20.0
 SQLAlchemy==1.3.3
-mbdata==2017.6.2
+git+https://github.com/lalinsky/mbdata.git@v2019.04.26
 sqlalchemy-dst==1.0.1
