@@ -108,6 +108,9 @@ def fetch_multiple_recordings(mbids, includes=None):
                 includes_data=includes_data,
             )
 
+        print("includes")
+        print(includes)
+
         serial_recordings = {str(mbid): serialize_recording(recordings[mbid], includes_data[recordings[mbid].id]) for mbid in mbids}
 
     return serial_recordings

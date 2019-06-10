@@ -40,8 +40,8 @@ def fetch_multiple_labels(mbids, includes=None):
     check_includes('label', includes)
     with mb_session() as db:
         query = db.query(models.Label).\
-            options(joinedload("type")).
-
+            options(joinedload("type")).\
+            options(joinedload("area"))
         labels = get_entities_by_gids(
             query=query,
             entity_type='label',
