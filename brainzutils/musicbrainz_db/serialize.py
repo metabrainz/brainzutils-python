@@ -68,10 +68,6 @@ def serialize_artist_credit(artist_credit):
 
 def serialize_recording(recording, includes=None):
     """Convert recording objects into dictionary."""
-    print("recording")
-    print(recording)
-    print("includes")
-    print(includes)
     if includes is None:
         includes = {}
     data = {
@@ -127,8 +123,6 @@ def serialize_places(place, includes=None):
 
 
 def serialize_labels(label, includes=None):
-    print("label")
-    print(label)
     if includes is None:
         includes = {}
     data = {
@@ -141,6 +135,9 @@ def serialize_labels(label, includes=None):
 
     if 'type' in includes and includes['type']:
         data['type'] = includes['type'].name
+
+    if 'area' in includes and includes['area']:
+        data['area'] = includes['area'].name
 
     if 'relationship_objs' in includes:
         serialize_relationships(data, label, includes['relationship_objs'])

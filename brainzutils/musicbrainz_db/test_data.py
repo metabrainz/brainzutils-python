@@ -32,6 +32,14 @@ from mbdata.models import (
     WorkType
 )
 
+# Area (489ce91b-6658-3307-9877-795b68554c98)
+area_united_states = Area()
+area_united_states.id = 222
+area_united_states.gid = '489ce91b-6658-3307-9877-795b68554c98'
+area_united_states.name = 'United States'
+area_united_states.ended = False
+area_united_states.comment = ''
+
 # Label (1aed8c3b-8e1e-46f8-b558-06357ff5f298)
 labeltype_imprint = LabelType()
 labeltype_imprint.id = 9
@@ -47,6 +55,7 @@ label_dreamville.comment = ''
 label_dreamville.ended = False
 label_dreamville.label_code = None
 label_dreamville.begin_date_year = 2007
+label_dreamville.area = area_united_states
 label_dreamville.type = labeltype_imprint
 
 # Label (4cccc72a-0bd0-433a-905e-dad87871397d)
@@ -64,6 +73,7 @@ label_roc_a_fella.comment = ''
 label_roc_a_fella.ended = False
 label_roc_a_fella.label_code = None
 label_roc_a_fella.begin_date_year = 1996
+label_roc_a_fella.area = area_united_states
 label_roc_a_fella.type = labeltype_original_production
 
 # Place (d71ffe38-5eaf-426b-9a2e-e1f21bc84609) with url-rels, place-rels

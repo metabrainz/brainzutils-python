@@ -69,4 +69,6 @@ def fetch_multiple_labels(mbids, includes=None):
 
         for label in labels.values():
             includes_data[label.id]['type'] = label.type
+            includes_data[label.id]['area'] = label.area
+
     return {str(mbid): serialize_labels(labels[mbid], includes_data[labels[mbid].id]) for mbid in mbids}
