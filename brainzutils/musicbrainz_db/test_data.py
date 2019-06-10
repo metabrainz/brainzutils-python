@@ -21,12 +21,50 @@ from mbdata.models import (
     ReleaseGroupMeta,
     ReleaseGroupPrimaryType,
     ReleaseStatus,
+    Label,
+    LabelType,
     Script,
     Event,
     EventType,
     Track,
     Editor,
+    Work,
+    WorkType
 )
+
+# Label (1aed8c3b-8e1e-46f8-b558-06357ff5f298)
+labeltype_imprint = LabelType()
+labeltype_imprint.id = 9
+labeltype_imprint.name = 'Imprint'
+labeltype_imprint.description = None
+labeltype_imprint.gid = 'b6285b2a-3514-3d43-80df-fcf528824ded'
+
+label_dreamville = Label()
+label_dreamville.id = 100653
+label_dreamville.gid = '1aed8c3b-8e1e-46f8-b558-06357ff5f298'
+label_dreamville.name = 'Dreamville'
+label_dreamville.comment = ''
+label_dreamville.ended = False
+label_dreamville.label_code = None
+label_dreamville.begin_date_year = 2007
+label_dreamville.type = labeltype_imprint
+
+# Label (4cccc72a-0bd0-433a-905e-dad87871397d)
+labeltype_original_production = LabelType()
+labeltype_original_production.id = 4
+labeltype_original_production.name = 'Original Production'
+labeltype_original_production.description = None
+labeltype_original_production.gid = '7aaa37fe-2def-3476-b359-80245850062d'
+
+label_roc_a_fella = Label()
+label_roc_a_fella.id = 4596
+label_roc_a_fella.gid = '4cccc72a-0bd0-433a-905e-dad87871397d'
+label_roc_a_fella.name = 'Roc-A-Fella Records'
+label_roc_a_fella.comment = ''
+label_roc_a_fella.ended = False
+label_roc_a_fella.label_code = None
+label_roc_a_fella.begin_date_year = 1996
+label_roc_a_fella.type = labeltype_original_production
 
 # Place (d71ffe38-5eaf-426b-9a2e-e1f21bc84609) with url-rels, place-rels
 area_hameenlinna = Area()
@@ -442,3 +480,27 @@ editor_2 = Editor(id=2324, name="Editor 2", privs=3, email="editor@example.com",
                   last_login_date=editor_dt, last_updated=editor_dt, birth_date=editor_date, deleted=False,
                   area=area_hameenlinna, password="$2b$12$2odiKUAGktuwM2J.tp/uZ.54bniapSMjCln3J1TfC6zx74QFuawQ6",
                   ha1="3f3edade87115ce351d63f42d92a1834")
+
+# Work (54ce5e07-2aca-4578-83d8-5a41a7b2f434)
+worktype_song = WorkType()
+worktype_song.id = 17
+worktype_song.name = 'Song'
+worktype_song.description = 'A song is in its origin (and still in most cases) a composition for voice, with or ' \
+                            'without instruments, performedby singing. This is the most common form by far in ' \
+                            'folk and popular music, but also fairly common in a classical context("art songs").'
+worktype_song.gid = 'f061270a-2fd6-32f1-a641-f0f8676d14e6'
+
+work_a_lot = Work()
+work_a_lot.id = 13378753
+work_a_lot.gid = '54ce5e07-2aca-4578-83d8-5a41a7b2f434'
+work_a_lot.name = 'a lot'
+work_a_lot.comment = ''
+work_a_lot.type = worktype_song
+
+# Work (757504fb-a130-4b84-9eb5-1b37164f12dd)
+work_aquemini = Work()
+work_aquemini.id = 12521050
+work_aquemini.gid = '757504fb-a130-4b84-9eb5-1b37164f12dd'
+work_aquemini.name = 'Aquemini'
+work_aquemini.comment = ''
+work_aquemini.type = worktype_song

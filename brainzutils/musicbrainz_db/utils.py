@@ -9,9 +9,11 @@ ENTITY_MODELS = {
     'release_group': models.ReleaseGroup,
     'release': models.Release,
     'event': models.Event,
+    'label': models.Label,
     'series': models.Series,
     'url': models.URL,
     'recording': models.Recording,
+    'work': models.Work,
     'editor': models.Editor,
 }
 
@@ -23,7 +25,9 @@ REDIRECT_MODELS = {
     'release': models.ReleaseGIDRedirect,
     'release_group': models.ReleaseGroupGIDRedirect,
     'event': models.EventGIDRedirect,
+    'label': models.LabelGIDRedirect,
     'recording': models.RecordingGIDRedirect,
+    'work': models.WorkGIDRedirect,
 }
 
 

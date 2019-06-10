@@ -1,9 +1,11 @@
 from collections import defaultdict
 from unittest import TestCase
 from mock import MagicMock
+from mbdata import models
 from brainzutils.musicbrainz_db.serialize import serialize_relationships
 from brainzutils.musicbrainz_db.helpers import get_relationship_info
 import brainzutils.musicbrainz_db as mb
+from brainzutils.musicbrainz_db.helpers import get_tags
 from brainzutils.musicbrainz_db.test_data import linkplaceurl_1, linkplaceurl_2, place_suisto
 
 
@@ -12,8 +14,30 @@ class HelpersTestCase(TestCase):
     def setUp(self):
         mb.mb_session = MagicMock()
         self.mock_db = mb.mb_session.return_value.__enter__.return_value
+        self.tags_query = self.mock_db.query.return_value.join.return_value.\
+            join.return_value.filter.return_value.group_by.return_value.all
         self.relationships_query = self.mock_db.query.return_value.options.return_value.\
             options.return_value.filter.return_value.options
+
+    def test_get_tags(self):
+        data = defaultdict(dict)
+        self.tags_query.return_value = [(1820974, ['hip hop', 'hip-hop/rap'])]
+        release_group_tags = get_tags(
+            db=self.mock_db,
+            entity_model=models.ReleaseGroup,
+            tag_model=models.ReleaseGroupTag,
+            foreign_tag_id=models.ReleaseGroupTag.release_group_id,
+            entity_ids=['1820974'],
+        )
+        for release_group_id, tags in release_group_tags:
+            data[release_group_id]['tags'] = tags
+        expected_data = {
+            1820974: {
+                'tags': ['hip hop', 'hip-hop/rap']
+            }
+        }
+        data = dict(data)
+        self.assertDictEqual(data, expected_data)
 
     def test_get_relationship_info(self):
         data = {}

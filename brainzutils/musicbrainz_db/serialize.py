@@ -3,6 +3,19 @@ from mbdata.utils.models import get_link_target
 from sqlalchemy_dst import row2dict
 
 
+def serialize_areas(area, includes=None):
+    if includes is None:
+        includes = {}
+    data = {
+        'id': area.gid,
+        'name': area.name,
+    }
+
+    if 'relationship_objs' in includes:
+        serialize_relationships(data, area, includes['relationship_objs'])
+    return data
+
+
 def serialize_relationships(data, source_obj, relationship_objs):
     """Convert relationship objects to dictionaries.
 
@@ -83,6 +96,52 @@ def serialize_recording(recording, includes=None):
     return data
 
 
+def serialize_places(place, includes=None):
+    if includes is None:
+        includes = {}
+    data = {
+        'id': place.gid,
+        'name': place.name,
+        'address': place.address,
+    }
+
+    if 'type' in includes and includes['type']:
+        data['type'] = includes['type'].name
+
+    if place.coordinates:
+        data['coordinates'] = {
+            'latitude': place.coordinates[0],
+            'longitude': place.coordinates[1],
+        }
+
+    if 'area' in includes and includes['area']:
+        data['area'] = serialize_areas(includes['area'])
+
+    if 'relationship_objs' in includes:
+        serialize_relationships(data, place, includes['relationship_objs'])
+    return data
+
+
+def serialize_labels(label, includes=None):
+    if includes is None:
+        includes = {}
+    data = {
+        'id': label.gid,
+        'name': label.name,
+    }
+
+    if label.comment:
+        data['comment'] = label.comment
+
+    if 'type' in includes and includes['type']:
+        data['type'] = includes['type'].name
+
+    if 'relationship_objs' in includes:
+        serialize_relationships(data, label, includes['relationship_objs'])
+    
+    return data
+
+
 def serialize_artists(artist, includes=None):
     if includes is None:
         includes = {}
@@ -97,6 +156,16 @@ def serialize_artists(artist, includes=None):
 
     if 'relationship_objs' in includes:
         serialize_relationships(data, artist, includes['relationship_objs'])
+    return data
+
+
+def serialize_artist_credit_names(artist_credit_name):
+    data = {
+        'name': artist_credit_name.name,
+        'artist': serialize_artists(artist_credit_name.artist),
+    }
+    if artist_credit_name.join_phrase:
+        data['join_phrase'] = artist_credit_name.join_phrase
     return data
 
 
@@ -185,6 +254,18 @@ def serialize_releases(release, includes=None):
     return data
 
 
+def serialize_events(event, includes=None):
+    if includes is None:
+        includes = {}
+    data = {
+        'id': event.gid,
+        'name': event.name,
+    }
+    if 'relationship_objs' in includes:
+        serialize_relationships(data, event, includes['relationship_objs'])
+    return data
+
+
 def serialize_url(url, includes=None):
     if includes is None:
         includes = {}
@@ -198,10 +279,42 @@ def serialize_url(url, includes=None):
     return data
 
 
+def serialize_works(work, includes=None):
+    if includes is None:
+        includes = {}
+    data = {
+        'id': work.gid,
+        'name': work.name,
+    }
+
+    if 'type' in includes and includes['type']:
+        data['type'] = includes['type'].name
+
+    if 'relationship_objs' in includes:
+        serialize_relationships(data, work, includes['relationship_objs'])
+    
+    return data
+
+
 def serialize_editor(editor, includes=None):
     data = row2dict(editor, exclude_pk=True, exclude={'password', 'ha1'})
 
     # TODO: Add includes to data here (BU-18)
+
+    return data
+
+
+def serialize_series(series, includes=None):
+    if includes is None:
+        includes = []
+
+    data = {
+        'id': series.gid,
+        'name': series.name,
+    }
+
+    if 'relationship_objs' in includes:
+        serialize_relationships(data, series, includes['relationship_objs'])
 
     return data
 
@@ -213,4 +326,9 @@ SERIALIZE_ENTITIES = {
     'medium': serialize_medium,
     'url': serialize_url,
     'editor': serialize_editor,
+    'recording': serialize_recording,
+    'place': serialize_places,
+    'area': serialize_areas,
+    'event': serialize_events,
+    'series': serialize_series,
 }

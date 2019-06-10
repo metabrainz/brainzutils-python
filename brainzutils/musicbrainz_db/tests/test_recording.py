@@ -39,14 +39,14 @@ class RecordingTestCase(TestCase):
             }
         )
     
-    def test_get_many_recordings_by_mbid(self):
+    def test_fetch_multiple_recordings(self):
         """ Tests if appropriate recordings are returned for a given list of MBIDs. """
 
         self.recording_query.return_value = [recording_numb_encore_explicit, 
             recording_numb_encore_instrumental]
 
         mbids = ['daccb724-8023-432a-854c-e0accb6c8678', '965b75df-397d-4395-aac8-de11854c4630']
-        recordings = mb_recording.get_many_recordings_by_mbid(mbids, includes=['artists'])
+        recordings = mb_recording.fetch_multiple_recordings(mbids, includes=['artists'])
 
         self.assertDictEqual(recordings,
             {

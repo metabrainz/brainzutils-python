@@ -20,8 +20,11 @@ def get_recording_by_mbid(mbid, includes=None):
     """
     if includes is None:
         includes = []
-    recording = get_many_recordings_by_mbid([mbid], includes)
-    return recording.get(mbid)
+    return fetch_multiple_recordings(
+        [mbid],
+        includes=includes,
+    ).get(mbid)
+
 
 def get_many_recordings_by_mbid(mbids, includes=None):
     """ Get multiple recordings with MusicBrainz IDs. It fetches recordings
@@ -37,12 +40,10 @@ def get_many_recordings_by_mbid(mbids, includes=None):
     if includes is None:
         includes = []
 
-    recordings = _fetch_multiple_recordings(mbids, includes)
-
-    return recordings
+    return fetch_multiple_recordings(mbids, includes)
 
 
-def _fetch_multiple_recordings(mbids, includes=None):
+def fetch_multiple_recordings(mbids, includes=None):
     """ Fetch multiple recordings with MusicBrainz IDs.
 
     Args:
@@ -88,6 +89,24 @@ def _fetch_multiple_recordings(mbids, includes=None):
         if 'artists' in includes:
             for recording in recordings.values():
                 includes_data[recording.id]['artists'] = recording.artist_credit.artists
+
+        if 'url-rels' in includes:
+            get_relationship_info(
+                db=db,
+                target_type='url',
+                source_type='recording',
+                source_entity_ids=recording_ids,
+                includes_data=includes_data,
+            )
+
+        if 'work-rels' in includes:
+            get_relationship_info(
+                db=db,
+                target_type='work',
+                source_type='recording',
+                source_entity_ids=recording_ids,
+                includes_data=includes_data,
+            )
 
         serial_recordings = {str(mbid): serialize_recording(recordings[mbid], includes_data[recordings[mbid].id]) for mbid in mbids}
 
