@@ -10,21 +10,19 @@ from brainzutils.musicbrainz_db.helpers import get_relationship_info
 from brainzutils.musicbrainz_db import recording
 
 
-def get_release_by_id(mbid):
+def get_release_by_id(mbid, includes=None):
     """Get release with the MusicBrainz ID.
     Args:
         mbid (uuid): MBID(gid) of the release.
     Returns:
         Dictionary containing the release information.
     """
-    release = _get_release_by_id(mbid)
-    return release
+    if includes is None:
+        includes = []
 
-
-def _get_release_by_id(mbid):
     return fetch_multiple_releases(
         [mbid],
-        includes=['media', 'release-groups'],
+        includes=includes,
     ).get(mbid)
 
 

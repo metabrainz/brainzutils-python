@@ -7,21 +7,19 @@ from brainzutils.musicbrainz_db.serialize import serialize_editor
 from brainzutils.musicbrainz_db.includes import check_includes
 
 
-def get_editor_by_id(editor_id):
+def get_editor_by_id(editor_id, includes=None):
     """Get editor with editor ID.
     Args:
         editor_id (int): ID of the editor.
     Returns:
         Dictionary containing the editor information
     """
-    editor = _get_editor_by_id(editor_id)
-    return editor
+    if includes is None:
+        includes = []
 
-
-def _get_editor_by_id(editor_id):
     return fetch_multiple_editors(
         [editor_id],
-        includes=[],
+        includes=includes,
     ).get(editor_id)
 
 
@@ -35,6 +33,7 @@ def fetch_multiple_editors(editor_ids, includes=None):
     """
     if includes is None:
         includes = []
+
     includes_data = defaultdict(dict)
     check_includes('editor', includes)
     with mb_session() as db:

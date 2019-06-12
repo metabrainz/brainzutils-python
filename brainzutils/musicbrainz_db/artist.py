@@ -8,21 +8,19 @@ from brainzutils.musicbrainz_db.serialize import serialize_artists
 from brainzutils.musicbrainz_db.includes import check_includes
 
 
-def get_artist_by_id(mbid):
+def get_artist_by_id(mbid, includes=None):
     """Get artist with MusicBrainz ID.
     Args:
         mbid (uuid): MBID(gid) of the artist.
     Returns:
         Dictionary containing the artist information
     """
-    artist = _get_artist_by_id(mbid)
-    return artist
+    if includes is None:
+        includes = []
 
-
-def _get_artist_by_id(mbid):
     return fetch_multiple_artists(
         [mbid],
-        includes=['artist-rels', 'url-rels'],
+        includes=includes,
     ).get(mbid)
 
 
