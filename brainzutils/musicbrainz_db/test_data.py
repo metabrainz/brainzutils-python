@@ -335,6 +335,12 @@ releasegroupprimarytype_single.name = 'Single'
 releasegroupprimarytype_single.child_order = 2
 releasegroupprimarytype_single.gid = 'd6038452-8ee0-3f68-affc-2de9a1ede0b9'
 
+releasegroupprimarytype_ep = ReleaseGroupPrimaryType()
+releasegroupprimarytype_ep.id = 3
+releasegroupprimarytype_ep.name = 'EP'
+releasegroupprimarytype_ep.child_order = 3
+releasegroupprimarytype_ep.gid = '6d0c5bf6-7a33-3420-a519-44fc63eedebf'
+
 releasegroupmeta = ReleaseGroupMeta()
 releasegroupmeta.release_count = 3
 releasegroupmeta.first_release_date_year = 2004
@@ -430,7 +436,9 @@ releasegroup_collision_course = ReleaseGroup()
 releasegroup_collision_course.id = 1110052
 releasegroup_collision_course.gid = '8ef859e3-feb2-4dd1-93da-22b91280d768'
 releasegroup_collision_course.name = 'Collision Course'
+releasegroup_collision_course.artist_credit = artistcredit_jay_z_linkin_park
 releasegroup_collision_course.meta = releasegroupmeta_1
+releasegroup_collision_course.type = releasegroupprimarytype_ep
 
 eventtype_festival = EventType()
 eventtype_festival.id = 2
