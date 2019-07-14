@@ -31,7 +31,7 @@ REDIRECT_MODELS = {
 }
 
 
-def get_entities_by_gids(query, entity_type, mbids):
+def get_entities_by_gids(query, entity_type, mbids, suppress_no_data_found=False):
     """Get entities using their MBIDs.
 
     An entity can have multiple MBIDs. This function may be passed another
@@ -60,13 +60,13 @@ def get_entities_by_gids(query, entity_type, mbids):
             entities[redirect_obj.gid] = entity
         remaining_gids = list(set(remaining_gids) - {redirect_obj.gid for entity, redirect_obj in results})
 
-    if remaining_gids:
+    if remaining_gids and not suppress_no_data_found:
         raise mb_exceptions.NoDataFoundException("Couldn't find entities with IDs: {mbids}".format(mbids=remaining_gids))
     
     return entities
 
 
-def get_entities_by_ids(query, entity_type, ids):
+def get_entities_by_ids(query, entity_type, ids, suppress_no_data_found=False):
     """Get entities using their IDs.
 
     Note that the query may be modified before passing it to this
@@ -85,7 +85,7 @@ def get_entities_by_ids(query, entity_type, ids):
     remaining_ids = list(set(ids) - {entity.id for entity in results})
     entities = {entity.id: entity for entity in results}
 
-    if remaining_ids:
+    if remaining_ids and not suppress_no_data_found:
         raise mb_exceptions.NoDataFoundException(
             "Couldn't find entities with IDs: {ids}".format(ids=remaining_ids))
 

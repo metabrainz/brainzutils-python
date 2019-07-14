@@ -8,7 +8,7 @@ from brainzutils.musicbrainz_db.helpers import get_relationship_info
 from brainzutils.musicbrainz_db.utils import get_entities_by_gids
 
 
-def get_place_by_id(mbid, includes=None):
+def get_place_by_id(mbid, includes=None, suppress_no_data_found=False):
     """Get place with the MusicBrainz ID.
 
     Args:
@@ -22,10 +22,11 @@ def get_place_by_id(mbid, includes=None):
     return fetch_multiple_places(
         [mbid],
         includes=includes,
+        suppress_no_data_found=suppress_no_data_found,
     ).get(mbid)
 
 
-def fetch_multiple_places(mbids, includes=None):
+def fetch_multiple_places(mbids, includes=None, suppress_no_data_found=False):
     """Get info related to multiple places using their MusicBrainz IDs.
 
     Args:
@@ -47,6 +48,7 @@ def fetch_multiple_places(mbids, includes=None):
             query=query,
             entity_type='place',
             mbids=mbids,
+            suppress_no_data_found=suppress_no_data_found,
         )
         place_ids = [place.id for place in places.values()]
 

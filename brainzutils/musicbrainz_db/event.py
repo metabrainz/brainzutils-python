@@ -7,7 +7,7 @@ from brainzutils.musicbrainz_db.serialize import serialize_events
 from brainzutils.musicbrainz_db.helpers import get_relationship_info
 
 
-def get_event_by_id(mbid, includes=None):
+def get_event_by_id(mbid, includes=None, suppress_no_data_found=False):
     """Get event with the MusicBrainz ID.
 
     Args:
@@ -21,10 +21,11 @@ def get_event_by_id(mbid, includes=None):
     return fetch_multiple_events(
         [mbid],
         includes=includes,
+        suppress_no_data_found=suppress_no_data_found,
     ).get(mbid)
 
 
-def fetch_multiple_events(mbids, includes=None):
+def fetch_multiple_events(mbids, includes=None, suppress_no_data_found=False):
     """Get info related to multiple events using their MusicBrainz IDs.
 
     Args:
@@ -44,6 +45,7 @@ def fetch_multiple_events(mbids, includes=None):
             query=query,
             entity_type='event',
             mbids=mbids,
+            suppress_no_data_found=suppress_no_data_found,
         )
         event_ids = [event.id for event in events.values()]
 

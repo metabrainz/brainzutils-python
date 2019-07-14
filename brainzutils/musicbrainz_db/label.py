@@ -8,7 +8,7 @@ from brainzutils.musicbrainz_db.serialize import serialize_labels
 from brainzutils.musicbrainz_db.helpers import get_relationship_info
 
 
-def get_label_by_id(mbid, includes=None):
+def get_label_by_id(mbid, includes=None, suppress_no_data_found=False):
     """Get label with the MusicBrainz ID.
 
     Args:
@@ -22,10 +22,11 @@ def get_label_by_id(mbid, includes=None):
     return fetch_multiple_labels(
         [mbid],
         includes=includes,
+        suppress_no_data_found=suppress_no_data_found,
     ).get(mbid)
 
 
-def fetch_multiple_labels(mbids, includes=None):
+def fetch_multiple_labels(mbids, includes=None, suppress_no_data_found=False):
     """Get info related to multiple labels using their MusicBrainz IDs.
 
     Args:
@@ -46,6 +47,7 @@ def fetch_multiple_labels(mbids, includes=None):
             query=query,
             entity_type='label',
             mbids=mbids,
+            suppress_no_data_found=suppress_no_data_found,
         )
         label_ids = [label.id for label in labels.values()]
 

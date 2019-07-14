@@ -7,7 +7,7 @@ from brainzutils.musicbrainz_db.serialize import serialize_editor
 from brainzutils.musicbrainz_db.includes import check_includes
 
 
-def get_editor_by_id(editor_id, includes=None):
+def get_editor_by_id(editor_id, includes=None, suppress_no_data_found=False):
     """Get editor with editor ID.
     Args:
         editor_id (int): ID of the editor.
@@ -20,10 +20,11 @@ def get_editor_by_id(editor_id, includes=None):
     return fetch_multiple_editors(
         [editor_id],
         includes=includes,
+        suppress_no_data_found=suppress_no_data_found,
     ).get(editor_id)
 
 
-def fetch_multiple_editors(editor_ids, includes=None):
+def fetch_multiple_editors(editor_ids, includes=None, suppress_no_data_found=False):
     """Get info related to multiple editors using their editor IDs.
     Args:
         editor_ids (list): List of IDs of editors.
@@ -42,6 +43,7 @@ def fetch_multiple_editors(editor_ids, includes=None):
             query=query,
             entity_type='editor',
             ids=editor_ids,
+            suppress_no_data_found=suppress_no_data_found,
         )
         editor_ids = [editor.id for editor in editors.values()]
         editors = {editor_id: serialize_editor(editors[editor_id], includes_data) for editor_id in editor_ids}
