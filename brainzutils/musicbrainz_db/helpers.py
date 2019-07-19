@@ -2,7 +2,7 @@ from mbdata.utils.models import get_link_model
 from mbdata.models import Tag
 from sqlalchemy.orm import joinedload
 from sqlalchemy import func
-from brainzutils.musicbrainz_db.utils import ENTITY_MODELS
+from brainzutils.musicbrainz_db.models import ENTITY_MODELS
 
 
 def get_relationship_info(db, target_type, source_type, source_entity_ids, includes_data):

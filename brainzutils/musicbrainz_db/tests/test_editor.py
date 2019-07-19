@@ -1,6 +1,7 @@
 from unittest import TestCase
 from mock import MagicMock
 from brainzutils.musicbrainz_db.test_data import editor_dt, editor_date, editor_1, editor_2
+from brainzutils.musicbrainz_db.unknown_entities import unknown_editor
 from brainzutils.musicbrainz_db import editor as mb_editor
 
 
@@ -54,3 +55,12 @@ class EditorTestCase(TestCase):
         editors = mb_editor.fetch_multiple_editors([2323, 2324])
         self.assertDictEqual(editors[2323], self.editor_1_dict)
         self.assertDictEqual(editors[2324], self.editor_2_dict)
+    
+    def test_fetch_multiple_editors_empty(self):
+        self.editor_query.return_value = []
+        editors = mb_editor.fetch_multiple_editors(
+            [2323, 2324],
+            unknown_entities_for_missing=True,
+        )
+        self.assertEqual(editors[2323]["name"], unknown_editor.name)
+        self.assertEqual(editors[2324]["name"], unknown_editor.name)

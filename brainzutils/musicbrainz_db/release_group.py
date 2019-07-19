@@ -9,7 +9,7 @@ from brainzutils.musicbrainz_db.utils import get_entities_by_gids
 from brainzutils.musicbrainz_db.helpers import get_relationship_info, get_tags
 
 
-def get_release_group_by_id(mbid, includes=None, suppress_no_data_found=False):
+def get_release_group_by_id(mbid, includes=None, unknown_entities_for_missing=False):
     """Get release group with the MusicBrainz ID.
     Args:
         mbid (uuid): MBID(gid) of the release group.
@@ -22,11 +22,11 @@ def get_release_group_by_id(mbid, includes=None, suppress_no_data_found=False):
     return fetch_multiple_release_groups(
         [mbid],
         includes=includes,
-        suppress_no_data_found=suppress_no_data_found,
+        unknown_entities_for_missing=unknown_entities_for_missing,
     ).get(mbid)
 
 
-def fetch_multiple_release_groups(mbids, includes=None, suppress_no_data_found=False):
+def fetch_multiple_release_groups(mbids, includes=None, unknown_entities_for_missing=False):
     """Get info related to multiple release groups using their MusicBrainz IDs.
     Args:
         mbids (list): List of MBIDs of releases groups.
@@ -53,7 +53,7 @@ def fetch_multiple_release_groups(mbids, includes=None, suppress_no_data_found=F
             query=query,
             entity_type='release_group',
             mbids=mbids,
-            suppress_no_data_found=suppress_no_data_found,
+            unknown_entities_for_missing=unknown_entities_for_missing,
         )
         release_group_ids = [release_group.id for release_group in release_groups.values()]
 

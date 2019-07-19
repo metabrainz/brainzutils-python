@@ -10,7 +10,7 @@ from brainzutils.musicbrainz_db.helpers import get_relationship_info
 from brainzutils.musicbrainz_db import recording
 
 
-def get_release_by_id(mbid, includes=None, suppress_no_data_found=False):
+def get_release_by_id(mbid, includes=None, unknown_entities_for_missing=False):
     """Get release with the MusicBrainz ID.
     Args:
         mbid (uuid): MBID(gid) of the release.
@@ -23,11 +23,11 @@ def get_release_by_id(mbid, includes=None, suppress_no_data_found=False):
     return fetch_multiple_releases(
         [mbid],
         includes=includes,
-        suppress_no_data_found=suppress_no_data_found,
+        unknown_entities_for_missing=unknown_entities_for_missing,
     ).get(mbid)
 
 
-def fetch_multiple_releases(mbids, includes=None, suppress_no_data_found=False):
+def fetch_multiple_releases(mbids, includes=None, unknown_entities_for_missing=False):
     """Get info related to multiple releases using their MusicBrainz IDs.
     Args:
         mbids (list): List of MBIDs of releases.
@@ -53,7 +53,7 @@ def fetch_multiple_releases(mbids, includes=None, suppress_no_data_found=False):
             query=query,
             entity_type='release',
             mbids=mbids,
-            suppress_no_data_found=suppress_no_data_found,
+            unknown_entities_for_missing=unknown_entities_for_missing,
         )
         release_ids = [release.id for release in releases.values()]
 

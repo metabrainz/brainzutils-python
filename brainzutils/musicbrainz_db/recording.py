@@ -8,7 +8,7 @@ from mbdata.models import Recording
 from sqlalchemy.orm import joinedload, subqueryload
 
 
-def get_recording_by_mbid(mbid, includes=None, suppress_no_data_found=False):
+def get_recording_by_mbid(mbid, includes=None, unknown_entities_for_missing=False):
     """ Get recording with MusicBrainz ID.
 
     Args:
@@ -23,11 +23,11 @@ def get_recording_by_mbid(mbid, includes=None, suppress_no_data_found=False):
     return fetch_multiple_recordings(
         [mbid],
         includes=includes,
-        suppress_no_data_found=suppress_no_data_found,
+        unknown_entities_for_missing=unknown_entities_for_missing,
     ).get(mbid)
 
 
-def get_many_recordings_by_mbid(mbids, includes=None, suppress_no_data_found=False):
+def get_many_recordings_by_mbid(mbids, includes=None, unknown_entities_for_missing=False):
     """ Get multiple recordings with MusicBrainz IDs. It fetches recordings
     using fetch_multiple_recordings.
 
@@ -44,11 +44,11 @@ def get_many_recordings_by_mbid(mbids, includes=None, suppress_no_data_found=Fal
     return fetch_multiple_recordings(
         mbids,
         includes,
-        suppress_no_data_found=suppress_no_data_found,
+        unknown_entities_for_missing=unknown_entities_for_missing,
     )
 
 
-def fetch_multiple_recordings(mbids, includes=None, suppress_no_data_found=False):
+def fetch_multiple_recordings(mbids, includes=None, unknown_entities_for_missing=False):
     """ Fetch multiple recordings with MusicBrainz IDs.
 
     Args:
@@ -83,7 +83,7 @@ def fetch_multiple_recordings(mbids, includes=None, suppress_no_data_found=False
             query=query,
             entity_type='recording',
             mbids=mbids,
-            suppress_no_data_found=suppress_no_data_found,
+            unknown_entities_for_missing=unknown_entities_for_missing,
         )
 
         recording_ids = [recording.id for recording in recordings.values()]
