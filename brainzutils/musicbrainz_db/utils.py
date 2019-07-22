@@ -68,7 +68,7 @@ def get_entities_by_gids(query, entity_type, mbids, unknown_entities_for_missing
         query (Query): SQLAlchemy Query object.
         entity_type (str): Type of entity being queried.
         mbids (list): IDs of the target entities.
-        unknown_entities_for_missing (bool): True, if NoDataFoundException should be suppressed and unknown entities should be returned instead.
+        unknown_entities_for_missing (bool): If set, NoDataFoundException is suppressed and unknown entities are returned instead.
 
     Returns:
         Dictionary of objects of target entities keyed by their MBID.
@@ -105,7 +105,7 @@ def get_entities_by_ids(query, entity_type, ids, unknown_entities_for_missing=Fa
         query (Query): SQLAlchemy Query object.
         entity_type (str): Type of entity being queried.
         ids (list): IDs of the target entities.
-        unknown_entities_for_missing (bool): True, if NoDataFoundException should be suppressed and unknown entities should be returned instead.
+        unknown_entities_for_missing (bool): If set, NoDataFoundException is suppressed and unknown entities are returned instead.
 
     Returns:
         Dictionary of objects of target entities keyed by their ID.
