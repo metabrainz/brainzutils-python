@@ -30,6 +30,8 @@ def unknown_entity_by_gid(entity_gid, entity_type):
         entity = unknown_entities.unknown_label
     elif entity_type == 'work':
         entity = unknown_entities.unknown_work
+    else:
+        raise mb_exceptions.InvalidTypeError("Couldn't create unknown for invalid type: {type}".format(type=entity_type))
 
     entity.gid = entity_gid
     return entity
@@ -46,6 +48,8 @@ def unknown_entity_by_id(entity_id, entity_type):
     """
     if entity_type == 'editor':
         entity = unknown_entities.unknown_editor(id=0)
+    else:
+        raise mb_exceptions.InvalidTypeError("Couldn't create unknown for invalid type: {type}".format(type=entity_type))
 
     entity.id = entity_id
     return entity
@@ -64,6 +68,7 @@ def get_entities_by_gids(query, entity_type, mbids, unknown_entities_for_missing
         query (Query): SQLAlchemy Query object.
         entity_type (str): Type of entity being queried.
         mbids (list): IDs of the target entities.
+        unknown_entities_for_missing (bool): True, if NoDataFoundException should be suppressed and unknown entities should be returned instead.
 
     Returns:
         Dictionary of objects of target entities keyed by their MBID.
@@ -100,6 +105,7 @@ def get_entities_by_ids(query, entity_type, ids, unknown_entities_for_missing=Fa
         query (Query): SQLAlchemy Query object.
         entity_type (str): Type of entity being queried.
         ids (list): IDs of the target entities.
+        unknown_entities_for_missing (bool): True, if NoDataFoundException should be suppressed and unknown entities should be returned instead.
 
     Returns:
         Dictionary of objects of target entities keyed by their ID.
