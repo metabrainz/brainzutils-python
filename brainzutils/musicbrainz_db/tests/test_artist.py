@@ -1,6 +1,7 @@
 from unittest import TestCase
 from mock import MagicMock
 from brainzutils.musicbrainz_db.test_data import artist_linkin_park, artist_jay_z
+from brainzutils.musicbrainz_db.unknown_entities import unknown_artist
 from brainzutils.musicbrainz_db import artist as mb_artist
 
 
@@ -39,3 +40,12 @@ class ArtistTestCase(TestCase):
             "sort_name": "Linkin Park",
             "type": "Group",
         })
+
+    def test_fetch_multiple_artists_empty(self):
+        self.artist_query.return_value = []
+        artists = mb_artist.fetch_multiple_artists([
+            "f59c5520-5f46-4d2c-b2c4-822eabf53419",
+            "f82bcf78-5b69-4622-a5ef-73800768d9ac",
+        ], unknown_entities_for_missing=True)
+        self.assertEqual(artists["f82bcf78-5b69-4622-a5ef-73800768d9ac"]["name"], unknown_artist.name)
+        self.assertEqual(artists["f59c5520-5f46-4d2c-b2c4-822eabf53419"]["name"], unknown_artist.name)

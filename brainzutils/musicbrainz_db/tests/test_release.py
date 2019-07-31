@@ -1,5 +1,6 @@
 from unittest import TestCase
 from mock import MagicMock
+from brainzutils.musicbrainz_db.unknown_entities import unknown_release
 from brainzutils.musicbrainz_db.test_data import (
     recording_numb_encore_explicit,
     release_numb_encore,
@@ -46,6 +47,15 @@ class ReleaseTestCase(TestCase):
         self.assertEqual(len(releases), 2)
         self.assertEqual(releases['a64a0467-9d7a-4ffa-90b8-d87d9b41e311']['name'], 'Numb/Encore')
         self.assertEqual(releases['f51598f5-4ef9-4b8a-865d-06a077bf78cf']['name'], 'Collision Course')
+
+    def test_fetch_multiple_releases_empty(self):
+        self.mock_db.query.return_value.filter.return_value.all.return_value = []
+        releases = mb_release.fetch_multiple_releases(
+            mbids=['f51598f5-4ef9-4b8a-865d-06a077bf78cf', 'a64a0467-9d7a-4ffa-90b8-d87d9b41e311'],
+            unknown_entities_for_missing=True
+        )
+        self.assertEqual(releases['a64a0467-9d7a-4ffa-90b8-d87d9b41e311']['name'], unknown_release.name)
+        self.assertEqual(releases['f51598f5-4ef9-4b8a-865d-06a077bf78cf']['name'], unknown_release.name)
 
     def test_get_releases_using_recording_mbid(self):
         """Tests if releases are fetched correctly for a given recording MBID"""

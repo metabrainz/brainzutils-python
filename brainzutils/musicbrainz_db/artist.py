@@ -8,7 +8,7 @@ from brainzutils.musicbrainz_db.serialize import serialize_artists
 from brainzutils.musicbrainz_db.includes import check_includes
 
 
-def get_artist_by_id(mbid, includes=None):
+def get_artist_by_id(mbid, includes=None, unknown_entities_for_missing=False):
     """Get artist with MusicBrainz ID.
     Args:
         mbid (uuid): MBID(gid) of the artist.
@@ -21,10 +21,11 @@ def get_artist_by_id(mbid, includes=None):
     return fetch_multiple_artists(
         [mbid],
         includes=includes,
+        unknown_entities_for_missing=unknown_entities_for_missing,
     ).get(mbid)
 
 
-def fetch_multiple_artists(mbids, includes=None):
+def fetch_multiple_artists(mbids, includes=None, unknown_entities_for_missing=False):
     """Get info related to multiple artists using their MusicBrainz IDs.
     Args:
         mbids (list): List of MBIDs of artists.
@@ -43,6 +44,7 @@ def fetch_multiple_artists(mbids, includes=None):
             query=query,
             entity_type='artist',
             mbids=mbids,
+            unknown_entities_for_missing=unknown_entities_for_missing,
         )
         artist_ids = [artist.id for artist in artists.values()]
 

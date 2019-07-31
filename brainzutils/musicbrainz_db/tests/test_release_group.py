@@ -1,6 +1,7 @@
 from unittest import TestCase
 from mock import MagicMock
 from brainzutils.musicbrainz_db import release_group as mb_release_group
+from brainzutils.musicbrainz_db.unknown_entities import unknown_release_group
 from brainzutils.musicbrainz_db.test_data import releasegroup_numb_encore, releasegroup_collision_course
 
 
@@ -53,6 +54,15 @@ class ReleaseGroupTestCase(TestCase):
         self.assertEqual(len(release_groups), 2)
         self.assertEqual(release_groups['7c1014eb-454c-3867-8854-3c95d265f8de']['title'], 'Numb/Encore')
         self.assertEqual(release_groups['8ef859e3-feb2-4dd1-93da-22b91280d768']['title'], 'Collision Course')
+
+    def test_fetch_release_groups_empty(self):
+        self.release_group_query.return_value = []
+        release_groups = mb_release_group.fetch_multiple_release_groups(
+            mbids=['8ef859e3-feb2-4dd1-93da-22b91280d768', '7c1014eb-454c-3867-8854-3c95d265f8de'],
+            unknown_entities_for_missing=True
+        )
+        self.assertEqual(release_groups['7c1014eb-454c-3867-8854-3c95d265f8de']['title'], unknown_release_group.name)
+        self.assertEqual(release_groups['8ef859e3-feb2-4dd1-93da-22b91280d768']['title'], unknown_release_group.name)
 
     def test_fetch_get_release_groups_for_artist(self):
         mb_release_group._get_release_groups_for_artist_query = MagicMock()

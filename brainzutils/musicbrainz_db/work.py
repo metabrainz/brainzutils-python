@@ -8,7 +8,7 @@ from brainzutils.musicbrainz_db.serialize import serialize_works
 from brainzutils.musicbrainz_db.helpers import get_relationship_info
 
 
-def get_work_by_id(mbid, includes=None):
+def get_work_by_id(mbid, includes=None, unknown_entities_for_missing=False):
     """Get work with the MusicBrainz ID.
 
     Args:
@@ -22,10 +22,11 @@ def get_work_by_id(mbid, includes=None):
     return fetch_multiple_works(
         [mbid],
         includes=includes,
+        unknown_entities_for_missing=unknown_entities_for_missing,
     ).get(mbid)
 
 
-def fetch_multiple_works(mbids, includes=None):
+def fetch_multiple_works(mbids, includes=None, unknown_entities_for_missing=False):
     """Get info related to multiple works using their MusicBrainz IDs.
 
     Args:
@@ -46,6 +47,7 @@ def fetch_multiple_works(mbids, includes=None):
             query=query,
             entity_type='work',
             mbids=mbids,
+            unknown_entities_for_missing=unknown_entities_for_missing,
         )
         work_ids = [work.id for work in works.values()]
 

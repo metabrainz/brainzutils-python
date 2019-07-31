@@ -2,6 +2,7 @@ from unittest import TestCase
 from mock import MagicMock
 from brainzutils.musicbrainz_db import event as mb_event
 from brainzutils.musicbrainz_db.test_data import taubertal_festival_2004, event_ra_hall_uk
+from brainzutils.musicbrainz_db.unknown_entities import unknown_event
 
 
 class EventTestCase(TestCase):
@@ -28,3 +29,14 @@ class EventTestCase(TestCase):
                          'Taubertal-Festival 2004, Day 1')
         self.assertEqual(events['40e6153d-a042-4c95-a0a9-b0a47e3825ce']['name'],
                          '1996-04-17: Royal Albert Hall, London, England, UK')
+
+    def test_fetch_multiple_events_empty(self):
+        self.event_query.return_value = []
+        events = mb_event.fetch_multiple_events([
+            'ebe6ce0f-22c0-4fe7-bfd4-7a0397c9fe94',
+            '40e6153d-a042-4c95-a0a9-b0a47e3825ce'
+        ], unknown_entities_for_missing=True)
+        self.assertEqual(events['ebe6ce0f-22c0-4fe7-bfd4-7a0397c9fe94']['name'],
+                         unknown_event.name)
+        self.assertEqual(events['40e6153d-a042-4c95-a0a9-b0a47e3825ce']['name'],
+                         unknown_event.name)

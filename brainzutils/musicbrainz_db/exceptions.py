@@ -3,6 +3,11 @@ class MBDatabaseException(Exception):
     pass
 
 
+class InvalidTypeError(MBDatabaseException):
+    """Exception related to wrong type in present functions"""
+    pass
+
+
 class InvalidIncludeError(MBDatabaseException):
     """Exception related to wrong includes in present functions"""
     pass

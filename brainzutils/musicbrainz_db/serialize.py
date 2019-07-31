@@ -1,4 +1,4 @@
-from brainzutils.musicbrainz_db.utils import ENTITY_MODELS
+from brainzutils.musicbrainz_db.models import ENTITY_MODELS
 from mbdata.utils.models import get_link_target
 from sqlalchemy_dst import row2dict
 
