@@ -68,6 +68,11 @@ def fetch_multiple_works(mbids, includes=None, unknown_entities_for_missing=Fals
                 source_entity_ids=work_ids,
                 includes_data=includes_data,
             )
+
+        if 'rating' in includes:
+            for work in works.values():
+                includes_data[work.id]['rating'] = work.rating    
+
         for work in works.values():
             includes_data[work.id]['type'] = work.type
     return {str(mbid): serialize_works(works[mbid], includes_data[works[mbid].id]) for mbid in mbids}

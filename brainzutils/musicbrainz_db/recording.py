@@ -70,7 +70,7 @@ def fetch_multiple_recordings(mbids, includes=None, unknown_entities_for_missing
 
     with mb_session() as db:
         query = db.query(Recording)
-        
+
         if 'artist' in includes or 'artists' in includes:
             query = query.options(joinedload("artist_credit", innerjoin=True))
 
@@ -87,6 +87,10 @@ def fetch_multiple_recordings(mbids, includes=None, unknown_entities_for_missing
         )
 
         recording_ids = [recording.id for recording in recordings.values()]
+
+        if 'rating' in includes:
+            for recording in recordings.values():
+                includes_data[recording.id]['rating'] = recording.rating
 
         if 'artist' in includes:
             for recording in recordings.values():

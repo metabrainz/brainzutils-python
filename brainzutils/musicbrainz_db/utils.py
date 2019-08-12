@@ -1,4 +1,4 @@
-from brainzutils.musicbrainz_db.models import ENTITY_MODELS, REDIRECT_MODELS
+from brainzutils.musicbrainz_db.models import ENTITY_MODELS, META_MODELS, REDIRECT_MODELS
 import brainzutils.musicbrainz_db.exceptions as mb_exceptions
 from brainzutils.musicbrainz_db import unknown_entities
 
@@ -77,6 +77,14 @@ def get_entities_by_gids(query, entity_type, mbids, unknown_entities_for_missing
     results = query.filter(entity_model.gid.in_(mbids)).all()
     remaining_gids = list(set(mbids) - {entity.gid for entity in results})
     entities = {str(entity.gid): entity for entity in results}
+
+    meta_model = META_MODELS[entity_type]
+    query = query.add_entity(meta_model).join(meta_model)
+    entity_ids = list({entity.id for entity in results})
+    results = query.filter(meta_model.id.in_(entity_ids))
+    for entity, entity_meta in results:
+        entities[entity.gid].rating = entity_meta.rating
+
     if remaining_gids:
         redirect_model = REDIRECT_MODELS[entity_type]
         query = query.add_entity(redirect_model).join(redirect_model)
