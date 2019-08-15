@@ -89,6 +89,7 @@ def serialize_recording(recording, includes=None):
         data['artist'] = recording.artist_credit.name
     elif 'artists' in includes:
         data['artists'] = serialize_artist_credit(recording.artist_credit)
+        data['artist-credit-phrase'] = includes['artist-credit-phrase']
 
     if 'isrc' in includes:
         data['isrcs'] = [isrc.isrc for isrc in recording.isrcs]
