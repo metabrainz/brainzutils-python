@@ -18,12 +18,17 @@ class SerializeTestCase(TestCase):
                              )
 
         # With artists included
-        recording = serialize_recording(recording_numb_encore_explicit, includes={'artists'})
+        artists = recording_numb_encore_explicit.artist_credit.artists
+        recording = serialize_recording(
+            recording_numb_encore_explicit,
+            includes={'artists': artists, 'artist-credit-phrase': 'Jay-Z/Linkin Park'}
+        )
         self.assertDictEqual(recording,
                              {
                                  'id': 'daccb724-8023-432a-854c-e0accb6c8678',
                                  'name': 'Numb/Encore (explicit)',
                                  'length': 205.28,
+                                 'artist-credit-phrase': 'Jay-Z/Linkin Park',
                                  'artists': [
                                      {
                                          'id': 'f82bcf78-5b69-4622-a5ef-73800768d9ac',
