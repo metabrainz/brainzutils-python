@@ -96,7 +96,11 @@ class RecordingTestCase(TestCase):
         self.recording_query.return_value = []
 
         mbids = ['daccb724-8023-432a-854c-e0accb6c8678', '965b75df-397d-4395-aac8-de11854c4630']
-        recordings = mb_recording.fetch_multiple_recordings(mbids, includes=['artists'], unknown_entities_for_missing=True)
+        recordings = mb_recording.fetch_multiple_recordings(
+            mbids,
+            includes=['artists', 'url-rels', 'work-rels'],
+            unknown_entities_for_missing=True
+        )
 
         self.assertEqual(recordings['daccb724-8023-432a-854c-e0accb6c8678']['name'], unknown_recording.name)
         self.assertEqual(recordings['965b75df-397d-4395-aac8-de11854c4630']['name'], unknown_recording.name)

@@ -43,6 +43,8 @@ class WorkTestCase(TestCase):
         works = mb_work.fetch_multiple_works([
             '54ce5e07-2aca-4578-83d8-5a41a7b2f434',
             '757504fb-a130-4b84-9eb5-1b37164f12dd'
-        ], unknown_entities_for_missing=True)
+        ],
+        includes=['artist-rels', 'recording-rels'],
+        unknown_entities_for_missing=True)
         self.assertEqual(works["54ce5e07-2aca-4578-83d8-5a41a7b2f434"]["name"], unknown_work.name)
         self.assertEqual(works["757504fb-a130-4b84-9eb5-1b37164f12dd"]["name"], unknown_work.name)

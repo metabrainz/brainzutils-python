@@ -46,6 +46,8 @@ class ArtistTestCase(TestCase):
         artists = mb_artist.fetch_multiple_artists([
             "f59c5520-5f46-4d2c-b2c4-822eabf53419",
             "f82bcf78-5b69-4622-a5ef-73800768d9ac",
-        ], unknown_entities_for_missing=True)
+        ],
+        includes=['artist-rels', 'url-rels'],
+        unknown_entities_for_missing=True)
         self.assertEqual(artists["f82bcf78-5b69-4622-a5ef-73800768d9ac"]["name"], unknown_artist.name)
         self.assertEqual(artists["f59c5520-5f46-4d2c-b2c4-822eabf53419"]["name"], unknown_artist.name)
