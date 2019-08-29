@@ -95,6 +95,7 @@ def fetch_multiple_recordings(mbids, includes=None, unknown_entities_for_missing
         if 'artists' in includes:
             for recording in recordings.values():
                 includes_data[recording.id]['artists'] = recording.artist_credit.artists
+                includes_data[recording.id]['artist-credit-phrase'] = recording.artist_credit.name
 
         if 'url-rels' in includes:
             get_relationship_info(

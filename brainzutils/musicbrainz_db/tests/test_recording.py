@@ -25,6 +25,7 @@ class RecordingTestCase(TestCase):
                 'id': 'daccb724-8023-432a-854c-e0accb6c8678',
                 'name': 'Numb/Encore (explicit)',
                 'length': 205.28,
+                'artist-credit-phrase': 'Jay-Z/Linkin Park',
                 'artists':[
                     {
                         'id': 'f82bcf78-5b69-4622-a5ef-73800768d9ac',
@@ -55,7 +56,8 @@ class RecordingTestCase(TestCase):
                     {
                         'id': 'daccb724-8023-432a-854c-e0accb6c8678',
                         'name': 'Numb/Encore (explicit)',
-                        'length': 205.28, 
+                        'length': 205.28,
+                        'artist-credit-phrase': 'Jay-Z/Linkin Park',
                         'artists':
                             [
                                 {'id': 'f82bcf78-5b69-4622-a5ef-73800768d9ac',
@@ -73,7 +75,8 @@ class RecordingTestCase(TestCase):
                         'id': '965b75df-397d-4395-aac8-de11854c4630',
                         'name': 'Numb/Encore (instrumental)',
                         'length': 207.333,
-                        'artists': 
+                        'artist-credit-phrase': 'Jay-Z/Linkin Park',
+                        'artists':
                             [
                                 {
                                     'id': 'f82bcf78-5b69-4622-a5ef-73800768d9ac',
