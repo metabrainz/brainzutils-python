@@ -9,15 +9,19 @@ unknown_artist.sort_name = '[Unknown Artist]'
 unknown_artist_credit = models.ArtistCredit()
 unknown_artist_credit.id = 0
 unknown_artist_credit.name = '[Unknown Artist]'
+unknown_artist_credit.artists = []
+unknown_artist_credit.artist_count = 0
 
 unknown_release_group = models.ReleaseGroup()
 unknown_release_group.id = 0
 unknown_release_group.name = '[Unknown Release Group]'
+unknown_release_group.artist_credit = unknown_artist_credit
 
 unknown_release = models.Release()
 unknown_release.id = 0
 unknown_release.name = '[Unknown Release]'
 unknown_release.artist_credit = unknown_artist_credit
+unknown_release.release_group = unknown_release_group
 
 unknown_recording = models.Recording()
 unknown_recording.id = 0

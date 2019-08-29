@@ -35,7 +35,9 @@ class EventTestCase(TestCase):
         events = mb_event.fetch_multiple_events([
             'ebe6ce0f-22c0-4fe7-bfd4-7a0397c9fe94',
             '40e6153d-a042-4c95-a0a9-b0a47e3825ce'
-        ], unknown_entities_for_missing=True)
+        ],
+        includes=['artist-rels', 'place-rels', 'series-rels', 'url-rels', 'release-group-rels'],
+        unknown_entities_for_missing=True)
         self.assertEqual(events['ebe6ce0f-22c0-4fe7-bfd4-7a0397c9fe94']['name'],
                          unknown_event.name)
         self.assertEqual(events['40e6153d-a042-4c95-a0a9-b0a47e3825ce']['name'],

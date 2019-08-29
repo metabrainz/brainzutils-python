@@ -52,6 +52,7 @@ class ReleaseTestCase(TestCase):
         self.mock_db.query.return_value.filter.return_value.all.return_value = []
         releases = mb_release.fetch_multiple_releases(
             mbids=['f51598f5-4ef9-4b8a-865d-06a077bf78cf', 'a64a0467-9d7a-4ffa-90b8-d87d9b41e311'],
+            includes=['media', 'release-groups', 'url-rels'],
             unknown_entities_for_missing=True
         )
         self.assertEqual(releases['a64a0467-9d7a-4ffa-90b8-d87d9b41e311']['name'], unknown_release.name)

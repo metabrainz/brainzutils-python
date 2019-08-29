@@ -59,6 +59,7 @@ class ReleaseGroupTestCase(TestCase):
         self.release_group_query.return_value = []
         release_groups = mb_release_group.fetch_multiple_release_groups(
             mbids=['8ef859e3-feb2-4dd1-93da-22b91280d768', '7c1014eb-454c-3867-8854-3c95d265f8de'],
+            includes=['artists', 'releases', 'release-group-rels', 'url-rels', 'work-rels', 'tags'],
             unknown_entities_for_missing=True
         )
         self.assertEqual(release_groups['7c1014eb-454c-3867-8854-3c95d265f8de']['title'], unknown_release_group.name)

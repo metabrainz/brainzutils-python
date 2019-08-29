@@ -37,6 +37,7 @@ class PlaceTestCase(TestCase):
         self.place_query.return_value = []
         places = mb_place.fetch_multiple_places(
             ['f9587914-8505-4bd1-833b-16a3100a4948', 'd71ffe38-5eaf-426b-9a2e-e1f21bc84609'],
+            includes=['artist-rels', 'place-rels', 'url-rels'],
             unknown_entities_for_missing=True
         )
         self.assertEqual(places['d71ffe38-5eaf-426b-9a2e-e1f21bc84609']['name'], unknown_place.name)
