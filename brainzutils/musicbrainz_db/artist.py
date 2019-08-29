@@ -65,6 +65,10 @@ def fetch_multiple_artists(mbids, includes=None, unknown_entities_for_missing=Fa
                 includes_data=includes_data,
             )
 
+    if 'rating' in includes:
+        for artist in artists.values():
+            includes_data[artist.id]['rating'] = artist.rating
+
     for artist in artists.values():
         includes_data[artist.id]['type'] = artist.type
     artists = {str(mbid): serialize_artists(artists[mbid], includes_data[artists[mbid].id]) for mbid in mbids}

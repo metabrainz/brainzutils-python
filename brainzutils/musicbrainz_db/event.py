@@ -89,4 +89,9 @@ def fetch_multiple_events(mbids, includes=None, unknown_entities_for_missing=Fal
                 source_entity_ids=event_ids,
                 includes_data=includes_data,
             )
+
+    if 'rating' in includes:
+        for event in events.values():
+            includes_data[event.id]['rating'] = event.rating
+
     return {str(mbid): serialize_events(events[mbid], includes_data[events[mbid].id]) for mbid in mbids}

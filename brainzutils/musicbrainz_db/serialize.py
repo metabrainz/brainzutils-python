@@ -85,6 +85,9 @@ def serialize_recording(recording, includes=None):
     if recording.video:
         data['video'] = True
 
+    if 'rating' in includes and includes['rating']:
+        data['rating'] = recording.rating
+
     if 'artist' in includes:
         data['artist'] = recording.artist_credit.name
     elif 'artists' in includes:
@@ -140,9 +143,12 @@ def serialize_labels(label, includes=None):
     if 'area' in includes and includes['area']:
         data['area'] = includes['area'].name
 
+    if 'rating' in includes and includes['rating']:
+        data['rating'] = label.rating
+
     if 'relationship_objs' in includes:
         serialize_relationships(data, label, includes['relationship_objs'])
-    
+
     return data
 
 
@@ -157,6 +163,9 @@ def serialize_artists(artist, includes=None):
 
     if 'type' in includes and includes['type']:
         data['type'] = includes['type'].name
+
+    if 'rating' in includes and includes['rating']:
+        data['rating'] = artist.rating
 
     if 'relationship_objs' in includes:
         serialize_relationships(data, artist, includes['relationship_objs'])
@@ -184,6 +193,9 @@ def serialize_release_groups(release_group, includes=None):
 
     if 'type' in includes and includes['type']:
         data['type'] = includes['type'].name
+
+    if 'rating' in includes and includes['rating']:
+        data['rating'] = release_group.rating
 
     if 'artist-credit-phrase' in includes:
         data['artist-credit-phrase'] = includes['artist-credit-phrase']
@@ -265,6 +277,12 @@ def serialize_events(event, includes=None):
         'id': event.gid,
         'name': event.name,
     }
+    if 'type' in includes and includes['type']:
+        data['type'] = includes['type'].name
+
+    if 'rating' in includes and includes['rating']:
+        data['rating'] = event.rating
+
     if 'relationship_objs' in includes:
         serialize_relationships(data, event, includes['relationship_objs'])
     return data
@@ -294,9 +312,12 @@ def serialize_works(work, includes=None):
     if 'type' in includes and includes['type']:
         data['type'] = includes['type'].name
 
+    if 'rating' in includes and includes['rating']:
+        data['rating'] = work.rating
+
     if 'relationship_objs' in includes:
         serialize_relationships(data, work, includes['relationship_objs'])
-    
+
     return data
 
 

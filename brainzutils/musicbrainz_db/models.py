@@ -28,3 +28,14 @@ REDIRECT_MODELS = {
     'recording': models.RecordingGIDRedirect,
     'work': models.WorkGIDRedirect,
 }
+
+
+# Meta models
+META_MODELS = {
+    'label': models.LabelMeta,
+    'release_group': models.ReleaseGroupMeta,
+    'event': models.EventMeta,
+    'work': models.WorkMeta,
+    'artist': models.ArtistMeta,
+    'recording': models.RecordingMeta,
+}
