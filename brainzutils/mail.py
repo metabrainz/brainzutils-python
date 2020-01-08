@@ -10,7 +10,7 @@ import socket
 
 def send_mail(subject, text, recipients, attachments=None,
               from_name="MetaBrainz Notifications",
-              from_addr=None):
+              from_addr=None, test=False):
     """This function can be used as a foundation for sending email.
 
     Args:
@@ -33,8 +33,12 @@ def send_mail(subject, text, recipients, attachments=None,
     if not recipients:
         return
 
-    message = MIMEMultipart('mixed')
-    message['To']= "<%s>" %(recipients)
+    if test:
+        originalboundary = "===============2220963697271485568=="
+        message = MIMEMultipart(boundary=originalboundary)
+    else:
+        message =MIMEMultipart('mixed')
+    message['To']="<%s>" %(recipients)
     message['Subject'] = subject
     message['From'] = "%s <%s>" % (from_name, from_addr)
     message.attach(MIMEText(text, _charset='utf-8'))
