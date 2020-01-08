@@ -2,8 +2,9 @@ import unittest
 import smtplib
 
 from mock import patch, call
-from brainzutils import mail
 from brainzutils import flask
+from brainzutils import mail
+
 
 class SendEmailTests(unittest.TestCase):
 
