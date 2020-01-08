@@ -36,6 +36,7 @@ def send_mail(subject, text, recipients, attachments=None,
     message = MIMEMultipart('mixed')
     message['Subject'] = subject
     message['From'] = "%s <%s>" % (from_name, from_addr)
+    message['To']= "<%s>" %(recipients)
     message.attach(MIMEText(text, _charset='utf-8'))
 
     for attachment in attachments:
