@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 """This module provides a way to send emails."""
+from __future__ import absolute_import
 from email.mime.application import MIMEApplication
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
@@ -26,7 +27,7 @@ def send_mail(subject, text, recipients, attachments=None,
         attachments = []
     if from_addr is None:
         from_addr = 'noreply@' + current_app.config['MAIL_FROM_DOMAIN']
-
+              
     if current_app.config['TESTING']:  # Not sending any emails during the testing process
         return
 
@@ -38,6 +39,7 @@ def send_mail(subject, text, recipients, attachments=None,
         message = MIMEMultipart(boundary=originalboundary)
     else:
         message =MIMEMultipart('mixed')
+        
     message['To']="<%s>" %(recipients)
     message['Subject'] = subject
     message['From'] = "%s <%s>" % (from_name, from_addr)

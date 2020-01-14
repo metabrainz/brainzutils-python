@@ -4,18 +4,19 @@ import smtplib
 from email.mime.application import MIMEApplication
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-from mock import patch, call
+import mock as mock
 from brainzutils import flask
 from brainzutils import mail
 
 
 class SendEmailTests(unittest.TestCase):
 
-    @patch("smtplib.SMTP")
+    @mock.patch("smtplib.SMTP", autospec=True)
     def test_send_email(self, mock_smtp):
         app=flask.CustomFlask(__name__) 
         app.config['SMTP_SERVER']='localhost'
         app.config['SMTP_PORT']=8080
+
         with app.app_context():
             from_address = "noreply@metabrainz.org"
             recipients='sarthak2907@gmail.com'
@@ -29,6 +30,7 @@ class SendEmailTests(unittest.TestCase):
             message['Subject'] = subject
             message['From'] = "%s <%s>" % (from_name, from_address)
             message.attach(MIMEText(text, _charset='utf-8'))
+
             for attachment in attachments:
                 file_obj, subtype, name = attachment
                 attachment = MIMEApplication(file_obj.read(), _subtype=subtype)
@@ -44,6 +46,5 @@ class SendEmailTests(unittest.TestCase):
             from_name='ListenBrainz',
             from_addr="noreply@metabrainz.org",test = True
                           )
-            mock_smtp.return_value.sendmail.assert_called_once_with(from_address,recipients, message.as_string())
-
-        
+            
+            mock_smtp.return_value.sendmail.assert_called_once_with(from_address,recipients, message.as_string())  
