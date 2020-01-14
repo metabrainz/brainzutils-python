@@ -5,8 +5,10 @@ from email.mime.application import MIMEApplication
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from flask import current_app
+
 import smtplib
 import socket
+
 
 
 def send_mail(subject, text, recipients, attachments=None,

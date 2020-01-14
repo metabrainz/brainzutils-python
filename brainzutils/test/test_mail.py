@@ -1,17 +1,17 @@
 import unittest
 import smtplib
+import mock as mock
 
 from email.mime.application import MIMEApplication
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-import mock as mock
 from brainzutils import flask
 from brainzutils import mail
 
 
 class SendEmailTests(unittest.TestCase):
 
-    @mock.patch("smtplib.SMTP", autospec=True)
+    @mock.patch("smtplib.SMTP")
     def test_send_email(self, mock_smtp):
         app=flask.CustomFlask(__name__) 
         app.config['SMTP_SERVER']='localhost'
