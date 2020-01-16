@@ -36,7 +36,7 @@ class MailTestCase(unittest.TestCase):
                 attachments=None,
                 from_name="ListenBrainz",
                 from_addr="noreply@metabrainz.org",
-                boundary=originalboundary,
+                boundary=originalboundary
             )
 
             mock_smtp.return_value.sendmail.assert_called_once_with(
