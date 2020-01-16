@@ -9,8 +9,6 @@ from flask import current_app
 import smtplib
 import socket
 
-
-
 def send_mail(subject, text, recipients, attachments=None,
               from_name="MetaBrainz Notifications",
               from_addr=None, boundary=None):

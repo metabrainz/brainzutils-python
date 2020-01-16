@@ -8,7 +8,6 @@ from email.mime.text import MIMEText
 from brainzutils import flask
 from brainzutils import mail
 
-
 class MailTestCase(unittest.TestCase):
 
     @mock.patch('smtplib.SMTP')
