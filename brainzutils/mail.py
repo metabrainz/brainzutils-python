@@ -23,10 +23,11 @@ def send_mail(subject, text, recipients, attachments=None,
         from_name: Name of the sender.
         from_addr: Email address of the sender.
     """
-
+    if attachments is None:
+        attachments = []
     if from_addr is None:
         from_addr = 'noreply@' + current_app.config['MAIL_FROM_DOMAIN']
-              
+                     
     if current_app.config['TESTING']:  # Not sending any emails during the testing process
         return
 
@@ -36,22 +37,19 @@ def send_mail(subject, text, recipients, attachments=None,
     message =MIMEMultipart()
 
     if boundary is not None:
-        originalboundary = "===============2220963697271485568=="
-        message = MIMEMultipart(boundary=originalboundary)
+        message = MIMEMultipart(boundary=boundary)
      
     message['To']="<%s>" %(recipients)
     message['Subject'] = subject
     message['From'] = "%s <%s>" % (from_name, from_addr)
     message.attach(MIMEText(text, _charset='utf-8'))
 
-    if attachments is not None:
-
-        for attachment in attachments:
-            file_obj, subtype, name = attachment
-            attachment = MIMEApplication(file_obj.read(), _subtype=subtype)
-            file_obj.close()  # FIXME(roman): This feels kind of hacky. Maybe there's a better way?
-            attachment.add_header('content-disposition', 'attachment', filename=name)
-            message.attach(attachment)
+    for attachment in attachments:
+        file_obj, subtype, name = attachment
+        attachment = MIMEApplication(file_obj.read(), _subtype=subtype)
+        file_obj.close()  # FIXME(roman): This feels kind of hacky. Maybe there's a better way?
+        attachment.add_header('content-disposition', 'attachment', filename=name)
+        message.attach(attachment)
     try:
         smtp_server = smtplib.SMTP(current_app.config['SMTP_SERVER'], current_app.config['SMTP_PORT'])
     except (socket.error, smtplib.SMTPException) as e:

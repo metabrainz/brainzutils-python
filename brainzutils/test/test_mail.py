@@ -22,8 +22,8 @@ class MailTestCase(unittest.TestCase):
             text = 'It is a test mail'
             from_name = 'ListenBrainz'
             subject = 'ListenBrainz Spotify Importer Error'
-            originalboundary = '===============2220963697271485568=='
-            message = MIMEMultipart(boundary=originalboundary)
+            boundary = '===============2220963697271485568=='
+            message = MIMEMultipart(boundary=boundary)
             message['To'] = '<%s>' % (recipients)
             message['Subject'] = subject
             message['From'] = '%s <%s>' % (from_name, from_address)
@@ -36,7 +36,7 @@ class MailTestCase(unittest.TestCase):
                 attachments=None,
                 from_name='ListenBrainz',
                 from_addr='noreply@metabrainz.org',
-                boundary=originalboundary
+                boundary=boundary
             )
 
             mock_smtp.return_value.sendmail.assert_called_once_with(from_address, recipients, message.as_string())
