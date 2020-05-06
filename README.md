@@ -20,7 +20,12 @@ For this project we are using [semantic versioning](http://semver.org/). If
 you want to make a new release:
 
 1. Create a new tag in git using the following format: `v<MAJOR>.<MINOR>.<PATCH>`.
+
+       git tag v1.x.0
+       git push --tags
+
 2. Create a release on GitHub based on that tag. Specify changes that were made.
+  https://github.com/metabrainz/brainzutils-python/releases/new
 
 When updating underlying dependencies keep in mind breaking changes that they
 might have. Update version of `brainzutils-python` accordingly.
