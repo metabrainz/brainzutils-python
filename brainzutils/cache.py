@@ -243,6 +243,28 @@ def increment(key, namespace=None):
 
 
 @init_required
+def hincrby(name, key, amount, namespace=None):
+    return _r.hincrby(_prep_keys_list([name], namespace)[0], key, amount)
+
+
+@init_required
+def hgetall(name, namespace=None):
+    return _r.hgetall(_prep_keys_list([name], namespace)[0])
+
+
+@init_required
+def hkeys(name, namespace=None):
+    return _r.hkeys(_prep_keys_list([name], namespace)[0])
+
+
+@init_required
+def hdel(name, keys, namespace=None):
+    if not isinstance(keys, list):
+        keys = [keys]
+    return _r.hdel(_prep_keys_list([name], namespace)[0], keys)
+
+
+@init_required
 def flush_all():
     _r.flushdb()
 
