@@ -135,7 +135,16 @@ def get_release_groups_for_artist(artist_id, release_types=None, limit=None, off
     includes_data = defaultdict(dict)
     if release_types is None:
         release_types = []
-    release_types = [release_type.capitalize() for release_type in release_types]
+    release_types = [release_type.lower() for release_type in release_types]
+    # map release types to their case sensitive name in musicbrainz.release_group_primary_type table in the database
+    release_types_mapping = {
+        'album': 'Album',
+        'single': 'Single',
+        'ep': 'EP',
+        'broadcast': 'Broadcast',
+        'other': 'Other'
+    }
+    release_types = [release_types_mapping[release_type] for release_type in release_types]
     with mb_session() as db:
         release_groups_query = _get_release_groups_for_artist_query(db, artist_id, release_types)
         count = release_groups_query.count()
