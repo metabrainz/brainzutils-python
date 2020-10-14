@@ -244,21 +244,62 @@ def increment(key, namespace=None):
 
 @init_required
 def hincrby(name, key, amount, namespace=None):
+    """Increment a hashes key by a given amount using HINCRBY
+
+    Args:
+        name: Name of the hash
+        key: Key of the item in the has to increment
+        amount: the number to increment the key by
+        namespace: Namespace for the name
+
+    Returns:
+        An integer equal to the value after increment
+    """
     return _r.hincrby(_prep_keys_list([name], namespace)[0], key, amount)
 
 
 @init_required
 def hgetall(name, namespace=None):
+    """Get all keys and values for a hash using HGETALL
+
+    Args:
+        name: Name of the hash
+        namespace: Namespace for the name
+
+    Returns:
+        A dictionary of {key: value} items for all keys in the hash
+    """
     return _r.hgetall(_prep_keys_list([name], namespace)[0])
 
 
 @init_required
 def hkeys(name, namespace=None):
+    """Get all keys for a hash using HKEYS
+
+    Args:
+        name: Name of the hash
+        namespace: Namespace for the name
+
+    Returns:
+        A list of [key] values for all keys in the hash
+    """
     return _r.hkeys(_prep_keys_list([name], namespace)[0])
 
 
 @init_required
 def hdel(name, keys, namespace=None):
+    """Delete the specified keys from a hash using HDEL.
+    Note that the ``keys`` argument must be a list. This differs from the underlying redis
+    library's version of this command, which takes varargs.
+
+    Args:
+        name: Name of the hash
+        keys: a list of the keys to delete from the has
+        namespace: Namespace for the name
+
+    Returns:
+        the number of keys deleted from the hash
+    """
     if not isinstance(keys, list):
         keys = [keys]
     return _r.hdel(_prep_keys_list([name], namespace)[0], keys)
