@@ -302,7 +302,7 @@ def hdel(name, keys, namespace=None):
     """
     if not isinstance(keys, list):
         keys = [keys]
-    return _r.hdel(_prep_keys_list([name], namespace)[0], keys)
+    return _r.hdel(_prep_keys_list([name], namespace)[0], *keys)
 
 
 @init_required
