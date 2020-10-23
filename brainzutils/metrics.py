@@ -99,7 +99,7 @@ class Metrics:
         for key in sorted(counters.keys()):
             ret.append({
                 'time': six.ensure_text(key),
-                'amount': int(counters[key])
+                self.name: int(counters[key])
             })
 
         return ret
