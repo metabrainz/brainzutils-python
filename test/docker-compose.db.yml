@@ -1,0 +1,26 @@
+version: "2"
+services:
+
+  test:
+    build:
+      context: ..
+      dockerfile: ./test/Dockerfile.py3
+    volumes:
+      - ../:/code
+    depends_on:
+      - redis
+      - musicbrainz_db
+
+  redis:
+    image: redis:3.2.1
+
+  musicbrainz_db:
+    build:
+      context: musicbrainz_db
+      dockerfile: Dockerfile
+    environment:
+      PGDATA: /var/lib/postgresql/data/pgdata
+      POSTGRES_HOST_AUTH_METHOD: trust
+      WGET_OPTIONS: -q
+    ports:
+      - "5430:5432"

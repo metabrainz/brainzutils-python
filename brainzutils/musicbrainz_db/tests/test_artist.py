@@ -1,26 +1,21 @@
-from unittest import TestCase
-from mock import MagicMock
+import pytest
+
 from brainzutils.musicbrainz_db.test_data import artist_linkin_park, artist_jay_z
 from brainzutils.musicbrainz_db.unknown_entities import unknown_artist
 from brainzutils.musicbrainz_db import artist as mb_artist
 
 
-class ArtistTestCase(TestCase):
+@pytest.mark.database
+class TestArtist:
 
-    def setUp(self):
-        mb_artist.mb_session = MagicMock()
-        self.mock_db = mb_artist.mb_session.return_value.__enter__.return_value
-        self.artist_query = self.mock_db.query.return_value.options.return_value.filter.return_value.all
-
-    def test_get_by_id(self):
-        self.artist_query.return_value = [artist_linkin_park]
+    def test_get_by_id(self, engine):
         artist = mb_artist.get_artist_by_id("f59c5520-5f46-4d2c-b2c4-822eabf53419")
-        self.assertDictEqual(artist, {
+        assert artist == {
             "id": "f59c5520-5f46-4d2c-b2c4-822eabf53419",
             "name": "Linkin Park",
             "sort_name": "Linkin Park",
             "type": "Group"
-        })
+        }
 
     def test_fetch_multiple_artists(self):
         self.artist_query.return_value = [artist_jay_z, artist_linkin_park]
