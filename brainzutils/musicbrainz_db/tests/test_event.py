@@ -1,44 +1,32 @@
-from unittest import TestCase
-from mock import MagicMock
+import pytest
+
 from brainzutils.musicbrainz_db import event as mb_event
-from brainzutils.musicbrainz_db.test_data import taubertal_festival_2004, event_ra_hall_uk
 from brainzutils.musicbrainz_db.unknown_entities import unknown_event
 
 
-class EventTestCase(TestCase):
+@pytest.mark.database
+class TestEvent:
 
-    def setUp(self):
-        mb_event.mb_session = MagicMock()
-        self.mock_db = mb_event.mb_session.return_value.__enter__.return_value
-        self.event_query = self.mock_db.query.return_value.filter.return_value.all
+    def test_get_event_by_id(self, engine):
+        event = mb_event.get_event_by_id('d4921d43-bf92-464e-aef4-bba8540fc5bd')
+        assert event == {
+            'id': 'd4921d43-bf92-464e-aef4-bba8540fc5bd',
+            'name': 'Butterfly Whirl 2015',
+        }
 
-    def test_get_event_by_id(self):
-        self.event_query.return_value = [taubertal_festival_2004]
-        event = mb_event.get_event_by_id('ebe6ce0f-22c0-4fe7-bfd4-7a0397c9fe94')
-        self.assertDictEqual(event, {
-            'id': 'ebe6ce0f-22c0-4fe7-bfd4-7a0397c9fe94',
-            'name': 'Taubertal-Festival 2004, Day 1',
-        })
-
-    def test_fetch_multiple_events(self):
-        self.event_query.return_value = [taubertal_festival_2004, event_ra_hall_uk]
+    def test_fetch_multiple_events(self, engine):
         events = mb_event.fetch_multiple_events(
-            ['ebe6ce0f-22c0-4fe7-bfd4-7a0397c9fe94', '40e6153d-a042-4c95-a0a9-b0a47e3825ce'],
+            ['d4921d43-bf92-464e-aef4-bba8540fc5bd', 'b335b093-b3a0-411f-9f3d-7f680a4992d6'],
         )
-        self.assertEqual(events['ebe6ce0f-22c0-4fe7-bfd4-7a0397c9fe94']['name'],
-                         'Taubertal-Festival 2004, Day 1')
-        self.assertEqual(events['40e6153d-a042-4c95-a0a9-b0a47e3825ce']['name'],
-                         '1996-04-17: Royal Albert Hall, London, England, UK')
+        assert events['d4921d43-bf92-464e-aef4-bba8540fc5bd']['name'] == 'Butterfly Whirl 2015'
+        assert events['b335b093-b3a0-411f-9f3d-7f680a4992d6']['name'] == 'KISS in Atlanta'
 
-    def test_fetch_multiple_events_empty(self):
-        self.event_query.return_value = []
+    def test_fetch_multiple_events_empty(self, engine):
         events = mb_event.fetch_multiple_events([
             'ebe6ce0f-22c0-4fe7-bfd4-7a0397c9fe94',
             '40e6153d-a042-4c95-a0a9-b0a47e3825ce'
         ],
-        includes=['artist-rels', 'place-rels', 'series-rels', 'url-rels', 'release-group-rels'],
-        unknown_entities_for_missing=True)
-        self.assertEqual(events['ebe6ce0f-22c0-4fe7-bfd4-7a0397c9fe94']['name'],
-                         unknown_event.name)
-        self.assertEqual(events['40e6153d-a042-4c95-a0a9-b0a47e3825ce']['name'],
-                         unknown_event.name)
+            includes=['artist-rels', 'place-rels', 'series-rels', 'url-rels', 'release-group-rels'],
+            unknown_entities_for_missing=True)
+        assert events['ebe6ce0f-22c0-4fe7-bfd4-7a0397c9fe94']['name'] == unknown_event.name
+        assert events['40e6153d-a042-4c95-a0a9-b0a47e3825ce']['name'] == unknown_event.name
