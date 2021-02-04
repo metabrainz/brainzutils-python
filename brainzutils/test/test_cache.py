@@ -174,7 +174,7 @@ class CacheKeyTestCase(unittest.TestCase):
         cache.set('key', u'value'.encode('utf-8'))
 
         # Keys are encoded into bytes always
-        expected_key = 'NS_TEST:a62f2225bf70bfaccbc7f1ef2a397836717377de'.encode('utf-8')
+        expected_key = 'NS_TEST:key'.encode('utf-8')
         # msgpack encoded value
         expected_value = b'\xc4\x05value'
         mock_redis.return_value.mset.assert_called_with({expected_key: expected_value})
@@ -186,7 +186,7 @@ class CacheKeyTestCase(unittest.TestCase):
         cache.init(host='host', port=2, namespace=self.namespace)
         cache.set('key', u'value')
 
-        expected_key = 'NS_TEST:a62f2225bf70bfaccbc7f1ef2a397836717377de'.encode('utf-8')
+        expected_key = 'NS_TEST:key'.encode('utf-8')
         # msgpack encoded value
         expected_value = b'\xa5value'
         mock_redis.return_value.mset.assert_called_with({expected_key: expected_value})
@@ -196,7 +196,7 @@ class CacheKeyTestCase(unittest.TestCase):
     def test_key_expire(self, mock_redis):
         cache.init(host='host', port=2, namespace=self.namespace)
         cache.set('key', u'value'.encode('utf-8'), time=30)
-        expected_key = 'NS_TEST:a62f2225bf70bfaccbc7f1ef2a397836717377de'.encode('utf-8')
+        expected_key = 'NS_TEST:key'.encode('utf-8')
         # msgpack encoded value
         expected_value = b'\xc4\x05value'
         mock_redis.return_value.mset.assert_called_with({expected_key: expected_value})

@@ -288,7 +288,6 @@ def _prep_key(key, namespace_and_version=None):
         key = "%s:%s" % (namespace_and_version, key)
     if not isinstance(key, bytes):
         key = key.encode(ENCODING_ASCII, errors='xmlcharrefreplace')
-    key = hashlib.sha1(key).hexdigest().encode(ENCODING_ASCII)
     return _glob_namespace + key
 
 
