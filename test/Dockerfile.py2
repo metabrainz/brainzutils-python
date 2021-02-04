@@ -1,4 +1,4 @@
-FROM metabrainz/python:2.7
+FROM metabrainz/python:2.7-20210115
 
 ENV DOCKERIZE_VERSION v0.2.0
 RUN wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSION/dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz \
@@ -23,5 +23,4 @@ COPY . /code/
 ENV REDIS_HOST "redis"
 
 CMD dockerize -wait tcp://redis:6379 -timeout 10s \
-    py.test --junitxml=/data/test_report.xml \
-            --cov-report xml:/data/coverage.xml
+    py.test --junitxml=/data/test_report-py2.xml

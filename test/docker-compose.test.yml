@@ -1,0 +1,27 @@
+# Docker Compose file for testing
+version: "2"
+services:
+
+  test_py2:
+    build:
+      context: ..
+      dockerfile: ./test/Dockerfile.py2
+    depends_on:
+      - redis
+
+  test_py3:
+    build:
+      context: ..
+      dockerfile: ./test/Dockerfile.py3
+      target: brainzutils-pytest
+    depends_on:
+      - redis
+
+  test_pylint:
+    build:
+      context: ..
+      dockerfile: ./test/Dockerfile.py3
+      target: brainzutils-pylint
+
+  redis:
+    image: redis:3.2.1
