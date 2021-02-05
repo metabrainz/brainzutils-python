@@ -23,6 +23,7 @@ ratelimit_window_default = 10
 ratelimit_per_token_key = "rate_limit_per_token_limit"
 ratelimit_per_ip_key = "rate_limit_per_ip_limit"
 ratelimit_window_key = "rate_limit_window"
+ratelimit_cache_namespace = "rate_limit"
 
 # external functions
 ratelimit_user_validation = None
@@ -103,8 +104,8 @@ class RateLimit(object):
         self.key = key_prefix + str(self.reset)
         self.limit = limit
         self.per = per
-        self.current = cache.increment(self.key)
-        cache.expireat(self.key, self.reset + self.expiration_window)
+        self.current = cache.increment(self.key, namespace=ratelimit_cache_namespace)
+        cache.expireat(self.key, self.reset + self.expiration_window, namespace=ratelimit_cache_namespace)
 
     remaining = property(lambda x: max(x.limit - x.current, 0))
     over_limit = property(lambda x: x.current > x.limit)
@@ -124,9 +125,9 @@ def set_rate_limits(per_token, per_ip, window):
     '''
         Update the current rate limits. This will affect all new rate limiting windows and existing windows will not be changed.
     '''
-    cache.set(ratelimit_per_token_key, per_token)
-    cache.set(ratelimit_per_ip_key, per_ip)
-    cache.set(ratelimit_window_key, window)
+    cache.set(ratelimit_per_token_key, per_token, namespace=ratelimit_cache_namespace)
+    cache.set(ratelimit_per_ip_key, per_ip, namespace=ratelimit_cache_namespace)
+    cache.set(ratelimit_window_key, window, namespace=ratelimit_cache_namespace)
 
 
 def inject_x_rate_headers(response):
@@ -170,21 +171,21 @@ def check_limit_freshness():
     if time.time() <= limits_timeout:
         return
 
-    value = int(cache.get(ratelimit_per_token_key) or '0')
+    value = int(cache.get(ratelimit_per_token_key, namespace=ratelimit_cache_namespace) or '0')
     if not value:
-        cache.set(ratelimit_per_token_key, ratelimit_per_token_default)
+        cache.set(ratelimit_per_token_key, ratelimit_per_token_default, namespace=ratelimit_cache_namespace)
         value = ratelimit_per_token_default
     setattr(g, '_' + ratelimit_per_token_key, value)
 
-    value = int(cache.get(ratelimit_per_ip_key) or '0')
+    value = int(cache.get(ratelimit_per_ip_key, namespace=ratelimit_cache_namespace) or '0')
     if not value:
-        cache.set(ratelimit_per_ip_key, ratelimit_per_ip_default)
+        cache.set(ratelimit_per_ip_key, ratelimit_per_ip_default, namespace=ratelimit_cache_namespace)
         value = ratelimit_per_ip_default
     setattr(g, '_' + ratelimit_per_ip_key, value)
 
-    value = int(cache.get(ratelimit_window_key) or '0')
+    value = int(cache.get(ratelimit_window_key, namespace=ratelimit_cache_namespace) or '0')
     if not value:
-        cache.set(ratelimit_window_key, ratelimit_window_default)
+        cache.set(ratelimit_window_key, ratelimit_window_default, namespace=ratelimit_cache_namespace)
         value = ratelimit_window_default
     setattr(g, '_' + ratelimit_window_key, value)
 
@@ -251,8 +252,7 @@ def ratelimit():
     def decorator(f):
         def rate_limited(*args, **kwargs):
             data = get_rate_limit_data(request)
-            key = 'rate-limit/%s/' % data['key']
-            rlimit = RateLimit(key, data['limit'], data['window'])
+            rlimit = RateLimit(data['key'], data['limit'], data['window'])
             g._view_rate_limit = rlimit
             if rlimit.over_limit:
                 return on_over_limit(rlimit)
