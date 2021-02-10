@@ -1,3 +1,4 @@
+psycopg2-binary==2.8.6
 pytest==4.6.9
 pytest-cov==2.8.1
 pylint==1.9.4
