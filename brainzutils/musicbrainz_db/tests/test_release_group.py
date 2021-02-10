@@ -1,90 +1,58 @@
-from unittest import TestCase
-from mock import MagicMock
+# -*- coding: utf-8 -*-
+
+import pytest
+
 from brainzutils.musicbrainz_db import release_group as mb_release_group
 from brainzutils.musicbrainz_db.unknown_entities import unknown_release_group
-from brainzutils.musicbrainz_db.test_data import releasegroup_numb_encore, releasegroup_collision_course
 
 
-class ReleaseGroupTestCase(TestCase):
+@pytest.mark.database
+class TestReleaseGroup:
 
-    def setUp(self):
-        mb_release_group.mb_session = MagicMock()
-        self.mock_db = mb_release_group.mb_session.return_value.__enter__.return_value
-        # Mock sql query for fetching release groups and alter the return value to return SQLAlchemy objects.
-        self._release_group_query = self.mock_db.query.return_value.options.return_value.options.return_value
-        self._release_group_query_with_artists = self._release_group_query.options.return_value.options.return_value.\
-            options.return_value
-        self.release_group_query = self._release_group_query.filter.return_value.all
-        self.release_group_query_with_artists = self._release_group_query_with_artists.filter.return_value.all
-
-    def test_get_by_id(self):
-        self.release_group_query_with_artists.return_value = [releasegroup_numb_encore]
+    def test_get_by_id(self, engine):
         release_group = mb_release_group.get_release_group_by_id(
-            '7c1014eb-454c-3867-8854-3c95d265f8de',
+            '0f18ec88-aa87-38a9-8a65-f03d81763560',
             includes=['artists', 'releases', 'release-group-rels', 'url-rels', 'tags']
         )
 
-        self.assertEqual(release_group['id'], '7c1014eb-454c-3867-8854-3c95d265f8de')
-        self.assertEqual(release_group['title'], 'Numb/Encore')
+        assert release_group['id'] == '0f18ec88-aa87-38a9-8a65-f03d81763560'
+        assert release_group['title'] == 'Led Zeppelin'
         # Check if multiple artists are properly fetched
-        self.assertEqual(release_group['artist-credit-phrase'], 'Jay-Z/Linkin Park')
-        self.assertDictEqual(release_group['artist-credit'][0], {
-            'name': 'Jay-Z',
+        assert release_group['artist-credit-phrase'] == 'Led Zeppelin'
+        assert release_group['artist-credit'][0] == {
+            'name': 'Led Zeppelin',
             'artist': {
-                'id': 'f82bcf78-5b69-4622-a5ef-73800768d9ac',
-                'name': 'JAY Z',
-                'sort_name': 'JAY Z'
-            },
-            'join_phrase': '/',
-        })
-        self.assertDictEqual(release_group['artist-credit'][1], {
-            'name': 'Linkin Park',
-            'artist': {
-                'id': 'f59c5520-5f46-4d2c-b2c4-822eabf53419',
-                'name': 'Linkin Park',
-                'sort_name': 'Linkin Park',
-            },
-        })
+                'id': '678d88b2-87b0-403b-b63d-5da7465aecc3',
+                'name': 'Led Zeppelin',
+                'sort_name': 'Led Zeppelin'
+            }
+        }
 
-    def test_fetch_release_groups(self):
-        self.release_group_query.return_value = [releasegroup_numb_encore, releasegroup_collision_course]
+    def test_fetch_release_groups(self, engine):
         release_groups = mb_release_group.fetch_multiple_release_groups(
-            mbids=['8ef859e3-feb2-4dd1-93da-22b91280d768', '7c1014eb-454c-3867-8854-3c95d265f8de'],
+            mbids=['0f18ec88-aa87-38a9-8a65-f03d81763560', '1b36a363-eec6-35ba-b0ed-34a1f2f2cd82'],
         )
-        self.assertEqual(len(release_groups), 2)
-        self.assertEqual(release_groups['7c1014eb-454c-3867-8854-3c95d265f8de']['title'], 'Numb/Encore')
-        self.assertEqual(release_groups['8ef859e3-feb2-4dd1-93da-22b91280d768']['title'], 'Collision Course')
+        assert len(release_groups) == 2
+        assert release_groups['0f18ec88-aa87-38a9-8a65-f03d81763560']['title'] == 'Led Zeppelin'
+        assert release_groups['1b36a363-eec6-35ba-b0ed-34a1f2f2cd82']['title'] == 'Cosmic Thing'
 
-    def test_fetch_release_groups_empty(self):
-        self.release_group_query.return_value = []
+    def test_fetch_release_groups_empty(self, engine):
         release_groups = mb_release_group.fetch_multiple_release_groups(
             mbids=['8ef859e3-feb2-4dd1-93da-22b91280d768', '7c1014eb-454c-3867-8854-3c95d265f8de'],
             includes=['artists', 'releases', 'release-group-rels', 'url-rels', 'work-rels', 'tags'],
             unknown_entities_for_missing=True
         )
-        self.assertEqual(release_groups['7c1014eb-454c-3867-8854-3c95d265f8de']['title'], unknown_release_group.name)
-        self.assertEqual(release_groups['8ef859e3-feb2-4dd1-93da-22b91280d768']['title'], unknown_release_group.name)
+        assert release_groups['7c1014eb-454c-3867-8854-3c95d265f8de']['title'] == unknown_release_group.name
+        assert release_groups['8ef859e3-feb2-4dd1-93da-22b91280d768']['title'] == unknown_release_group.name
 
-    def test_fetch_get_release_groups_for_artist(self):
-        mb_release_group._get_release_groups_for_artist_query = MagicMock()
-        mock_query = mb_release_group._get_release_groups_for_artist_query.return_value
-        mock_query.count.return_value = 2
-        mock_query.order_by.return_value.limit.return_value.offset.\
-            return_value.all.return_value = [releasegroup_collision_course, releasegroup_numb_encore]
+    def test_fetch_get_release_groups_for_artist(self, engine):
         release_groups = mb_release_group.get_release_groups_for_artist(
             artist_id='f59c5520-5f46-4d2c-b2c4-822eabf53419',
             release_types=['Single', 'EP'],
         )
-        self.assertListEqual(release_groups[0], [
-            {
-                'id': '8ef859e3-feb2-4dd1-93da-22b91280d768',
-                'title': 'Collision Course',
-                'first-release-year': 2004,
-            },
-            {
-                'id': '7c1014eb-454c-3867-8854-3c95d265f8de',
-                'title': 'Numb/Encore',
-                'first-release-year': 2004,
-            }
-        ])
-        self.assertEqual(release_groups[1], 2)
+        assert release_groups[0] == [{
+            'id': '277ddbc8-d6fa-47fa-b652-dce7a325202f',
+            'title': 'A Thousand Suns: Puerta de Alcalá',
+            'first-release-year': 2010
+        }]
+        assert release_groups[1] == 1

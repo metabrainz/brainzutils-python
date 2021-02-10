@@ -1,50 +1,42 @@
-from unittest import TestCase
-from mock import MagicMock
-from brainzutils.musicbrainz_db.test_data import work_a_lot, work_aquemini
+import pytest
+
 from brainzutils.musicbrainz_db.unknown_entities import unknown_work
 from brainzutils.musicbrainz_db import work as mb_work
 
 
-class WorkTestCase(TestCase):
-
-    def setUp(self):
-        mb_work.mb_session = MagicMock()
-        self.mock_db = mb_work.mb_session.return_value.__enter__.return_value
-        self.work_query = self.mock_db.query.return_value.options.return_value.filter.return_value.all
+@pytest.mark.database
+class TestWork:
 
     def test_get_work_by_id(self):
-        self.work_query.return_value = [work_a_lot]
-        work = mb_work.get_work_by_id('54ce5e07-2aca-4578-83d8-5a41a7b2f434')
-        self.assertDictEqual(work, {
-            "id": "54ce5e07-2aca-4578-83d8-5a41a7b2f434",
-            "name": "a lot",
+        work = mb_work.get_work_by_id('d35f8fb8-52ab-4a12-b1c8-f2054d10cf88')
+        assert work == {
+            "id": "d35f8fb8-52ab-4a12-b1c8-f2054d10cf88",
+            "name": "Apple Bush",
             "type": "Song",
-        })
+        }
 
     def test_fetch_multiple_works(self):
-        self.work_query.return_value = [work_a_lot, work_aquemini]
         works = mb_work.fetch_multiple_works([
-            '54ce5e07-2aca-4578-83d8-5a41a7b2f434',
-            '757504fb-a130-4b84-9eb5-1b37164f12dd'
+            'd35f8fb8-52ab-4a12-b1c8-f2054d10cf88',
+            '1deb7377-f980-4adb-8f0f-a36355461f38'
         ])
-        self.assertDictEqual(works["54ce5e07-2aca-4578-83d8-5a41a7b2f434"], {
-            "id": "54ce5e07-2aca-4578-83d8-5a41a7b2f434",
-            "name": "a lot",
+        assert works["d35f8fb8-52ab-4a12-b1c8-f2054d10cf88"] == {
+            "id": "d35f8fb8-52ab-4a12-b1c8-f2054d10cf88",
+            "name": "Apple Bush",
             "type": "Song",
-        })
-        self.assertDictEqual(works["757504fb-a130-4b84-9eb5-1b37164f12dd"], {
-            "id": "757504fb-a130-4b84-9eb5-1b37164f12dd",
-            "name": "Aquemini",
+        }
+        assert works["1deb7377-f980-4adb-8f0f-a36355461f38"] == {
+            "id": "1deb7377-f980-4adb-8f0f-a36355461f38",
+            "name": "Fields of Regret",
             "type": "Song",
-        })
+        }
 
     def test_fetch_multiple_works_empty(self):
-        self.work_query.return_value = []
         works = mb_work.fetch_multiple_works([
             '54ce5e07-2aca-4578-83d8-5a41a7b2f434',
             '757504fb-a130-4b84-9eb5-1b37164f12dd'
         ],
-        includes=['artist-rels', 'recording-rels'],
-        unknown_entities_for_missing=True)
-        self.assertEqual(works["54ce5e07-2aca-4578-83d8-5a41a7b2f434"]["name"], unknown_work.name)
-        self.assertEqual(works["757504fb-a130-4b84-9eb5-1b37164f12dd"]["name"], unknown_work.name)
+            includes=['artist-rels', 'recording-rels'],
+            unknown_entities_for_missing=True)
+        assert works["54ce5e07-2aca-4578-83d8-5a41a7b2f434"]["name"] == unknown_work.name
+        assert works["757504fb-a130-4b84-9eb5-1b37164f12dd"]["name"] == unknown_work.name

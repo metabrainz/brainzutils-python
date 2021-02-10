@@ -23,5 +23,6 @@ COPY . /code/
 ENV REDIS_HOST "redis"
 
 CMD dockerize -wait tcp://redis:6379 -timeout 10s \
+    dockerize -wait tcp://musicbrainz_db:5432 -timeout 600s \
     py.test --junitxml=/data/test_report.xml \
             --cov-report xml:/data/coverage.xml
