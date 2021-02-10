@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import pytest
 
 from brainzutils.musicbrainz_db import release_group as mb_release_group
