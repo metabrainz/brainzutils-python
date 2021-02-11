@@ -6,18 +6,34 @@ import six
 
 from brainzutils import cache
 
-NAMESPACE_STATS = "timeseries_stats"
+NAMESPACE_METRICS = "metrics"
 
 # Keep this many hours of old cache items in each key
 HOURS_TO_KEEP = 12
 
-STATS_RANGE_MINUTE = 1
-STATS_RANGE_10MIN = 10
-STATS_RANGE_HOUR = 60
+METRICS_RANGE_MINUTE = 1
+METRICS_RANGE_10MIN = 10
+METRICS_RANGE_HOUR = 60
 
 
-class TimeseriesStats:
-    """TimeseriesStats keeps basic counts of the number of events that occur over time.
+def increment(metric_name, amount=1):
+    """Increment a metric with the name ``metric_name`` with a default range of one hour
+    Arguments:
+        metric_name: the name of a metric
+        amount (int): the amount to increment the metrric by (default 1)
+    """
+    metric = Metrics(metric_name, METRICS_RANGE_HOUR)
+    metric.increment(amount)
+
+
+def stats(metric_name):
+    """Get an overview of the metrics for a given metric name"""
+    metric = Metrics(metric_name, METRICS_RANGE_HOUR)
+    return metric.stats()
+
+
+class Metrics:
+    """Metrics keeps basic counts of the number of events that occur over time.
     This can be used to count events in a system, grouping events in a time range together
     (e.g. all events that happened in 10 minutes, or in an hour).
 
@@ -25,7 +41,7 @@ class TimeseriesStats:
 
     Example usage:
 
-        counter = TimeseriesStats("user-signups", STATS_RANGE_10MIN)
+        counter = Metrics("user-signups", METRICS_RANGE_10MIN)
         counter.increment()
 
         ...
@@ -39,10 +55,10 @@ class TimeseriesStats:
 
     @cache.init_required
     def __init__(self, name, range):
-        """Create a stats object. The BU cache must be initalised first.
+        """Create a metrics object. The BU cache must be initalised first.
 
         Arguments:
-            name: the name of the stats to record.
+            name: the name of the metrics to record.
             range: the duration in minutes of each bucket"""
         self.name = name
         self.range = range
@@ -53,12 +69,12 @@ class TimeseriesStats:
         Arguments:
             amount: the amount to increase the counter by (default: 1)"""
 
-        now = datetime.datetime.utcnow()
+        now = datetime.datetime.now(tz=datetime.timezone.utc)
         minute = now.minute // self.range * self.range
         now = now.replace(minute=minute, second=0, microsecond=0)
         field = now.isoformat()
 
-        ret = cache.hincrby(self.name, field, amount, namespace=NAMESPACE_STATS)
+        ret = cache.hincrby(self.name, field, amount, namespace=NAMESPACE_METRICS)
         tokeep = int(60 // self.range * HOURS_TO_KEEP)
         self._expire_old_items(tokeep)
         return ret
@@ -69,17 +85,21 @@ class TimeseriesStats:
           if there is a gap (bucket with 0 items) then it will keep more than
           HOURS_TO_KEEP hours worth of items
         """
-        items = cache.hkeys(self.name, namespace=NAMESPACE_STATS)
-        toremove = items[tokeep:]
+        items = cache.hkeys(self.name, namespace=NAMESPACE_METRICS)
+        toremove = sorted(items)[tokeep:]
         if toremove:
-            cache.hdel(self.name, toremove)
+            cache.hdel(self.name, toremove, namespace=NAMESPACE_METRICS)
 
     def stats(self):
         """Get all current stats for this counter.
          Returns a dictionary of {bucket: count} items where bucket
          is the UTC timestamp that the bucket starts at, in iso8601 format"""
-        counters = cache.hgetall(self.name, namespace=NAMESPACE_STATS)
-        ret = {}
+        counters = cache.hgetall(self.name, namespace=NAMESPACE_METRICS)
+        ret = []
         for key in sorted(counters.keys()):
-            ret[six.ensure_text(key)] = int(counters[key])
+            ret.append({
+                'time': six.ensure_text(key),
+                'amount': int(counters[key])
+            })
+
         return ret
