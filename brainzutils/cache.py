@@ -93,7 +93,7 @@ def init_required(f):
 
 # pylint: disable=redefined-builtin
 @init_required
-def set(key, val, time=0, namespace=None, encode=True):
+def set(key, val, time, namespace=None, encode=True):
     """Set a key to a given value.
 
     Args:
@@ -179,7 +179,7 @@ def expireat(key, timeat, namespace=None):
 
 
 @init_required
-def set_many(mapping, time=None, namespace=None, encode=True):
+def set_many(mapping, time, namespace=None, encode=True):
     """Set multiple keys doing just one query.
 
     Args:
