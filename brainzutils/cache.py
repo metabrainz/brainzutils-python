@@ -321,7 +321,7 @@ def _encode_val(value):
 def _decode_val(value):
     if value is None:
         return value
-    return msgpack.unpackb(value, encoding=CONTENT_ENCODING, ext_hook=_msgpack_ext_hook)
+    return msgpack.unpackb(value, raw=False, ext_hook=_msgpack_ext_hook)
 
 
 ############
