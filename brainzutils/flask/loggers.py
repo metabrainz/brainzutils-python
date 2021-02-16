@@ -1,24 +1,12 @@
 # pylint: disable=invalid-name
 import logging
 from logging.handlers import RotatingFileHandler, SMTPHandler
-import raven
-import raven.base
-import raven.contrib.flask
-import raven.transport.threaded_requests
 
-
-class MissingRavenClient(raven.Client):
-    """Raven client class that is used as a placeholder.
-    This is done to make sure that calls to functions in the client don't fail
-    even if the client is not initialized. Sentry server might be missing, but
-    we don't want to check if it actually exists in every place exception is
-    captured.
-    """
-    captureException = lambda self, *args, **kwargs: None
-    captureMessage = lambda self, *args, **kwargs: None
-
-
-_sentry_client = MissingRavenClient()  # type: raven.Client
+import sentry_sdk
+from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
+from sentry_sdk.integrations.logging import LoggingIntegration
+from sentry_sdk.integrations.redis import RedisIntegration
+from sentry_sdk.integrations.flask import FlaskIntegration
 
 
 def add_file_handler(app, filename, max_bytes=512 * 1024, backup_count=100):
@@ -62,20 +50,7 @@ def add_sentry(app, dsn, level=logging.WARNING, **options):
 
     Sentry is a realtime event logging and aggregation platform. Additional
     information about it is available at https://sentry.readthedocs.org/.
-
-    We use Raven as a client for Sentry. More info about Raven is available at
-    https://raven.readthedocs.org/.
     """
-    app.config["SENTRY_TRANSPORT"] = raven.transport.threaded_requests.ThreadedRequestsHTTPTransport
     app.config["SENTRY_CONFIG"] = options
-    global _sentry_client
-    _sentry_client = raven.contrib.flask.Sentry(
-        app=app,
-        dsn=dsn,
-        level=level,
-        logging=True,
-    )
-
-
-def get_sentry_client():
-    return _sentry_client
+    sentry_sdk.init(dsn, integrations=[LoggingIntegration(level=level), FlaskIntegration(), RedisIntegration(),
+                                       SqlalchemyIntegration()])
