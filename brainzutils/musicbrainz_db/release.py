@@ -111,7 +111,8 @@ def get_releases_using_recording_mbid(recording_mbid):
            recording_mbid (UUID): recording MBID for which releases are to be fetched.
 
        Returns:
-           serial_releases (list): list with dictionary elements of following format:
+           serial_releases (list): list with dictionary elements of following format::
+
            {
                'id': <release MBID>,
                'name': <release Title>,

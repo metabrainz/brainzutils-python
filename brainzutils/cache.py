@@ -2,7 +2,7 @@
 """
 This module serves as an interface for Redis.
 
-Module needs to be initialized before use! See init() function.
+The module needs to be initialized before use! See :meth:`init()`.
 
 It basically is a wrapper for redis package with additional
 functionality and tweaks specific to serve our needs.

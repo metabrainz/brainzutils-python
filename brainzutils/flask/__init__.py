@@ -55,13 +55,16 @@ class CustomFlask(Flask):
         `logging` module, as an integer or a valid string.
 
         Args:
-            file_config (dict): Dictionary with the following structure:
+            file_config (dict): Dictionary with the following structure::
+
                 {
                     'filename': 'log.txt',
                     'max_bytes': 512 * 1024,  # optional
                     'backup_count': 100,      # optional
-                 }
-            email_config (dict): Dictionary with the following structure:
+                }
+
+            email_config (dict): Dictionary with the following structure::
+
                 {
                     'mail_server': 'localhost',
                     'mail_port': 25,
@@ -72,12 +75,14 @@ class CustomFlask(Flask):
                     ],
                     'log_email_topic': 'Error occurred',
                     'level': 'ERROR',  # optional
-                 }
-            sentry_config (dict): Dictionary with the following structure:
+                }
+
+            sentry_config (dict): Dictionary with the following structure::
+
                 {
                     'dsn': 'YOUR_SENTRY_DSN',
                     'level': 'WARNING',  # optional
-                 }
+                }
         """
         if file_config:
             loggers.add_file_handler(self, **file_config)
