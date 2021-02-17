@@ -99,9 +99,9 @@ def stats():
         A dictionary containing metric names and counts for the current project, as well
         as a field ``tag`` containing the current project name. For example::
 
-        {"new_users": 100,
-         "computed_stats": 20,
-         "tag": "listenbrainz.org"}
+            {"new_users": 100,
+             "computed_stats": 20,
+             "tag": "listenbrainz.org"}
     """
 
     counters = cache.hgetall(_metrics_project_name, namespace=NAMESPACE_METRICS)
@@ -119,7 +119,7 @@ def set_count(metric_name, **data):
     For example, if you have an import process that happens periodically,
     you could call something like::
 
-    metrics.set_count('import', artists=10, releases=27, recordings=100)
+        metrics.set_count('import', artists=10, releases=27, recordings=100)
 
     to set some fixed counts for the ``import`` metric. These metrics are
     stored with the time that the method is called.
@@ -181,12 +181,12 @@ def stats_count(metric_name):
         the requested metric, and ``date`` containing the date that the metric was last written.
         For example::
 
-        {"artists": 10,
-         "releases": 29,
-         "recordings": 100,
-         "date": "2021-02-17T13:02:18",
-         "metric": "import",
-         "tag": "listenbrainz.org"}
+            {"artists": 10,
+             "releases": 29,
+             "recordings": 100,
+             "date": "2021-02-17T13:02:18",
+             "metric": "import",
+             "tag": "listenbrainz.org"}
     """
 
     metric_key = _metrics_project_name + ":" + metric_name
