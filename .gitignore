@@ -20,6 +20,9 @@ var/
 .installed.cfg
 *.egg
 
+# Docs
+docs/_build
+
 # Test results
 htmlcov
 .coverage
