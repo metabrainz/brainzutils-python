@@ -13,7 +13,7 @@ class MetricsTestCase(unittest.TestCase):
         cache.init('redis')
 
     def tearDown(self):
-        metrics._metrics_site_name = None
+        metrics._metrics_project_name = None
 
     @mock.patch('brainzutils.metrics.cache.hincrby')
     def test_increment(self, hincrby):
