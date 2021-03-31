@@ -66,10 +66,11 @@ class CustomFlask(Flask):
 
                 {
                     'dsn': 'YOUR_SENTRY_DSN',
+                    'environment': 'production',  # optional
                     'level': 'WARNING',  # optional
                 }
         """
         if file_config:
             loggers.add_file_handler(self, **file_config)
         if sentry_config:
-            loggers.add_sentry(self, **sentry_config)
+            loggers.add_sentry(**sentry_config)

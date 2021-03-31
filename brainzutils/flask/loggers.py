@@ -20,12 +20,18 @@ def add_file_handler(app, filename, max_bytes=512 * 1024, backup_count=100):
     app.logger.addHandler(file_handler)
 
 
-def add_sentry(app, dsn, level=logging.WARNING, **options):
-    """Adds Sentry logging.
+def add_sentry(dsn, level=logging.WARNING, **options):
+    """Adds Sentry event logging.
 
-    Sentry is a realtime event logging and aggregation platform. Additional
-    information about it is available at https://sentry.readthedocs.org/.
+    Sentry is a realtime event logging and aggregation platform.
+    By default we add integration to the python logger, flask, redis, and sqlalchemy.
+
+    Arguments:
+        dsn: The sentry DSN to connect to
+        level: the logging level at which logging messages are sent as events to sentry
+        options: Any other arguments to be passed to sentry_sdk.init.
+          See https://docs.sentry.io/platforms/python/configuration/options/
     """
-    app.config["SENTRY_CONFIG"] = options
     sentry_sdk.init(dsn, integrations=[LoggingIntegration(level=level), FlaskIntegration(), RedisIntegration(),
-                                       SqlalchemyIntegration()])
+                                       SqlalchemyIntegration()],
+                    **options)
