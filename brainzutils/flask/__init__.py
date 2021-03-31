@@ -43,7 +43,6 @@ class CustomFlask(Flask):
 
     def init_loggers(self,
                      file_config=None,
-                     email_config=None,
                      sentry_config=None):
         """This method attaches loggers to the Flask app.
 
@@ -63,20 +62,6 @@ class CustomFlask(Flask):
                     'backup_count': 100,      # optional
                 }
 
-            email_config (dict): Dictionary with the following structure::
-
-                {
-                    'mail_server': 'localhost',
-                    'mail_port': 25,
-                    'mail_from_host': 'example.org',
-                    'log_email_recipients': [
-                        'user1@example.org',
-                        'user2@example.org',
-                    ],
-                    'log_email_topic': 'Error occurred',
-                    'level': 'ERROR',  # optional
-                }
-
             sentry_config (dict): Dictionary with the following structure::
 
                 {
@@ -86,7 +71,5 @@ class CustomFlask(Flask):
         """
         if file_config:
             loggers.add_file_handler(self, **file_config)
-        if email_config:
-            loggers.add_email_handler(self, **email_config)
         if sentry_config:
             loggers.add_sentry(self, **sentry_config)
