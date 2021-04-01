@@ -24,11 +24,9 @@ import redis
 import msgpack
 from brainzutils import locks
 
-
 _r = None  # type: redis.StrictRedis
 _glob_namespace = None  # type: bytes
 _ns_versions_loc = None  # type: str
-
 
 SHA1_LENGTH = 40
 MAX_KEY_LENGTH = 250
@@ -69,6 +67,7 @@ def init_required(f):
             raise RuntimeError("Cache module needs to be initialized before "
                                "use! See documentation for more info.")
         return f(*args, **kwargs)
+
     return decorated
 
 
@@ -305,7 +304,7 @@ def hdel(name, keys, namespace=None):
 
 
 @init_required
-def sadd(name, keys, expirein, namespace=None):
+def sadd(name: str, keys, expirein: int, namespace: str = None) -> int:
     """Add the specified keys to the set stored at name using SADD
     Note that it is not possible to expire a single value stored in a set.  The ``expirein``
     argument will set the expiration period of the entire set stored at ``name``. Therefore,
@@ -323,22 +322,24 @@ def sadd(name, keys, expirein, namespace=None):
     prepared_name = _prep_key(name, namespace)
     if not isinstance(keys, list) and not isinstance(keys, builtins.set):
         keys = {keys}
-    result = _r.sadd(prepared_name, *keys)
+    encoded_keys = {_encode_val(key) for key in keys}
+    result = _r.sadd(prepared_name, *encoded_keys)
     expire(prepared_name, expirein, namespace)
     return result
 
 
 @init_required
-def smembers(name, namespace=None):
-    """Returns all the members of the set value stored at key.
+def smembers(name: str, namespace: str = None) -> builtins.set:
+    """Returns all the members of the set value stored at name.
     Args:
         name: Name of the set
         namespace: namespace for the name
 
     Returns:
-
+        all member of the set
     """
-    return _r.smembers(_prep_key(name, namespace))
+    keys = _r.smembers(_prep_key(name, namespace))
+    return {_decode_val(key) for key in keys}
 
 
 @init_required
