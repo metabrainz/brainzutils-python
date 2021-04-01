@@ -124,9 +124,9 @@ def set_rate_limits(per_token, per_ip, window):
     '''
         Update the current rate limits. This will affect all new rate limiting windows and existing windows will not be changed.
     '''
-    cache.set(ratelimit_per_token_key, per_token, time=0)
-    cache.set(ratelimit_per_ip_key, per_ip, time=0)
-    cache.set(ratelimit_window_key, window, time=0)
+    cache.set(ratelimit_per_token_key, per_token, expirein=0)
+    cache.set(ratelimit_per_ip_key, per_ip, expirein=0)
+    cache.set(ratelimit_window_key, window, expirein=0)
 
 
 def inject_x_rate_headers(response):
@@ -172,19 +172,19 @@ def check_limit_freshness():
 
     value = int(cache.get(ratelimit_per_token_key) or '0')
     if not value:
-        cache.set(ratelimit_per_token_key, ratelimit_per_token_default, time=0)
+        cache.set(ratelimit_per_token_key, ratelimit_per_token_default, expirein=0)
         value = ratelimit_per_token_default
     setattr(g, '_' + ratelimit_per_token_key, value)
 
     value = int(cache.get(ratelimit_per_ip_key) or '0')
     if not value:
-        cache.set(ratelimit_per_ip_key, ratelimit_per_ip_default, time=0)
+        cache.set(ratelimit_per_ip_key, ratelimit_per_ip_default, expirein=0)
         value = ratelimit_per_ip_default
     setattr(g, '_' + ratelimit_per_ip_key, value)
 
     value = int(cache.get(ratelimit_window_key) or '0')
     if not value:
-        cache.set(ratelimit_window_key, ratelimit_window_default, time=0)
+        cache.set(ratelimit_window_key, ratelimit_window_default, expirein=0)
         value = ratelimit_window_default
     setattr(g, '_' + ratelimit_window_key, value)
 

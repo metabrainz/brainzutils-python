@@ -93,13 +93,13 @@ def init_required(f):
 
 # pylint: disable=redefined-builtin
 @init_required
-def set(key, val, time, namespace=None, encode=True):
+def set(key, val, expirein, namespace=None, encode=True):
     """Set a key to a given value.
 
     Args:
         key (str): Key of the item.
         val: Item's value.
-        time (int): The time after which this value should expire, in seconds.
+        expirein (int): The time after which this value should expire, in seconds.
         namespace (str): Optional namespace in which key needs to be defined.
         encode: True if the value should be encoded with msgpack, False otherwise
 
@@ -109,7 +109,7 @@ def set(key, val, time, namespace=None, encode=True):
     # Note that both key and value are encoded before insertion.
     return set_many(
         mapping={key: val},
-        time=time,
+        expirein=expirein,
         namespace=namespace,
         encode=encode
     )
@@ -147,19 +147,19 @@ def delete(key, namespace=None):
 
 
 @init_required
-def expire(key, time, namespace=None):
+def expire(key, expirein, namespace=None):
     """Set the expiration time for an item
 
     Args:
         key: Key of the item that needs to be deleted.
-        time: the number of seconds after which the item should expire
+        expirein: the number of seconds after which the item should expire
         namespace: Optional namespace in which key was defined.
 
     Returns:
           True if the timeout was set, False otherwise
     """
     # Note that key is encoded before deletion request.
-    return _r.pexpire(_prep_key(key, namespace), time * 1000)
+    return _r.pexpire(_prep_key(key, namespace), expirein * 1000)
 
 
 @init_required
@@ -179,12 +179,12 @@ def expireat(key, timeat, namespace=None):
 
 
 @init_required
-def set_many(mapping, time, namespace=None, encode=True):
+def set_many(mapping, expirein, namespace=None, encode=True):
     """Set multiple keys doing just one query.
 
     Args:
         mapping (dict): A dict of key/value pairs to set.
-        time (int): The time after which this value should expire, in seconds.
+        expirein (int): The time after which this value should expire, in seconds.
         namespace (str): Namespace for the keys.
         encode: True if the values should be encoded with msgpack, False otherwise
 
@@ -193,9 +193,9 @@ def set_many(mapping, time, namespace=None, encode=True):
     """
     # TODO: Fix return value
     result = _r.mset(_prep_dict(mapping, namespace, encode))
-    if time:
+    if expirein:
         for key in _prep_keys_list(list(mapping.keys()), namespace):
-            _r.pexpire(key, time * 1000)
+            _r.pexpire(key, expirein * 1000)
 
     return result
 
