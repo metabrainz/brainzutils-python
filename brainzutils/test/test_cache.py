@@ -138,6 +138,8 @@ class CacheTestCase(unittest.TestCase):
 
     def test_sadd(self):
         cache.sadd("myset", {"a", "b", "c"}, expirein=1000)
+        cache.sadd("myset", ["a", "f", "d"], expirein=1000)
+        cache.sadd("myset", "z", expirein=1000)
         logging.error(cache.smembers("myset"))
         assert False
 
