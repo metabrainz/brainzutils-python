@@ -1,7 +1,6 @@
 # pylint: disable=protected-access
 
 import datetime
-import logging
 import os
 import unittest
 from time import sleep, time
@@ -140,8 +139,7 @@ class CacheTestCase(unittest.TestCase):
         cache.sadd("myset", {"a", "b", "c"}, expirein=1000)
         cache.sadd("myset", ["a", "f", "d"], expirein=1000)
         cache.sadd("myset", "z", expirein=1000)
-        logging.error(cache.smembers("myset"))
-        assert False
+        self.assertEqual({"a", "b", "c", "d", "f", "z"}, cache.smembers("myset"))
 
 
 class CacheKeyTestCase(unittest.TestCase):

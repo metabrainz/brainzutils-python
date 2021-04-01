@@ -336,7 +336,7 @@ def smembers(name: str, namespace: str = None) -> builtins.set:
         namespace: namespace for the name
 
     Returns:
-        all member of the set
+        all members of the set
     """
     keys = _r.smembers(_prep_key(name, namespace))
     return {_decode_val(key) for key in keys}
