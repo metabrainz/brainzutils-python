@@ -321,7 +321,7 @@ def sadd(name, keys, expirein, namespace=None):
         the number of elements that were added to the set, not including all the elements already present into the set.
     """
     prepared_name = _prep_key(name, namespace)
-    if not isinstance(keys, list) or not isinstance(keys, builtins.set):
+    if not isinstance(keys, list) and not isinstance(keys, builtins.set):
         keys = {keys}
     result = _r.sadd(prepared_name, *keys)
     expire(prepared_name, expirein, namespace)
