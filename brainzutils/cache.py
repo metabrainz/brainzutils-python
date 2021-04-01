@@ -12,6 +12,7 @@ versions of data saved in the cache.
 
 More information about Redis can be found at http://redis.io/.
 """
+import builtins
 from functools import wraps
 import shutil
 import hashlib
@@ -301,6 +302,43 @@ def hdel(name, keys, namespace=None):
     if not isinstance(keys, list):
         keys = [keys]
     return _r.hdel(_prep_keys_list([name], namespace)[0], *keys)
+
+
+@init_required
+def sadd(name, keys, expirein, namespace=None):
+    """Add the specified keys to the set stored at name using SADD
+    Note that it is not possible to expire a single value stored in a set.  The ``expirein``
+    argument will set the expiration period of the entire set stored at ``name``. Therefore,
+    any additions to a set will reset its expiry to the value of ``expirein`` passed in
+    last call.
+    Args:
+        name: Name of the set
+        keys: keys to add to the set
+        expirein: the number of seconds after which the item should expire
+        namespace: namespace for the name
+
+    Returns:
+        the number of elements that were added to the set, not including all the elements already present into the set.
+    """
+    prepared_name = _prep_key(name, namespace)
+    if not isinstance(keys, list) or not isinstance(keys, builtins.set):
+        keys = {keys}
+    result = _r.sadd(prepared_name, *keys)
+    expire(prepared_name, expirein, namespace)
+    return result
+
+
+@init_required
+def smembers(name, namespace=None):
+    """Returns all the members of the set value stored at key.
+    Args:
+        name: Name of the set
+        namespace: namespace for the name
+
+    Returns:
+
+    """
+    return _r.smembers(_prep_key(name, namespace))
 
 
 @init_required
