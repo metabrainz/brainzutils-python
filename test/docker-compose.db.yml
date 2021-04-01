@@ -15,12 +15,8 @@ services:
     image: redis:3.2.1
 
   musicbrainz_db:
-    build:
-      context: musicbrainz_db
-      dockerfile: Dockerfile
+    image: metabrainz/brainzutils-mb-sample-database:schema-25-2021-04-04.0
     environment:
-      PGDATA: /var/lib/postgresql/data/pgdata
       POSTGRES_HOST_AUTH_METHOD: trust
-      WGET_OPTIONS: -q
     ports:
       - "5430:5432"
