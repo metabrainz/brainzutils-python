@@ -154,7 +154,7 @@ class CacheKeyTestCase(unittest.TestCase):
         # Keys are encoded into bytes always
         expected_key = 'NS_TEST:key'.encode('utf-8')
         # msgpack encoded value
-        expected_value = b'\xc4\x05value'
+        expected_value = '\xc4\x05value'
         mock_redis.return_value.mset.assert_called_with({expected_key: expected_value})
         mock_redis.return_value.pexpire.assert_not_called()
 
@@ -166,7 +166,7 @@ class CacheKeyTestCase(unittest.TestCase):
 
         expected_key = 'NS_TEST:key'.encode('utf-8')
         # msgpack encoded value
-        expected_value = b'\xa5value'
+        expected_value = '\xa5value'
         mock_redis.return_value.mset.assert_called_with({expected_key: expected_value})
         mock_redis.return_value.pexpire.assert_not_called()
 
@@ -176,6 +176,6 @@ class CacheKeyTestCase(unittest.TestCase):
         cache.set('key', u'value'.encode('utf-8'), expirein=30)
         expected_key = 'NS_TEST:key'.encode('utf-8')
         # msgpack encoded value
-        expected_value = b'\xc4\x05value'
+        expected_value = '\xc4\x05value'
         mock_redis.return_value.mset.assert_called_with({expected_key: expected_value})
         mock_redis.return_value.pexpire.assert_called_with(expected_key, 30000)
