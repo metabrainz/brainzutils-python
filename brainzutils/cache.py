@@ -25,7 +25,7 @@ from brainzutils import locks
 
 
 _r = None  # type: redis.StrictRedis
-_glob_namespace = None  # type: bytes
+_glob_namespace = None  # type: str
 _ns_versions_loc = None  # type: str
 
 
@@ -56,7 +56,6 @@ def init(host="localhost", port=6379, db_number=0, namespace=""):
     )
 
     _glob_namespace = namespace + ":"
-    _glob_namespace = _glob_namespace.encode(ENCODING_ASCII)
     if len(_glob_namespace) + SHA1_LENGTH > MAX_KEY_LENGTH:
         raise ValueError("Namespace is too long.")
 
@@ -174,8 +173,8 @@ def set_many(mapping, expirein, namespace=None, encode=True):
     # TODO: Fix return value
     result = _r.mset(_prep_dict(mapping, namespace, encode))
     if expirein:
-        for key in _prep_keys_list(list(mapping.keys()), namespace):
-            _r.pexpire(key, expirein * 1000)
+        for key in list(mapping.keys()):
+            expire(key, expirein, namespace)
 
     return result
 
@@ -320,14 +319,14 @@ def gen_key(key, *attributes):
     """
     if not isinstance(key, str):
         key = str(key)
-    key = key.encode(ENCODING_ASCII, errors='xmlcharrefreplace')
+    key = key.encode(ENCODING_ASCII, errors='xmlcharrefreplace').decode(ENCODING_ASCII)
 
     for attr in attributes:
         if not isinstance(attr, str):
             attr = str(attr)
-        key += b'_' + attr.encode(ENCODING_ASCII, errors='xmlcharrefreplace')
+        key += '_' + attr.encode(ENCODING_ASCII, errors='xmlcharrefreplace').decode(ENCODING_ASCII)
 
-    key = key.replace(b' ', b'_')  # spaces are not allowed
+    key = key.replace(' ', '_')  # spaces are not allowed
 
     return key
 
@@ -344,7 +343,7 @@ def _prep_key(key, namespace):
     if namespace:
         key = "%s:%s" % (namespace, key)
     if not isinstance(key, bytes):
-        key = key.encode(ENCODING_ASCII, errors='xmlcharrefreplace')
+        key = key.encode(ENCODING_ASCII, errors='xmlcharrefreplace').decode(ENCODING_ASCII)
     return _glob_namespace + key
 
 
