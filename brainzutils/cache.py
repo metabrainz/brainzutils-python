@@ -304,7 +304,7 @@ def hdel(name, keys, namespace=None):
 
 
 @init_required
-def sadd(name: str, keys, expirein: int, namespace: str = None) -> int:
+def sadd(name, keys, expirein, encode=True, namespace=None):
     """Add the specified keys to the set stored at name using SADD
     Note that it is not possible to expire a single value stored in a set.  The ``expirein``
     argument will set the expiration period of the entire set stored at ``name``. Therefore,
@@ -315,6 +315,7 @@ def sadd(name: str, keys, expirein: int, namespace: str = None) -> int:
         keys: keys to add to the set
         expirein: the number of seconds after which the item should expire
         namespace: namespace for the name
+        encode: True if the value should be encoded with msgpack, False otherwise
 
     Returns:
         the number of elements that were added to the set, not including all the elements already present into the set.
@@ -322,24 +323,30 @@ def sadd(name: str, keys, expirein: int, namespace: str = None) -> int:
     prepared_name = _prep_key(name, namespace)
     if not isinstance(keys, list) and not isinstance(keys, builtins.set):
         keys = {keys}
-    encoded_keys = {_encode_val(key) for key in keys}
-    result = _r.sadd(prepared_name, *encoded_keys)
+
+    if encode:
+        keys = {_encode_val(key) for key in keys}
+
+    result = _r.sadd(prepared_name, *keys)
     expire(prepared_name, expirein, namespace)
     return result
 
 
 @init_required
-def smembers(name: str, namespace: str = None) -> builtins.set:
+def smembers(name, decode=True, namespace=None):
     """Returns all the members of the set value stored at name.
     Args:
         name: Name of the set
+        decode: True if value should be decoded with msgpack, False otherwise
         namespace: namespace for the name
 
     Returns:
         all members of the set
     """
     keys = _r.smembers(_prep_key(name, namespace))
-    return {_decode_val(key) for key in keys}
+    if decode:
+        keys = {_decode_val(key) for key in keys}
+    return keys
 
 
 @init_required
