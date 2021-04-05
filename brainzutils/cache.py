@@ -25,7 +25,7 @@ import msgpack
 from brainzutils import locks
 
 _r = None  # type: redis.StrictRedis
-_glob_namespace = None  # type: bytes
+_glob_namespace = None  # type: str
 _ns_versions_loc = None  # type: str
 
 SHA1_LENGTH = 40
@@ -55,7 +55,6 @@ def init(host="localhost", port=6379, db_number=0, namespace=""):
     )
 
     _glob_namespace = namespace + ":"
-    _glob_namespace = _glob_namespace.encode(ENCODING_ASCII)
     if len(_glob_namespace) + SHA1_LENGTH > MAX_KEY_LENGTH:
         raise ValueError("Namespace is too long.")
 
@@ -390,7 +389,7 @@ def _prep_key(key, namespace):
     if namespace:
         key = "%s:%s" % (namespace, key)
     if not isinstance(key, bytes):
-        key = key.encode(ENCODING_ASCII, errors='xmlcharrefreplace')
+        key = key.encode(ENCODING_ASCII, errors='xmlcharrefreplace').decode(ENCODING_ASCII)
     return _glob_namespace + key
 
 
