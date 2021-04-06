@@ -4,7 +4,7 @@ services:
   test:
     build:
       context: ..
-      dockerfile: ./test/Dockerfile.py3
+      dockerfile: Dockerfile.test
     volumes:
       - ../:/code
     depends_on:

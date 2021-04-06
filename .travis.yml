@@ -6,26 +6,15 @@ language: python
 services:
   - docker
 
-
 install:
-  - docker-compose -f test/docker-compose.py2.yml -p brainzutils_py2_test build
-  - docker-compose -f test/docker-compose.db.yml -p brainzutils_py3_test build
+  - docker-compose -f test/docker-compose.test.yml -p brainzutils_py3_test build
 
 script:
-  - docker-compose -f test/docker-compose.py2.yml -p brainzutils_py2_test up -d redis
-  - docker-compose -f test/docker-compose.py2.yml -p brainzutils_py2_test run --rm test
-    dockerize
-    -wait tcp://redis:6379 -timeout 10s
-    py.test -m "not database"
-  - docker-compose -f test/docker-compose.py2.yml -p brainzutils_py2_test down
-
-  - sleep 2
-
-  - docker-compose -f test/docker-compose.db.yml -p brainzutils_py3_test up -d redis
-  - travis_wait docker-compose -f test/docker-compose.db.yml -p brainzutils_py3_test run --rm test
+  - docker-compose -f test/docker-compose.test.yml -p brainzutils_test up -d redis
+  - travis_wait docker-compose -f test/docker-compose.test.yml -p brainzutils_test run --rm test
       dockerize
       -wait tcp://redis:6379 -timeout 10s
       dockerize
       -wait tcp://musicbrainz_db:5432 -timeout 600s
       py.test
-  - docker-compose -f test/docker-compose.db.yml -p brainzutils_py3_test down
+  - docker-compose -f test/docker-compose.test.yml -p brainzutils_test down
