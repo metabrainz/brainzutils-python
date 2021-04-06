@@ -2,14 +2,13 @@
 """
 This module serves as an interface for Redis.
 
-Module needs to be initialized before use! See init() function.
+The module needs to be initialized before use! See :meth:`init()`.
 
 It basically is a wrapper for redis package with additional
 functionality and tweaks specific to serve our needs.
 
 There's also support for namespacing, which simplifies management of different
-versions of data saved in the cache. You can invalidate whole namespace using
-invalidate_namespace() function. See its description for more info.
+versions of data saved in the cache.
 
 More information about Redis can be found at http://redis.io/.
 """
@@ -38,7 +37,7 @@ CONTENT_ENCODING = "utf-8"
 ENCODING_ASCII = "ascii"
 
 
-def init(host="localhost", port=6379, db_number=0, namespace="", ns_versions_loc=None):
+def init(host="localhost", port=6379, db_number=0, namespace=""):
     """Initializes Redis client. Needs to be called before use.
 
     Namespace versions are stored in a local directory.
@@ -48,10 +47,6 @@ def init(host="localhost", port=6379, db_number=0, namespace="", ns_versions_loc
         port (int): Redis port.
         db_number (int): Redis database number.
         namespace (str): Global namespace that will be prepended to all keys.
-        ns_versions_loc (str): Path to directory where namespace versions will
-            be stored. If not specified, creates a temporary directory that uses
-            global namespace as a reference to make sure availability to multiple
-            processes. See NS_VERSIONS_LOC_DIR value in this module and implementation.
     """
     global _r, _glob_namespace, _ns_versions_loc
     _r = redis.StrictRedis(
@@ -64,21 +59,6 @@ def init(host="localhost", port=6379, db_number=0, namespace="", ns_versions_loc
     _glob_namespace = _glob_namespace.encode(ENCODING_ASCII)
     if len(_glob_namespace) + SHA1_LENGTH > MAX_KEY_LENGTH:
         raise ValueError("Namespace is too long.")
-
-    if ns_versions_loc:
-        if not os.path.isdir(ns_versions_loc):
-            raise ValueError("Can't find directory for storing namespace versions! "
-                             "Please check `version_location` argument.")
-    else:
-        ns_versions_loc = os.path.join(tempfile.gettempdir(), NS_VERSIONS_LOC_DIR)
-    _ns_versions_loc = os.path.join(ns_versions_loc, namespace)
-    if not os.path.exists(_ns_versions_loc):
-        os.makedirs(_ns_versions_loc)
-
-
-def delete_ns_versions_dir():
-    if os.path.isdir(_ns_versions_loc):
-        shutil.rmtree(_ns_versions_loc)
 
 
 def init_required(f):
@@ -93,13 +73,13 @@ def init_required(f):
 
 # pylint: disable=redefined-builtin
 @init_required
-def set(key, val, time=0, namespace=None, encode=True):
+def set(key, val, expirein, namespace=None, encode=True):
     """Set a key to a given value.
 
     Args:
         key (str): Key of the item.
         val: Item's value.
-        time (int): The time after which this value should expire, in seconds.
+        expirein (int): The time after which this value should expire, in seconds.
         namespace (str): Optional namespace in which key needs to be defined.
         encode: True if the value should be encoded with msgpack, False otherwise
 
@@ -109,7 +89,7 @@ def set(key, val, time=0, namespace=None, encode=True):
     # Note that both key and value are encoded before insertion.
     return set_many(
         mapping={key: val},
-        time=time,
+        expirein=expirein,
         namespace=namespace,
         encode=encode
     )
@@ -147,19 +127,19 @@ def delete(key, namespace=None):
 
 
 @init_required
-def expire(key, time, namespace=None):
+def expire(key, expirein, namespace=None):
     """Set the expiration time for an item
 
     Args:
         key: Key of the item that needs to be deleted.
-        time: the number of seconds after which the item should expire
+        expirein: the number of seconds after which the item should expire
         namespace: Optional namespace in which key was defined.
 
     Returns:
           True if the timeout was set, False otherwise
     """
     # Note that key is encoded before deletion request.
-    return _r.pexpire(_prep_key(key, namespace), time * 1000)
+    return _r.pexpire(_prep_key(key, namespace), expirein * 1000)
 
 
 @init_required
@@ -179,12 +159,12 @@ def expireat(key, timeat, namespace=None):
 
 
 @init_required
-def set_many(mapping, time=None, namespace=None, encode=True):
+def set_many(mapping, expirein, namespace=None, encode=True):
     """Set multiple keys doing just one query.
 
     Args:
         mapping (dict): A dict of key/value pairs to set.
-        time (int): The time after which this value should expire, in seconds.
+        expirein (int): The time after which this value should expire, in seconds.
         namespace (str): Namespace for the keys.
         encode: True if the values should be encoded with msgpack, False otherwise
 
@@ -193,9 +173,9 @@ def set_many(mapping, time=None, namespace=None, encode=True):
     """
     # TODO: Fix return value
     result = _r.mset(_prep_dict(mapping, namespace, encode))
-    if time:
+    if expirein:
         for key in _prep_keys_list(list(mapping.keys()), namespace):
-            _r.pexpire(key, time * 1000)
+            _r.pexpire(key, expirein * 1000)
 
     return result
 
@@ -243,6 +223,87 @@ def increment(key, namespace=None):
 
 
 @init_required
+def hincrby(name, key, amount, namespace=None):
+    """Increment a hashes key by a given amount using HINCRBY
+
+    Args:
+        name: Name of the hash
+        key: Key of the item in the hash to increment
+        amount: the number to increment the key by
+        namespace: Namespace for the name
+
+    Returns:
+        An integer equal to the value after increment
+    """
+    return _r.hincrby(_prep_keys_list([name], namespace)[0], key, amount)
+
+
+@init_required
+def hgetall(name, namespace=None):
+    """Get all keys and values for a hash using HGETALL
+
+    Args:
+        name: Name of the hash
+        namespace: Namespace for the name
+
+    Returns:
+        A dictionary of {key: value} items for all keys in the hash
+    """
+    return _r.hgetall(_prep_keys_list([name], namespace)[0])
+
+
+@init_required
+def hkeys(name, namespace=None):
+    """Get all keys for a hash using HKEYS
+
+    Args:
+        name: Name of the hash
+        namespace: Namespace for the name
+
+    Returns:
+        A list of [key] values for all keys in the hash
+    """
+    return _r.hkeys(_prep_keys_list([name], namespace)[0])
+
+
+@init_required
+def hset(name, key, value, namespace=None):
+    """Delete the specified keys from a hash using HDEL.
+    Note that the ``keys`` argument must be a list. This differs from the underlying redis
+    library's version of this command, which takes varargs.
+
+    Args:
+        name: Name of the hash
+        key: Key of the item in the hash to set
+        value: value to set the item to
+        namespace: Namespace for the name
+
+    Returns:
+        the number of keys deleted from the hash
+    """
+    return _r.hset(_prep_keys_list([name], namespace)[0], key, value)
+
+
+@init_required
+def hdel(name, keys, namespace=None):
+    """Delete the specified keys from a hash using HDEL.
+    Note that the ``keys`` argument must be a list. This differs from the underlying redis
+    library's version of this command, which takes varargs.
+
+    Args:
+        name: Name of the hash
+        keys: a list of the keys to delete from the has
+        namespace: Namespace for the name
+
+    Returns:
+        the number of keys deleted from the hash
+    """
+    if not isinstance(keys, list):
+        keys = [keys]
+    return _r.hdel(_prep_keys_list([name], namespace)[0], *keys)
+
+
+@init_required
 def flush_all():
     _r.flushdb()
 
@@ -273,22 +334,17 @@ def gen_key(key, *attributes):
 
 def _prep_dict(dictionary, namespace=None, encode=True):
     """Wrapper for _prep_key and _encode_val functions that works with dictionaries."""
-    if namespace:
-        namespace_and_version = _append_namespace_version(namespace)
-    else:
-        namespace_and_version = None
-    return {_prep_key(key, namespace_and_version): _encode_val(value) if encode else value
+    return {_prep_key(key, namespace): _encode_val(value) if encode else value
             for key, value in dictionary.items()}
 
 
-def _prep_key(key, namespace_and_version=None):
+def _prep_key(key, namespace):
     """Prepares a key for use with Redis."""
     # TODO(roman): Check if this is actually required for Redis.
-    if namespace_and_version:
-        key = "%s:%s" % (namespace_and_version, key)
+    if namespace:
+        key = "%s:%s" % (namespace, key)
     if not isinstance(key, bytes):
         key = key.encode(ENCODING_ASCII, errors='xmlcharrefreplace')
-    key = hashlib.sha1(key).hexdigest().encode(ENCODING_ASCII)
     return _glob_namespace + key
 
 
@@ -298,19 +354,7 @@ def _prep_keys_list(l, namespace=None):
     Returns:
         Prepared keys in the same order.
     """
-    if namespace:
-        namespace_and_version = _append_namespace_version(namespace)
-    else:
-        namespace_and_version = None
-    return [_prep_key(k, namespace_and_version) for k in l]
-
-
-@init_required
-def _append_namespace_version(namespace):
-    version = get_namespace_version(namespace)
-    if version is None:  # namespace isn't initialized
-        version = invalidate_namespace(namespace)
-    return "%s:%s" % (namespace, version)
+    return [_prep_key(k, namespace) for k in l]
 
 
 def _encode_val(value):
@@ -322,67 +366,17 @@ def _encode_val(value):
 def _decode_val(value):
     if value is None:
         return value
-    return msgpack.unpackb(value, encoding=CONTENT_ENCODING, ext_hook=_msgpack_ext_hook)
+    return msgpack.unpackb(value, raw=False, ext_hook=_msgpack_ext_hook)
 
 
 ############
 # NAMESPACES
 ############
 
-
-@init_required
-def invalidate_namespace(namespace):
-    """Invalidates specified namespace.
-
-    Invalidation is done by incrementing version of the namespace
-
-    Args:
-        namespace: Namespace that needs to be invalidated.
-
-    Returns:
-        New version number.
-    """
-    validate_namespace(namespace)
-    current_version = get_namespace_version(namespace)
-    if current_version is None:  # namespace isn't initialized
-        new_version = 1
-    else:
-        new_version = current_version + 1
-    with locks.locked_open(_get_ns_version_file_path(namespace), mode=locks.M_WRITE) as f:
-        f.write(str(new_version).encode(ENCODING_ASCII))
-    return new_version
-
-
-@init_required
-def get_namespace_version(namespace):
-    """Get version of a namespace.
-
-    Args:
-        namespace (str): Namespace itself.
-
-    Returns:
-        Namespace version as an integer if it exists, otherwise None.
-    """
-    validate_namespace(namespace)
-    path = _get_ns_version_file_path(namespace)
-    if not os.path.isfile(path):
-        return None
-    with locks.locked_open(path) as f:
-        try:
-            cont = f.read()
-            return int(cont.decode(ENCODING_ASCII))
-        except ValueError as e:
-            raise RuntimeError("Failed to get version of namespace. Error: %s" % e)
-
-
 def validate_namespace(namespace):
     """Checks that namespace value is supported."""
     if not NS_REGEX.match(namespace):
         raise ValueError("Invalid namespace. Must match regex /[a-zA-Z0-9_-]+$/.")
-
-
-def _get_ns_version_file_path(namespace):
-    return os.path.join(_ns_versions_loc, namespace)
 
 
 ######################

@@ -29,9 +29,6 @@ class RatelimitTestCase(unittest.TestCase):
         # Making sure there are no items in cache before we run each test
         cache.flush_all()
 
-    def tearDown(self):
-        cache.delete_ns_versions_dir()
-
     def test_create_app(self):
         app = flask.CustomFlask(__name__)
         self.assertIsNotNone(app)

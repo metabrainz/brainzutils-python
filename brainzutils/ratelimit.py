@@ -28,26 +28,34 @@ ratelimit_cache_namespace = "rate_limit"
 # external functions
 ratelimit_user_validation = None
 
-'''
+
+class RateLimit(object):
+    """
+        This Ratelimit object is created when a request is started (via the ratelimit decorator)
+        and is stored in the flask's request context so that the results can be injected into
+        the response headers before the request is over.
+
     HOW TO USE THIS MODULE:
 
     This module defines a set of function that allows your to add ratelimiting to your
     flask app. There are three values to know and set:
 
-       per_token_limit - The number of requests that are allowed for a caller who is 
-            setting an 
+       per_token_limit - The number of requests that are allowed for a caller who is
+            setting an::
+
                Authorization: Token <auth token>
+
             header. This limit can be different than the limit for rate limiting on an IP basis.
 
        per_ip_limit - The number of requests that are allowed for a caller who is not
             providing an Authorization header and is rate limited on their IP address.
 
        ratelimit_window - The window, in number of seconds, how long long the limits
-            above are applied for. 
+            above are applied for.
 
     To add ratelimit capabilities to your flask app, follow these steps:
 
-    1. During app creation add these lines:
+    1. During app creation add these lines::
 
           from brainzutils.ratelimit import ratelimit, inject_x_rate_headers
 
@@ -55,7 +63,7 @@ ratelimit_user_validation = None
           def after_request_callbacks(response):
               return inject_x_rate_headers(response)
 
-    2. Then apply the ratelimit() decorator to any function that should be rate limited:
+    2. Then apply the ratelimit() decorator to any function that should be rate limited::
 
          @app.route('/')
          @ratelimit()
@@ -64,14 +72,14 @@ ratelimit_user_validation = None
 
     3. The default rate limits are defined above (see comment Defaults). If you want to set different
        rate limits, which can be also done dynamically without restarting the application, call
-       the set_rate_limits function:
+       the set_rate_limits function::
 
           from brainzutils.ratelimit import set_rate_limits
 
           set_rate_limits(per_token_limit, per_ip_limit, rate_limit_window)
 
     4. To enable token based rate limiting, callers need to pass the Authorization header (see above)
-       and the application needs to provide a user validation function:
+       and the application needs to provide a user validation function::
 
           from brainzutils.ratelimit import set_user_validation_function
 
@@ -82,15 +90,7 @@ ratelimit_user_validation = None
 
          set_user_validation_function(validate_user)
 
-'''
-
-
-class RateLimit(object):
-    '''
-        This Ratelimit object is created when a request is started (via the ratelimit decorator)
-        and is stored in the flask's request context so that the results can be injected into
-        the response headers before the request is over.
-    '''
+    """
 
     # From the docs:
     # We also give the key extra expiration_window seconds time to expire in cache so that badly
@@ -125,9 +125,9 @@ def set_rate_limits(per_token, per_ip, window):
     '''
         Update the current rate limits. This will affect all new rate limiting windows and existing windows will not be changed.
     '''
-    cache.set(ratelimit_per_token_key, per_token, namespace=ratelimit_cache_namespace)
-    cache.set(ratelimit_per_ip_key, per_ip, namespace=ratelimit_cache_namespace)
-    cache.set(ratelimit_window_key, window, namespace=ratelimit_cache_namespace)
+    cache.set(ratelimit_per_token_key, per_token, expirein=0, namespace=ratelimit_cache_namespace)
+    cache.set(ratelimit_per_ip_key, per_ip, expirein=0, namespace=ratelimit_cache_namespace)
+    cache.set(ratelimit_window_key, window, expirein=0, namespace=ratelimit_cache_namespace)
 
 
 def inject_x_rate_headers(response):
@@ -173,19 +173,19 @@ def check_limit_freshness():
 
     value = int(cache.get(ratelimit_per_token_key, namespace=ratelimit_cache_namespace) or '0')
     if not value:
-        cache.set(ratelimit_per_token_key, ratelimit_per_token_default, namespace=ratelimit_cache_namespace)
+        cache.set(ratelimit_per_token_key, ratelimit_per_token_default, expirein=0, namespace=ratelimit_cache_namespace)
         value = ratelimit_per_token_default
     setattr(g, '_' + ratelimit_per_token_key, value)
 
     value = int(cache.get(ratelimit_per_ip_key, namespace=ratelimit_cache_namespace) or '0')
     if not value:
-        cache.set(ratelimit_per_ip_key, ratelimit_per_ip_default, namespace=ratelimit_cache_namespace)
+        cache.set(ratelimit_per_ip_key, ratelimit_per_ip_default, expirein=0, namespace=ratelimit_cache_namespace)
         value = ratelimit_per_ip_default
     setattr(g, '_' + ratelimit_per_ip_key, value)
 
     value = int(cache.get(ratelimit_window_key, namespace=ratelimit_cache_namespace) or '0')
     if not value:
-        cache.set(ratelimit_window_key, ratelimit_window_default, namespace=ratelimit_cache_namespace)
+        cache.set(ratelimit_window_key, ratelimit_window_default, expirein=0, namespace=ratelimit_cache_namespace)
         value = ratelimit_window_default
     setattr(g, '_' + ratelimit_window_key, value)
 

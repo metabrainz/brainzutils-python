@@ -90,9 +90,18 @@ def get_entities_by_gids(query, entity_type, mbids, unknown_entities_for_missing
         redirect_model = REDIRECT_MODELS[entity_type]
         query = query.add_entity(redirect_model).join(redirect_model)
         results = query.filter(redirect_model.gid.in_(remaining_gids))
-        for entity, redirect_obj in results:
-            entities[redirect_obj.gid] = entity
-        remaining_gids = list(set(remaining_gids) - {redirect_obj.gid for entity, redirect_obj in results})
+
+        redirect_gids = set()
+        if entity_type in META_MODELS:
+            for entity, _, redirect_obj in results:
+                entities[redirect_obj.gid] = entity
+                redirect_gids.add(redirect_obj.gid)
+        else:
+            for entity, redirect_obj in results:
+                entities[redirect_obj.gid] = entity
+                redirect_gids.add(redirect_obj.gid)
+
+        remaining_gids = list(set(remaining_gids) - redirect_gids)
 
     if remaining_gids:
         if unknown_entities_for_missing:
