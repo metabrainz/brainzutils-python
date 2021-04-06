@@ -8,8 +8,7 @@ It basically is a wrapper for redis package with additional
 functionality and tweaks specific to serve our needs.
 
 There's also support for namespacing, which simplifies management of different
-versions of data saved in the cache. You can invalidate whole namespace using
-invalidate_namespace() function. See its description for more info.
+versions of data saved in the cache.
 
 More information about Redis can be found at http://redis.io/.
 """
@@ -38,7 +37,7 @@ CONTENT_ENCODING = "utf-8"
 ENCODING_ASCII = "ascii"
 
 
-def init(host="localhost", port=6379, db_number=0, namespace="", ns_versions_loc=None):
+def init(host="localhost", port=6379, db_number=0, namespace=""):
     """Initializes Redis client. Needs to be called before use.
 
     Namespace versions are stored in a local directory.
@@ -48,10 +47,6 @@ def init(host="localhost", port=6379, db_number=0, namespace="", ns_versions_loc
         port (int): Redis port.
         db_number (int): Redis database number.
         namespace (str): Global namespace that will be prepended to all keys.
-        ns_versions_loc (str): Path to directory where namespace versions will
-            be stored. If not specified, creates a temporary directory that uses
-            global namespace as a reference to make sure availability to multiple
-            processes. See NS_VERSIONS_LOC_DIR value in this module and implementation.
     """
     global _r, _glob_namespace, _ns_versions_loc
     _r = redis.StrictRedis(
@@ -64,21 +59,6 @@ def init(host="localhost", port=6379, db_number=0, namespace="", ns_versions_loc
     _glob_namespace = _glob_namespace.encode(ENCODING_ASCII)
     if len(_glob_namespace) + SHA1_LENGTH > MAX_KEY_LENGTH:
         raise ValueError("Namespace is too long.")
-
-    if ns_versions_loc:
-        if not os.path.isdir(ns_versions_loc):
-            raise ValueError("Can't find directory for storing namespace versions! "
-                             "Please check `version_location` argument.")
-    else:
-        ns_versions_loc = os.path.join(tempfile.gettempdir(), NS_VERSIONS_LOC_DIR)
-    _ns_versions_loc = os.path.join(ns_versions_loc, namespace)
-    if not os.path.exists(_ns_versions_loc):
-        os.makedirs(_ns_versions_loc)
-
-
-def delete_ns_versions_dir():
-    if os.path.isdir(_ns_versions_loc):
-        shutil.rmtree(_ns_versions_loc)
 
 
 def init_required(f):
@@ -354,19 +334,15 @@ def gen_key(key, *attributes):
 
 def _prep_dict(dictionary, namespace=None, encode=True):
     """Wrapper for _prep_key and _encode_val functions that works with dictionaries."""
-    if namespace:
-        namespace_and_version = _append_namespace_version(namespace)
-    else:
-        namespace_and_version = None
-    return {_prep_key(key, namespace_and_version): _encode_val(value) if encode else value
+    return {_prep_key(key, namespace): _encode_val(value) if encode else value
             for key, value in dictionary.items()}
 
 
-def _prep_key(key, namespace_and_version=None):
+def _prep_key(key, namespace):
     """Prepares a key for use with Redis."""
     # TODO(roman): Check if this is actually required for Redis.
-    if namespace_and_version:
-        key = "%s:%s" % (namespace_and_version, key)
+    if namespace:
+        key = "%s:%s" % (namespace, key)
     if not isinstance(key, bytes):
         key = key.encode(ENCODING_ASCII, errors='xmlcharrefreplace')
     return _glob_namespace + key
@@ -378,19 +354,7 @@ def _prep_keys_list(l, namespace=None):
     Returns:
         Prepared keys in the same order.
     """
-    if namespace:
-        namespace_and_version = _append_namespace_version(namespace)
-    else:
-        namespace_and_version = None
-    return [_prep_key(k, namespace_and_version) for k in l]
-
-
-@init_required
-def _append_namespace_version(namespace):
-    version = get_namespace_version(namespace)
-    if version is None:  # namespace isn't initialized
-        version = invalidate_namespace(namespace)
-    return "%s:%s" % (namespace, version)
+    return [_prep_key(k, namespace) for k in l]
 
 
 def _encode_val(value):
@@ -409,60 +373,10 @@ def _decode_val(value):
 # NAMESPACES
 ############
 
-
-@init_required
-def invalidate_namespace(namespace):
-    """Invalidates specified namespace.
-
-    Invalidation is done by incrementing version of the namespace
-
-    Args:
-        namespace: Namespace that needs to be invalidated.
-
-    Returns:
-        New version number.
-    """
-    validate_namespace(namespace)
-    current_version = get_namespace_version(namespace)
-    if current_version is None:  # namespace isn't initialized
-        new_version = 1
-    else:
-        new_version = current_version + 1
-    with locks.locked_open(_get_ns_version_file_path(namespace), mode=locks.M_WRITE) as f:
-        f.write(str(new_version).encode(ENCODING_ASCII))
-    return new_version
-
-
-@init_required
-def get_namespace_version(namespace):
-    """Get version of a namespace.
-
-    Args:
-        namespace (str): Namespace itself.
-
-    Returns:
-        Namespace version as an integer if it exists, otherwise None.
-    """
-    validate_namespace(namespace)
-    path = _get_ns_version_file_path(namespace)
-    if not os.path.isfile(path):
-        return None
-    with locks.locked_open(path) as f:
-        try:
-            cont = f.read()
-            return int(cont.decode(ENCODING_ASCII))
-        except ValueError as e:
-            raise RuntimeError("Failed to get version of namespace. Error: %s" % e)
-
-
 def validate_namespace(namespace):
     """Checks that namespace value is supported."""
     if not NS_REGEX.match(namespace):
         raise ValueError("Invalid namespace. Must match regex /[a-zA-Z0-9_-]+$/.")
-
-
-def _get_ns_version_file_path(namespace):
-    return os.path.join(_ns_versions_loc, namespace)
 
 
 ######################
