@@ -27,9 +27,6 @@ class CacheTestCase(unittest.TestCase):
         # Making sure there are no items in cache before we run each test
         cache.flush_all()
 
-    def tearDown(self):
-        cache.delete_ns_versions_dir()
-
     def test_no_init(self):
         cache._r = None
         with self.assertRaises(RuntimeError):
@@ -117,29 +114,6 @@ class CacheTestCase(unittest.TestCase):
         }
         self.assertTrue(cache.set_many(mapping, expirein=0))
         self.assertEqual(cache.get_many(list(mapping.keys())), mapping)
-
-    def test_invalidate_namespace(self):
-        namespace = "test"
-        self.assertEqual(cache.invalidate_namespace(namespace), 1)
-        self.assertEqual(cache.invalidate_namespace(namespace), 2)
-
-        with self.assertRaises(ValueError):
-            cache.invalidate_namespace(u"Тест")
-        with self.assertRaises(ValueError):
-            cache.invalidate_namespace("Hello!")
-
-    def test_namespace_version(self):
-        name = "test"
-        self.assertIsNone(cache.get_namespace_version(name))
-        self.assertEqual(cache.invalidate_namespace(name), 1)
-        self.assertEqual(cache.get_namespace_version(name), 1)
-        self.assertEqual(cache.invalidate_namespace(name), 2)
-        self.assertEqual(cache.get_namespace_version(name), 2)
-
-        with self.assertRaises(ValueError):
-            cache.get_namespace_version(u"Тест")
-        with self.assertRaises(ValueError):
-            cache.get_namespace_version("Hello!")
 
     def test_increment(self):
         cache.set("a", 1, encode=False, expirein=0)
