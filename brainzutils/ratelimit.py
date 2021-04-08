@@ -4,7 +4,6 @@
 #
 # http://flask.pocoo.org/snippets/70/
 #
-from __future__ import absolute_import
 import time
 from functools import update_wrapper
 from flask import request, g
