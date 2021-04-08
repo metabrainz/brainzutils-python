@@ -384,16 +384,15 @@ def validate_namespace(namespace):
 ######################
 
 TYPE_DATETIME_CODE = 1
-DATETIME_FORMAT = "%Y%m%dT%H:%M:%S.%f"
 
 
 def _msgpack_default(obj):
     if isinstance(obj, datetime.datetime):
-        return msgpack.ExtType(TYPE_DATETIME_CODE, obj.strftime(DATETIME_FORMAT).encode(CONTENT_ENCODING))
+        return msgpack.ExtType(TYPE_DATETIME_CODE, obj.isoformat().encode(CONTENT_ENCODING))
     raise TypeError("Unknown type: %r" % (obj,))
 
 
 def _msgpack_ext_hook(code, data):
     if code == TYPE_DATETIME_CODE:
-        return datetime.datetime.strptime(data.decode(CONTENT_ENCODING), DATETIME_FORMAT)
+        return datetime.datetime.fromisoformat(data.decode(CONTENT_ENCODING))
     return msgpack.ExtType(code, data)
