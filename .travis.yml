@@ -16,5 +16,5 @@ script:
       -wait tcp://redis:6379 -timeout 10s
       dockerize
       -wait tcp://musicbrainz_db:5432 -timeout 600s
-      py.test
+      pytest
   - docker-compose -f test/docker-compose.test.yml -p brainzutils_test down
