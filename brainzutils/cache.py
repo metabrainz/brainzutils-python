@@ -13,25 +13,16 @@ versions of data saved in the cache.
 More information about Redis can be found at http://redis.io/.
 """
 from functools import wraps
-import shutil
-import hashlib
-import tempfile
 import datetime
-import os.path
 import re
 import redis
 import msgpack
-from brainzutils import locks
 
 
-_r = None  # type: redis.StrictRedis
-_glob_namespace = None  # type: str
-_ns_versions_loc = None  # type: str
+_r: redis.StrictRedis = None
+_glob_namespace: str = None
 
 
-SHA1_LENGTH = 40
-MAX_KEY_LENGTH = 250
-NS_VERSIONS_LOC_DIR = "namespace_versions"
 NS_REGEX = re.compile('[a-zA-Z0-9_-]+$')
 CONTENT_ENCODING = "utf-8"
 ENCODING_ASCII = "ascii"
@@ -48,7 +39,7 @@ def init(host="localhost", port=6379, db_number=0, namespace=""):
         db_number (int): Redis database number.
         namespace (str): Global namespace that will be prepended to all keys.
     """
-    global _r, _glob_namespace, _ns_versions_loc
+    global _r, _glob_namespace
     _r = redis.StrictRedis(
         host=host,
         port=port,
@@ -56,8 +47,6 @@ def init(host="localhost", port=6379, db_number=0, namespace=""):
     )
 
     _glob_namespace = namespace + ":"
-    if len(_glob_namespace) + SHA1_LENGTH > MAX_KEY_LENGTH:
-        raise ValueError("Namespace is too long.")
 
 
 def init_required(f):
@@ -339,7 +328,6 @@ def _prep_dict(dictionary, namespace=None, encode=True):
 
 def _prep_key(key, namespace):
     """Prepares a key for use with Redis."""
-    # TODO(roman): Check if this is actually required for Redis.
     if namespace:
         key = "%s:%s" % (namespace, key)
     if not isinstance(key, bytes):
