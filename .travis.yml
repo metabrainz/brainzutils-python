@@ -7,9 +7,9 @@ services:
   - docker
 
 install:
-  - docker-compose -f test/docker-compose.test.yml -p brainzutils_test build
+  - docker-compose -f test/docker-compose.yml -p brainzutils_test build
 
 script:
-  - docker-compose -f test/docker-compose.test.yml -p brainzutils_test up -d redis musicbrainz_db
-  - docker-compose -f test/docker-compose.test.yml -p brainzutils_test run --rm test
-  - docker-compose -f test/docker-compose.test.yml -p brainzutils_test down
+  - docker-compose -f test/docker-compose.yml -p brainzutils_test up -d redis musicbrainz_db
+  - docker-compose -f test/docker-compose.yml -p brainzutils_test run --rm test
+  - docker-compose -f test/docker-compose.yml -p brainzutils_test down
