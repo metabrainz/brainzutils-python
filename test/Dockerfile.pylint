@@ -1,4 +1,4 @@
-FROM metabrainz/python:3.5
+FROM metabrainz/python:3.7-20210115
 
 RUN mkdir /data
 RUN mkdir /code
