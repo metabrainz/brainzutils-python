@@ -192,7 +192,7 @@ def stats_count(metric_name):
     for k, v in counters.items():
         k = str(k)
         if k == STATS_COUNT_DATE_KEY:
-            ret[k] = str(v)
+            ret[k] = v.decode('utf-8')
         else:
             ret[k] = int(v)
     ret["metric"] = metric_name

@@ -1,5 +1,4 @@
-import unittest
-import mock
+from unittest import mock, TestCase
 from freezegun import freeze_time
 from redis import ResponseError
 
@@ -7,7 +6,7 @@ from brainzutils import cache
 from brainzutils import metrics
 
 
-class MetricsTestCase(unittest.TestCase):
+class MetricsTestCase(TestCase):
 
     def setUp(self):
         cache.init('redis')
@@ -61,9 +60,9 @@ class MetricsTestCase(unittest.TestCase):
     @mock.patch('brainzutils.metrics.cache.hgetall')
     def test_stats(self, hgetall):
         metrics.init('listenbrainz.org')
-        hgetall.return_value = {b'valueone': b'1',
-                                b'valuetwo': b'20',
-                                b'somethingelse': b'8'}
+        hgetall.return_value = {'valueone': b'1',
+                                'valuetwo': b'20',
+                                'somethingelse': b'8'}
 
         stats = metrics.stats()
         hgetall.assert_called_with('listenbrainz.org', namespace='metrics')
@@ -105,9 +104,9 @@ class MetricsTestCase(unittest.TestCase):
     @mock.patch('brainzutils.metrics.cache.hgetall')
     def test_stats_count(self, hgetall):
         metrics.init('listenbrainz.org')
-        hgetall.return_value = {b'valueone': b'1',
-                                b'valuetwo': b'20',
-                                b'date': b'2021-02-12T13:02:18'}
+        hgetall.return_value = {'valueone': b'1',
+                                'valuetwo': b'20',
+                                'date': b'2021-02-12T13:02:18'}
 
         stats = metrics.stats_count('dataimport')
         hgetall.assert_called_with('listenbrainz.org:dataimport', namespace='metrics')
