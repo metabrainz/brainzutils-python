@@ -1,7 +1,7 @@
 os: linux
 dist: focal
 
-language: python
+language: minimal
 
 services:
   - docker
