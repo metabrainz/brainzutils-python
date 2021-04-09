@@ -11,10 +11,11 @@ install:
 
 script:
   - docker-compose -f test/docker-compose.test.yml -p brainzutils_test up -d redis
+  - docker-compose -f test/docker-compose.test.yml -p brainzutils_test up -d musicbrainz_db
   - travis_wait docker-compose -f test/docker-compose.test.yml -p brainzutils_test run --rm test
       dockerize
       -wait tcp://redis:6379 -timeout 10s
       dockerize
-      -wait tcp://musicbrainz_db:5432 -timeout 600s
+      -wait tcp://musicbrainz_db:5432 -timeout 10s
       pytest
   - docker-compose -f test/docker-compose.test.yml -p brainzutils_test down
