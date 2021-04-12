@@ -1,0 +1,27 @@
+name: Docker Image CI
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Build the Docker image
+      run: docker-compose -f test/docker-compose.yml -p brainzutils_test build
+    
+    - name: Bring up dependencies
+      run: docker-compose -f test/docker-compose.yml -p brainzutils_test up -d redis musicbrainz_db
+    
+    - name: Run tests
+      run: docker-compose -f test/docker-compose.yml -p brainzutils_test run --rm test
+    
+    - name: Bring down containers
+      run: docker-compose -f test/docker-compose.yml -p brainzutils_test down
