@@ -47,12 +47,14 @@ class TestReleaseGroup:
 
     def test_fetch_get_release_groups_for_artist(self, engine):
         release_groups = mb_release_group.get_release_groups_for_artist(
-            artist_id='f59c5520-5f46-4d2c-b2c4-822eabf53419',
+            artist_id='074e3847-f67f-49f9-81f1-8c8cea147e8e',
             release_types=['Single', 'EP'],
         )
-        assert release_groups[0] == [{
-            'id': '277ddbc8-d6fa-47fa-b652-dce7a325202f',
-            'title': 'A Thousand Suns: Puerta de Alcalá',
-            'first-release-year': 2010
-        }]
+        assert release_groups[0] == [
+            {
+                'id': '07f5e633-8846-3fe7-8e68-472b54dba159',
+                'title': 'This Is What the Edge of Your Seat Was Made For',
+                'first-release-year': 2004
+            }
+        ]
         assert release_groups[1] == 1
