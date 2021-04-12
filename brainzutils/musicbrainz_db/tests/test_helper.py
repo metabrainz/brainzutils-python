@@ -1,6 +1,6 @@
 from collections import defaultdict
 from unittest import TestCase
-from mock import MagicMock
+from unittest.mock import MagicMock
 from mbdata import models
 from brainzutils.musicbrainz_db.serialize import serialize_relationships
 from brainzutils.musicbrainz_db.helpers import get_relationship_info

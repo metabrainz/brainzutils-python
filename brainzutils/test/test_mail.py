@@ -1,6 +1,6 @@
 import unittest
 import smtplib
-import mock as mock
+from unittest import mock
 
 from email.mime.application import MIMEApplication
 from email.mime.multipart import MIMEMultipart
