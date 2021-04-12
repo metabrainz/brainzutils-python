@@ -1,6 +1,6 @@
-FROM metabrainz/python:2.7
+FROM metabrainz/python:3.7-20210115
 
-ENV DOCKERIZE_VERSION v0.2.0
+ENV DOCKERIZE_VERSION v0.6.1
 RUN wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSION/dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz \
     && tar -C /usr/local/bin -xzvf dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
 
@@ -23,5 +23,5 @@ COPY . /code/
 ENV REDIS_HOST "redis"
 
 CMD dockerize -wait tcp://redis:6379 -timeout 10s \
-    py.test --junitxml=/data/test_report.xml \
-            --cov-report xml:/data/coverage.xml
+    dockerize -wait tcp://musicbrainz_db:5432 -timeout 10s \
+    pytest

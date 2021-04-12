@@ -9,6 +9,7 @@ BrainzUtils is a set of python tools used in projects by the MetaBrainz foundati
 
    cache
    flask
+   metrics
    mail
    musicbrainz_db/index
    ratelimit

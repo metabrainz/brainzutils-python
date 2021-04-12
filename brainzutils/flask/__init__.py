@@ -12,14 +12,14 @@ class CustomFlask(Flask):
                  *args, **kwargs):
         """Create an instance of Flask app.
 
-        See original documentation for Flask.
+            See original documentation for Flask.
 
-        Args:
-            import_name (str): Name of the application package.
-            config_file (str): Path to a config file that needs to be loaded.
-                Should be in a form of Python module.
-            debug (bool): Override debug value.
-            use_flask_uuid (bool): Turn on Flask-UUID extension if set to True.
+            Arguments:
+                import_name (str): Name of the application package.
+                config_file (str): Path to a config file that needs to be loaded.
+                    Should be in a form of Python module.
+                debug (bool): Override debug value.
+                use_flask_uuid (bool): Turn on Flask-UUID extension if set to True.
         """
         super(CustomFlask, self).__init__(import_name, *args, **kwargs)
         if config_file:
@@ -43,7 +43,6 @@ class CustomFlask(Flask):
 
     def init_loggers(self,
                      file_config=None,
-                     email_config=None,
                      sentry_config=None):
         """This method attaches loggers to the Flask app.
 
@@ -63,30 +62,15 @@ class CustomFlask(Flask):
                     'backup_count': 100,      # optional
                 }
 
-            email_config (dict): Dictionary with the following structure::
-
-                {
-                    'mail_server': 'localhost',
-                    'mail_port': 25,
-                    'mail_from_host': 'example.org',
-                    'log_email_recipients': [
-                        'user1@example.org',
-                        'user2@example.org',
-                    ],
-                    'log_email_topic': 'Error occurred',
-                    'level': 'ERROR',  # optional
-                }
-
             sentry_config (dict): Dictionary with the following structure::
 
                 {
                     'dsn': 'YOUR_SENTRY_DSN',
+                    'environment': 'production',  # optional
                     'level': 'WARNING',  # optional
                 }
         """
         if file_config:
             loggers.add_file_handler(self, **file_config)
-        if email_config:
-            loggers.add_email_handler(self, **email_config)
         if sentry_config:
-            loggers.add_sentry(self, **sentry_config)
+            loggers.add_sentry(**sentry_config)
