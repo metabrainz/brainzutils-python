@@ -14,6 +14,13 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+
+    - name: Pull docker images
+      run: docker-compose -f test/docker-compose.yml pull
+
+    - uses: satackey/action-docker-layer-caching@v0.0.11
+      continue-on-error: true
+
     - name: Build the Docker image
       run: docker-compose -f test/docker-compose.yml -p brainzutils_test build
     
