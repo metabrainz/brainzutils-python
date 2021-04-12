@@ -3,6 +3,8 @@
 This is a package with common utilities that are used throughout MetaBrainz
 projects that use Python programming language.
 
+Note that v1.18.* will be the last line of releases compatible with Python 2.
+
 Please report issues at https://tickets.musicbrainz.org/browse/BU.
 
 ## Usage

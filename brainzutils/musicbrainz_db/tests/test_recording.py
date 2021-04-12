@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import pytest
 
 from brainzutils.musicbrainz_db import recording as mb_recording

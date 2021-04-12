@@ -1,6 +1,4 @@
-# -*- coding: utf-8 -*-
 """This module provides a way to send emails."""
-from __future__ import absolute_import
 from email.mime.application import MIMEApplication
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText

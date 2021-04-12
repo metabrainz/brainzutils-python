@@ -1,9 +1,6 @@
-from __future__ import division
-
 import datetime
 from functools import wraps
 
-import six
 from redis import ResponseError
 
 from brainzutils import cache
@@ -105,7 +102,7 @@ def stats():
     """
 
     counters = cache.hgetall(_metrics_project_name, namespace=NAMESPACE_METRICS)
-    ret = {six.ensure_text(k): int(v) for k, v in counters.items()}
+    ret = {str(k): int(v) for k, v in counters.items()}
     ret["tag"] = _metrics_project_name
     return ret
 
@@ -193,9 +190,9 @@ def stats_count(metric_name):
     counters = cache.hgetall(metric_key, namespace=NAMESPACE_METRICS)
     ret = {}
     for k, v in counters.items():
-        k = six.ensure_text(k)
+        k = str(k)
         if k == STATS_COUNT_DATE_KEY:
-            ret[k] = six.ensure_text(v)
+            ret[k] = v.decode('utf-8')
         else:
             ret[k] = int(v)
     ret["metric"] = metric_name

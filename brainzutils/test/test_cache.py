@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # pylint: disable=protected-access
 
 import datetime
@@ -6,7 +5,7 @@ import os
 import unittest
 from time import sleep, time
 
-import mock as mock
+from unittest import mock
 import redis
 
 from brainzutils import cache
