@@ -38,7 +38,7 @@ jobs:
       uses: EnricoMi/publish-unit-test-result-action@v1.11
       if: ${{ always() }}
       with:
-        files: 'reports/*.xml'
+        files: reports/test_results.xml
     
     - name: Bring down containers
       run: docker-compose -f test/docker-compose.yml -p brainzutils_test down
