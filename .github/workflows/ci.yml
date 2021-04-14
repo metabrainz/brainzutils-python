@@ -33,6 +33,12 @@ jobs:
     
     - name: Run tests
       run: docker-compose -f test/docker-compose.yml -p brainzutils_test run --rm test
+
+    - name: Publish Unit Test Results
+      uses: EnricoMi/publish-unit-test-result-action@v1.11
+      if: ${{ always() }}
+      with:
+        files: '/data/*.xml'
     
     - name: Bring down containers
       run: docker-compose -f test/docker-compose.yml -p brainzutils_test down
