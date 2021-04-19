@@ -6,11 +6,10 @@ from brainzutils.musicbrainz_db import release_group as mb_release_group
 @pytest.mark.database
 class TestReleaseGroup:
 
-    def test_get_release_group_by_id(self, engine):
-        release_group = mb_release_group.get_release_group_by_id(
-            '0f18ec88-aa87-38a9-8a65-f03d81763560',
-            includes=['artists', 'releases', 'release-group-rels', 'url-rels', 'tags']
-        )
+    def test_get_release_group_by_mbid(self, engine):
+        release_group = mb_release_group.get_release_group_by_mbid('0f18ec88-aa87-38a9-8a65-f03d81763560',
+                                                                   includes=['artists', 'releases',
+                                                                             'release-group-rels', 'url-rels', 'tags'])
 
         assert release_group['id'] == '0f18ec88-aa87-38a9-8a65-f03d81763560'
         assert release_group['title'] == 'Led Zeppelin'
@@ -25,10 +24,8 @@ class TestReleaseGroup:
             }
         }
 
-    def test_get_release_group_by_id_redirect(self, engine):
-        release_group = mb_release_group.get_release_group_by_id(
-            '358bbed4-1717-3e1c-ba8e-af54d2d3a5d6',
-        )
+    def test_get_release_group_by_mbid_redirect(self, engine):
+        release_group = mb_release_group.get_release_group_by_mbid('358bbed4-1717-3e1c-ba8e-af54d2d3a5d6')
         assert release_group == {
             'id': '8a01217e-6947-3927-a39b-6691104694f1',
             'title': 'The College Dropout',

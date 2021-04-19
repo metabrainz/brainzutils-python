@@ -7,7 +7,7 @@ from brainzutils.musicbrainz_db.serialize import serialize_events
 from brainzutils.musicbrainz_db.helpers import get_relationship_info
 
 
-def get_event_by_id(mbid, includes=None):
+def get_event_by_mbid(mbid, includes=None):
     """Get event with the MusicBrainz ID.
 
     Args:

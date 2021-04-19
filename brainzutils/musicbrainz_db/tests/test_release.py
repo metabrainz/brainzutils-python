@@ -6,11 +6,9 @@ from brainzutils.musicbrainz_db import release as mb_release
 @pytest.mark.database
 class TestRelease:
 
-    def test_get_recording_by_id(self, engine):
-        release = mb_release.get_release_by_id(
-            'fed37cfc-2a6d-4569-9ac0-501a7c7598eb',
-            includes=['media', 'release-groups'],
-        )
+    def test_get_recording_by_mbid(self, engine):
+        release = mb_release.get_release_by_mbid('fed37cfc-2a6d-4569-9ac0-501a7c7598eb',
+                                                 includes=['media', 'release-groups'])
         assert release["name"] == "Master of Puppets"
         assert len(release["medium-list"][0]["track-list"]) == 8
 
@@ -90,7 +88,7 @@ class TestRelease:
         ]
 
     def test_get_release_by_mbid_redirect(self, engine):
-        release = mb_release.get_release_by_id('fb2031ae-4e2a-4d2c-9819-32568f9e5e17')
+        release = mb_release.get_release_by_mbid('fb2031ae-4e2a-4d2c-9819-32568f9e5e17')
         assert release == {
             'id': 'a6949d8e-c1eb-4eee-a670-680d28dd80e6',
             'name': 'The College Dropout'

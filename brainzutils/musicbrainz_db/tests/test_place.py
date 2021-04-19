@@ -6,8 +6,8 @@ from brainzutils.musicbrainz_db import place as mb_place
 @pytest.mark.database
 class TestPlace:
 
-    def test_get_place_by_id(self, engine):
-        place = mb_place.get_place_by_id('4352063b-a833-421b-a420-e7fb295dece0')
+    def test_get_place_by_mbid(self, engine):
+        place = mb_place.get_place_by_mbid('4352063b-a833-421b-a420-e7fb295dece0')
         assert place['name'] == 'Royal Albert Hall'
         assert place['type'] == 'Venue'
         assert place['coordinates'] == {
@@ -19,8 +19,8 @@ class TestPlace:
             'name': 'Kensington and Chelsea',
         }
 
-    def test_get_place_by_id_redirect(self, engine):
-        place = mb_place.get_place_by_id('b1690ae6-5a37-46d7-99ae-b7e2d790485f')
+    def test_get_place_by_mbid_redirect(self, engine):
+        place = mb_place.get_place_by_mbid('b1690ae6-5a37-46d7-99ae-b7e2d790485f')
         assert place == {
             'address': 'Herbert-von-Karajan-Straße 1, 10785 Berlin, Germany',
             'area': {'id': 'c9ac1239-e832-41bc-9930-e252a1fd1105', 'name': 'Berlin'},

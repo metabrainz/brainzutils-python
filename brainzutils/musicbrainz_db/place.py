@@ -8,7 +8,7 @@ from brainzutils.musicbrainz_db.helpers import get_relationship_info
 from brainzutils.musicbrainz_db.utils import get_entities_by_gids
 
 
-def get_place_by_id(mbid, includes=None):
+def get_place_by_mbid(mbid, includes=None):
     """Get place with the MusicBrainz ID.
 
     Args:

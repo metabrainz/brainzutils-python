@@ -6,8 +6,8 @@ from brainzutils.musicbrainz_db import label as mb_label
 @pytest.mark.database
 class TestLabel:
 
-    def test_get_label_by_id(self, engine):
-        label = mb_label.get_label_by_id('4cccc72a-0bd0-433a-905e-dad87871397d')
+    def test_get_label_by_mbid(self, engine):
+        label = mb_label.get_label_by_mbid('4cccc72a-0bd0-433a-905e-dad87871397d')
         assert label == {
             "id": "4cccc72a-0bd0-433a-905e-dad87871397d",
             "name": "Roc‐A‐Fella Records",
@@ -15,8 +15,8 @@ class TestLabel:
             "area": "United States",
         }
 
-    def test_get_label_by_id_redirect(self, engine):
-        label = mb_label.get_label_by_id('67cf4cad-c039-4f01-bc84-f8dab7791ed7')
+    def test_get_label_by_mbid_redirect(self, engine):
+        label = mb_label.get_label_by_mbid('67cf4cad-c039-4f01-bc84-f8dab7791ed7')
         assert label == {
             "id": "50c384a2-0b44-401b-b893-8181173339c7",
             "name": "Atlantic",

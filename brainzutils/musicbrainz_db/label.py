@@ -8,7 +8,7 @@ from brainzutils.musicbrainz_db.serialize import serialize_labels
 from brainzutils.musicbrainz_db.helpers import get_relationship_info
 
 
-def get_label_by_id(mbid, includes=None):
+def get_label_by_mbid(mbid, includes=None):
     """Get label with the MusicBrainz ID.
 
     Args:

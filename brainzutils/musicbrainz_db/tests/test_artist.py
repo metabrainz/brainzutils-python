@@ -6,17 +6,17 @@ from brainzutils.musicbrainz_db import artist as mb_artist
 @pytest.mark.database
 class TestArtist:
 
-    def test_get_artist_by_id(self, engine):
-        artist = mb_artist.get_artist_by_id("f59c5520-5f46-4d2c-b2c4-822eabf53419")
+    def test_get_artist_by_mbid(self, engine):
+        artist = mb_artist.get_artist_by_mbid("f59c5520-5f46-4d2c-b2c4-822eabf53419")
         assert artist == {
             "id": "f59c5520-5f46-4d2c-b2c4-822eabf53419",
             "name": "Linkin Park",
             "sort_name": "Linkin Park",
         }
 
-    def test_get_artist_by_id_redirect(self, engine):
+    def test_get_artist_by_mbid_redirect(self, engine):
         """Using an MBID which is a redirect will return the "canonical" id"""
-        artist = mb_artist.get_artist_by_id("b3d01315-d52a-4f3a-908b-0618315c1ef2")
+        artist = mb_artist.get_artist_by_mbid("b3d01315-d52a-4f3a-908b-0618315c1ef2")
         assert artist == {
             "id": "79239441-bfd5-4981-a70c-55c3f15c1287",
             "name": "Madonna",

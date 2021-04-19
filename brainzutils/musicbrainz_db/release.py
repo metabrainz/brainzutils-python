@@ -10,7 +10,7 @@ from brainzutils.musicbrainz_db.helpers import get_relationship_info
 from brainzutils.musicbrainz_db import recording
 
 
-def get_release_by_id(mbid, includes=None):
+def get_release_by_mbid(mbid, includes=None):
     """Get release with the MusicBrainz ID.
     Args:
         mbid (uuid): MBID(gid) of the release.

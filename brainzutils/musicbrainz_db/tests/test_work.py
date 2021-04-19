@@ -5,16 +5,16 @@ from brainzutils.musicbrainz_db import work as mb_work
 
 @pytest.mark.database
 class TestWork:
-    def test_get_work_by_id(self, engine):
-        work = mb_work.get_work_by_id('d35f8fb8-52ab-4a12-b1c8-f2054d10cf88')
+    def test_get_work_by_mbid(self, engine):
+        work = mb_work.get_work_by_mbid('d35f8fb8-52ab-4a12-b1c8-f2054d10cf88')
         assert work == {
             "id": "d35f8fb8-52ab-4a12-b1c8-f2054d10cf88",
             "name": "Apple Bush",
             "type": "Song",
         }
 
-    def test_get_work_by_id_redirect(self, engine):
-        work = mb_work.get_work_by_id('4531bed5-073c-37a8-9500-70de8583c0a1')
+    def test_get_work_by_mbid_redirect(self, engine):
+        work = mb_work.get_work_by_mbid('4531bed5-073c-37a8-9500-70de8583c0a1')
         assert work == {
             "id": "36e33f94-ef5f-36b5-97b0-c1ed9c5a542f",
             "name": "Jesus Walks",

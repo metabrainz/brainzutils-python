@@ -8,7 +8,7 @@ from brainzutils.musicbrainz_db.serialize import serialize_artists
 from brainzutils.musicbrainz_db.includes import check_includes
 
 
-def get_artist_by_id(mbid, includes=None):
+def get_artist_by_mbid(mbid, includes=None):
     """Get artist with MusicBrainz ID.
     Args:
         mbid (uuid): MBID(gid) of the artist.
