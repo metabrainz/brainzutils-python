@@ -8,7 +8,7 @@ from brainzutils.musicbrainz_db.serialize import serialize_labels
 from brainzutils.musicbrainz_db.helpers import get_relationship_info
 
 
-def get_label_by_id(mbid, includes=None, unknown_entities_for_missing=False):
+def get_label_by_id(mbid, includes=None):
     """Get label with the MusicBrainz ID.
 
     Args:
@@ -22,11 +22,10 @@ def get_label_by_id(mbid, includes=None, unknown_entities_for_missing=False):
     return fetch_multiple_labels(
         [mbid],
         includes=includes,
-        unknown_entities_for_missing=unknown_entities_for_missing,
     ).get(mbid)
 
 
-def fetch_multiple_labels(mbids, includes=None, unknown_entities_for_missing=False):
+def fetch_multiple_labels(mbids, includes=None):
     """Get info related to multiple labels using their MusicBrainz IDs.
 
     Args:
@@ -47,7 +46,6 @@ def fetch_multiple_labels(mbids, includes=None, unknown_entities_for_missing=Fal
             query=query,
             entity_type='label',
             mbids=mbids,
-            unknown_entities_for_missing=unknown_entities_for_missing,
         )
         label_ids = [label.id for label in labels.values()]
 
@@ -77,4 +75,4 @@ def fetch_multiple_labels(mbids, includes=None, unknown_entities_for_missing=Fal
         for label in labels.values():
             includes_data[label.id]['rating'] = label.rating
 
-    return {str(mbid): serialize_labels(labels[mbid], includes_data[labels[mbid].id]) for mbid in mbids}
+    return {str(mbid): serialize_labels(label, includes_data[label.id]) for mbid, label in labels.items()}

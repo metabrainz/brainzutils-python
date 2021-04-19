@@ -5,7 +5,6 @@ from mbdata.models import Editor
 from psycopg2.tz import FixedOffsetTimezone
 
 from brainzutils.musicbrainz_db import editor as mb_editor
-from brainzutils.musicbrainz_db.unknown_entities import unknown_editor
 
 
 @pytest.mark.database
@@ -99,7 +98,5 @@ class TestEditor:
     def test_fetch_multiple_editors_empty(self, engine):
         editors = mb_editor.fetch_multiple_editors(
             [2323, 2324],
-            unknown_entities_for_missing=True,
         )
-        assert editors[2323]["name"] == unknown_editor.name
-        assert editors[2324]["name"] == unknown_editor.name
+        assert editors == {}

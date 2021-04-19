@@ -1,18 +1,26 @@
 import pytest
 
-from brainzutils.musicbrainz_db.unknown_entities import unknown_artist
 from brainzutils.musicbrainz_db import artist as mb_artist
 
 
 @pytest.mark.database
 class TestArtist:
 
-    def test_get_by_id(self, engine):
+    def test_get_artist_by_id(self, engine):
         artist = mb_artist.get_artist_by_id("f59c5520-5f46-4d2c-b2c4-822eabf53419")
         assert artist == {
             "id": "f59c5520-5f46-4d2c-b2c4-822eabf53419",
             "name": "Linkin Park",
             "sort_name": "Linkin Park",
+        }
+
+    def test_get_artist_by_id_redirect(self, engine):
+        """Using an MBID which is a redirect will return the "canonical" id"""
+        artist = mb_artist.get_artist_by_id("b3d01315-d52a-4f3a-908b-0618315c1ef2")
+        assert artist == {
+            "id": "79239441-bfd5-4981-a70c-55c3f15c1287",
+            "name": "Madonna",
+            "sort_name": "Madonna",
         }
 
     def test_fetch_multiple_artists(self, engine):
@@ -33,8 +41,19 @@ class TestArtist:
             "type": "Group",
         }
 
-    def test_fetch_multiple_artists_empty(self, engine):
-        artists = mb_artist.fetch_multiple_artists(["f59c5520-aaaa-aaaa-b2c4-822eabf53419"],
-                                                   includes=['artist-rels', 'url-rels'],
-                                                   unknown_entities_for_missing=True)
-        assert artists["f59c5520-aaaa-aaaa-b2c4-822eabf53419"]["name"] == unknown_artist.name
+    def test_fetch_multiple_artists_redirect(self, engine):
+        """Artist with a redirect uses redirected mbid in dictionary key, but canonical id in returned data"""
+        artists = mb_artist.fetch_multiple_artists(["fe008f22-07be-46f0-9206-7cab2d26e89d"])
+        assert len(artists) == 1
+        assert artists["fe008f22-07be-46f0-9206-7cab2d26e89d"] == {
+            "id": "f59c5520-5f46-4d2c-b2c4-822eabf53419",
+            "name": "Linkin Park",
+            "sort_name": "Linkin Park"
+        }
+
+    def test_fetch_multiple_artists_missing(self, engine):
+        """If an artist id doesn't exist, don't fetch it"""
+        artists = mb_artist.fetch_multiple_artists(["f59c5520-5f46-4d2c-b2c4-822eabf53419",
+                                                    "f59c5520-aaaa-aaaa-b2c4-822eabf53419"],
+                                                   includes=['artist-rels', 'url-rels'])
+        assert list(artists.keys()) == ["f59c5520-5f46-4d2c-b2c4-822eabf53419"]

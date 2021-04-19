@@ -1,7 +1,6 @@
 import pytest
 
 from brainzutils.musicbrainz_db import recording as mb_recording
-from brainzutils.musicbrainz_db.unknown_entities import unknown_recording
 
 
 @pytest.mark.database
@@ -29,6 +28,14 @@ class TestRecording:
                     'name': 'Linkin Park'
                 }
             ]
+        }
+
+    def test_get_recording_by_mbid_redirect(self, engine):
+        recording = mb_recording.get_recording_by_mbid('e00d4dce-097e-4098-bbb3-77db884566f3')
+        assert recording == {
+            'id': 'fbe3d0b9-3990-4a76-bddb-12f4a0447a2c',
+            'name': 'The Perfect Drug (Nine Inch Nails)',
+            'length': 499
         }
 
     def test_fetch_multiple_recordings(self, engine):
@@ -76,15 +83,23 @@ class TestRecording:
             }
         }
 
-    def test_fetch_multiple_recordings_empty(self, engine):
+    def test_fetch_multiple_recordings_redirect(self, engine):
+        recordings = mb_recording.fetch_multiple_recordings([
+            'e00d4dce-097e-4098-bbb3-77db884566f3'
+        ])
+        assert recordings == {
+            'e00d4dce-097e-4098-bbb3-77db884566f3': {
+                'id': 'fbe3d0b9-3990-4a76-bddb-12f4a0447a2c',
+                'name': 'The Perfect Drug (Nine Inch Nails)',
+                'length': 499
+            }
+        }
+
+    def test_fetch_multiple_recordings_missing(self, engine):
         """ Tests if appropriate recordings are returned for a given list of MBIDs. """
 
-        mbids = ['daccb724-8023-0000-0000-e0accb6c8678', '965b75df-397d-4395-aac8-de11854c4630']
         recordings = mb_recording.fetch_multiple_recordings(
-            mbids,
-            includes=['artists', 'url-rels', 'work-rels'],
-            unknown_entities_for_missing=True
+            ['e00d4dce-097e-4098-bbb3-77db884566f3', 'e00d4dce-0000-0000-0000-77db884566f3']
         )
 
-        assert recordings['daccb724-8023-0000-0000-e0accb6c8678']['name'] == unknown_recording.name
-        assert recordings['965b75df-397d-4395-aac8-de11854c4630']['name'] == unknown_recording.name
+        assert list(recordings.keys()) == ['e00d4dce-097e-4098-bbb3-77db884566f3']

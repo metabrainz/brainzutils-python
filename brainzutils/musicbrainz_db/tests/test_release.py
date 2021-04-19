@@ -1,13 +1,12 @@
 import pytest
 
 from brainzutils.musicbrainz_db import release as mb_release
-from brainzutils.musicbrainz_db.unknown_entities import unknown_release
 
 
 @pytest.mark.database
 class TestRelease:
 
-    def test_get_by_id(self, engine):
+    def test_get_recording_by_id(self, engine):
         release = mb_release.get_release_by_id(
             'fed37cfc-2a6d-4569-9ac0-501a7c7598eb',
             includes=['media', 'release-groups'],
@@ -90,6 +89,13 @@ class TestRelease:
             }
         ]
 
+    def test_get_release_by_mbid_redirect(self, engine):
+        release = mb_release.get_release_by_id('fb2031ae-4e2a-4d2c-9819-32568f9e5e17')
+        assert release == {
+            'id': 'a6949d8e-c1eb-4eee-a670-680d28dd80e6',
+            'name': 'The College Dropout'
+        }
+
     def test_fetch_multiple_releases(self, engine):
         releases = mb_release.fetch_multiple_releases(
             mbids=['e327da6d-717b-4eb3-b396-bbce6b9466bc', 'b1bb026c-e813-407f-ba7b-db7466cdc56c'],
@@ -98,14 +104,22 @@ class TestRelease:
         assert releases['e327da6d-717b-4eb3-b396-bbce6b9466bc']['name'] == 'Without a Sound'
         assert releases['b1bb026c-e813-407f-ba7b-db7466cdc56c']['name'] == 'War All the Time'
 
-    def test_fetch_multiple_releases_empty(self, engine):
+    def test_fetch_multiple_releases_redirect(self, engine):
         releases = mb_release.fetch_multiple_releases(
-            mbids=['f51598f5-4ef9-4b8a-865d-06a077bf78cf', 'a64a0467-9d7a-4ffa-90b8-d87d9b41e311'],
-            includes=['media', 'release-groups', 'url-rels'],
-            unknown_entities_for_missing=True
+            mbids=['fb2031ae-4e2a-4d2c-9819-32568f9e5e17'],
         )
-        assert releases['a64a0467-9d7a-4ffa-90b8-d87d9b41e311']['name'] == unknown_release.name
-        assert releases['f51598f5-4ef9-4b8a-865d-06a077bf78cf']['name'] == unknown_release.name
+        assert releases == {
+            'fb2031ae-4e2a-4d2c-9819-32568f9e5e17': {
+                'id': 'a6949d8e-c1eb-4eee-a670-680d28dd80e6',
+                'name': 'The College Dropout'
+            }
+        }
+
+    def test_fetch_multiple_releases_missing(self, engine):
+        releases = mb_release.fetch_multiple_releases(
+            mbids=['a6949d8e-c1eb-4eee-a670-680d28dd80e6', 'a6949d8e-cccc-cccc-cccc-680d28dd80e6'],
+        )
+        assert list(releases.keys()) == ['a6949d8e-c1eb-4eee-a670-680d28dd80e6']
 
     def test_get_releases_using_recording_mbid(self, engine):
         """Tests if releases are fetched correctly for a given recording MBID"""

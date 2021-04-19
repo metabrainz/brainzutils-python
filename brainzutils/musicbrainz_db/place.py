@@ -8,7 +8,7 @@ from brainzutils.musicbrainz_db.helpers import get_relationship_info
 from brainzutils.musicbrainz_db.utils import get_entities_by_gids
 
 
-def get_place_by_id(mbid, includes=None, unknown_entities_for_missing=False):
+def get_place_by_id(mbid, includes=None):
     """Get place with the MusicBrainz ID.
 
     Args:
@@ -22,11 +22,10 @@ def get_place_by_id(mbid, includes=None, unknown_entities_for_missing=False):
     return fetch_multiple_places(
         [mbid],
         includes=includes,
-        unknown_entities_for_missing=unknown_entities_for_missing,
     ).get(mbid)
 
 
-def fetch_multiple_places(mbids, includes=None, unknown_entities_for_missing=False):
+def fetch_multiple_places(mbids, includes=None):
     """Get info related to multiple places using their MusicBrainz IDs.
 
     Args:
@@ -48,7 +47,6 @@ def fetch_multiple_places(mbids, includes=None, unknown_entities_for_missing=Fal
             query=query,
             entity_type='place',
             mbids=mbids,
-            unknown_entities_for_missing=unknown_entities_for_missing,
         )
         place_ids = [place.id for place in places.values()]
 
@@ -80,5 +78,6 @@ def fetch_multiple_places(mbids, includes=None, unknown_entities_for_missing=Fal
         for place in places.values():
             includes_data[place.id]['area'] = place.area
             includes_data[place.id]['type'] = place.type
-        places = {str(mbid): serialize_places(places[mbid], includes_data[places[mbid].id]) for mbid in mbids}
+
+        places = {str(mbid): serialize_places(place, includes_data[place.id]) for mbid, place in places.items()}
     return places

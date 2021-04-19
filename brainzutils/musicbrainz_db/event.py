@@ -7,7 +7,7 @@ from brainzutils.musicbrainz_db.serialize import serialize_events
 from brainzutils.musicbrainz_db.helpers import get_relationship_info
 
 
-def get_event_by_id(mbid, includes=None, unknown_entities_for_missing=False):
+def get_event_by_id(mbid, includes=None):
     """Get event with the MusicBrainz ID.
 
     Args:
@@ -21,11 +21,10 @@ def get_event_by_id(mbid, includes=None, unknown_entities_for_missing=False):
     return fetch_multiple_events(
         [mbid],
         includes=includes,
-        unknown_entities_for_missing=unknown_entities_for_missing,
     ).get(mbid)
 
 
-def fetch_multiple_events(mbids, includes=None, unknown_entities_for_missing=False):
+def fetch_multiple_events(mbids, includes=None):
     """Get info related to multiple events using their MusicBrainz IDs.
 
     Args:
@@ -45,7 +44,6 @@ def fetch_multiple_events(mbids, includes=None, unknown_entities_for_missing=Fal
             query=query,
             entity_type='event',
             mbids=mbids,
-            unknown_entities_for_missing=unknown_entities_for_missing,
         )
         event_ids = [event.id for event in events.values()]
 
@@ -94,4 +92,4 @@ def fetch_multiple_events(mbids, includes=None, unknown_entities_for_missing=Fal
         for event in events.values():
             includes_data[event.id]['rating'] = event.rating
 
-    return {str(mbid): serialize_events(events[mbid], includes_data[events[mbid].id]) for mbid in mbids}
+    return {str(mbid): serialize_events(event, includes_data[event.id]) for mbid, event in events.items()}

@@ -10,7 +10,7 @@ from brainzutils.musicbrainz_db.helpers import get_relationship_info
 from brainzutils.musicbrainz_db import recording
 
 
-def get_release_by_id(mbid, includes=None, unknown_entities_for_missing=False):
+def get_release_by_id(mbid, includes=None):
     """Get release with the MusicBrainz ID.
     Args:
         mbid (uuid): MBID(gid) of the release.
@@ -25,11 +25,10 @@ def get_release_by_id(mbid, includes=None, unknown_entities_for_missing=False):
     return fetch_multiple_releases(
         [mbid],
         includes=includes,
-        unknown_entities_for_missing=unknown_entities_for_missing,
     ).get(mbid)
 
 
-def fetch_multiple_releases(mbids, includes=None, unknown_entities_for_missing=False):
+def fetch_multiple_releases(mbids, includes=None):
     """Get info related to multiple releases using their MusicBrainz IDs.
     Args:
         mbids (list): List of MBIDs of releases.
@@ -55,7 +54,6 @@ def fetch_multiple_releases(mbids, includes=None, unknown_entities_for_missing=F
             query=query,
             entity_type='release',
             mbids=mbids,
-            unknown_entities_for_missing=unknown_entities_for_missing,
         )
         release_ids = [release.id for release in releases.values()]
 
@@ -80,7 +78,8 @@ def fetch_multiple_releases(mbids, includes=None, unknown_entities_for_missing=F
             for release in releases.values():
                 includes_data[release.id]['comment'] = release.comment
 
-        releases = {str(mbid): serialize_releases(releases[mbid], includes_data[releases[mbid].id]) for mbid in mbids}
+        releases = {str(mbid): serialize_releases(release, includes_data[release.id])
+                    for mbid, release in releases.items()}
     return releases
 
 
