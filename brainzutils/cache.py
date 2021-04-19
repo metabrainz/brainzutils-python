@@ -209,17 +209,18 @@ def delete_many(keys, namespace=None):
 
 
 @init_required
-def increment(key, namespace=None):
+def increment(key, amount=1, namespace=None):
     """ Increment the value for given key using the INCR command.
 
     Args:
         key: Key of the item that needs to be incremented
+        amount: the amount to increment the value by
         namespace: Namespace for the key
 
     Returns:
         An integer equal to the value after increment
     """
-    return _r.incr(_prep_keys_list([key], namespace)[0])
+    return _r.incr(_prep_keys_list([key], namespace)[0], amount=amount)
 
 
 @init_required
