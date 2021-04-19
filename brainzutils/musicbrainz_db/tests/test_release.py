@@ -14,7 +14,7 @@ class TestRelease:
 
         assert release["medium-list"][0]["track-list"] == [
             {
-               "id":"58c97804-bd98-3bc6-b8c7-5234db05bc2e",
+               "mbid":"58c97804-bd98-3bc6-b8c7-5234db05bc2e",
                "name":"Battery",
                "number":"1",
                "position":1,
@@ -23,7 +23,7 @@ class TestRelease:
                "recording_title":"Battery"
             },
             {
-               "id":"51b179fa-8e72-383b-9549-0ae9a6dd9cfb",
+               "mbid":"51b179fa-8e72-383b-9549-0ae9a6dd9cfb",
                "name":"Master of Puppets",
                "number":"2",
                "position":2,
@@ -32,7 +32,7 @@ class TestRelease:
                "recording_title":"Master of Puppets"
             },
             {
-               "id":"052e25d8-373e-3a5a-bced-bd47eb209dc5",
+               "mbid":"052e25d8-373e-3a5a-bced-bd47eb209dc5",
                "name":"The Thing That Should Not Be",
                "number":"3",
                "position":3,
@@ -41,7 +41,7 @@ class TestRelease:
                "recording_title":"The Thing That Should Not Be"
             },
             {
-               "id":"00367246-d956-3a44-af4b-bc3cfd34ec49",
+               "mbid":"00367246-d956-3a44-af4b-bc3cfd34ec49",
                "name":"Welcome Home (Sanitarium)",
                "number":"4",
                "position":4,
@@ -50,7 +50,7 @@ class TestRelease:
                "recording_title":"Welcome Home (Sanitarium)"
             },
             {
-               "id":"77fac948-8223-3077-a25e-50d9512142f0",
+               "mbid":"77fac948-8223-3077-a25e-50d9512142f0",
                "name":"Disposable Heroes",
                "number":"5",
                "position":5,
@@ -59,7 +59,7 @@ class TestRelease:
                "recording_title":"Disposable Heroes"
             },
             {
-               "id":"7f97a9e0-89ec-37ed-a3d7-5a7390ffa43b",
+               "mbid":"7f97a9e0-89ec-37ed-a3d7-5a7390ffa43b",
                "name":"Leper Messiah",
                "number":"6",
                "position":6,
@@ -68,7 +68,7 @@ class TestRelease:
                "recording_title":"Leper Messiah"
             },
             {
-               "id":"b7e772d3-3a9b-32ad-8e5c-e8c079d5e4f4",
+               "mbid":"b7e772d3-3a9b-32ad-8e5c-e8c079d5e4f4",
                "name":"Orion",
                "number":"7",
                "position":7,
@@ -77,7 +77,7 @@ class TestRelease:
                "recording_title":"Orion"
             },
             {
-               "id":"0949ef68-edef-39a1-a3a0-dc666920f629",
+               "mbid":"0949ef68-edef-39a1-a3a0-dc666920f629",
                "name":"Damage, Inc.",
                "number":"8",
                "position":8,
@@ -90,7 +90,7 @@ class TestRelease:
     def test_get_release_by_mbid_redirect(self, engine):
         release = mb_release.get_release_by_mbid('fb2031ae-4e2a-4d2c-9819-32568f9e5e17')
         assert release == {
-            'id': 'a6949d8e-c1eb-4eee-a670-680d28dd80e6',
+            'mbid': 'a6949d8e-c1eb-4eee-a670-680d28dd80e6',
             'name': 'The College Dropout'
         }
 
@@ -108,7 +108,7 @@ class TestRelease:
         )
         assert releases == {
             'fb2031ae-4e2a-4d2c-9819-32568f9e5e17': {
-                'id': 'a6949d8e-c1eb-4eee-a670-680d28dd80e6',
+                'mbid': 'a6949d8e-c1eb-4eee-a670-680d28dd80e6',
                 'name': 'The College Dropout'
             }
         }
@@ -123,19 +123,19 @@ class TestRelease:
         """Tests if releases are fetched correctly for a given recording MBID"""
         releases = mb_release.get_releases_using_recording_mbid('5465ca86-3881-4349-81b2-6efbd3a59451')
         assert releases == [
-            {'id': '89f64145-2f75-41d1-831a-517b785ed75a', 'name': "The Blueprint Collector's Edition"},
-            {'id': 'f1183a86-36d2-4f1f-ab8f-6f965dc0b033', 'name': 'The Hits Collection Volume One'},
-            {'id': '77a74b85-0ae0-338f-aaca-4f36cd394f88', 'name': 'Blueprint 2.1'},
-            {'id': '7111c8bc-8549-4abc-8ab9-db13f65b4a55', 'name': 'Blueprint 2.1'},
-            {'id': '2c5e4198-24cf-3c95-a16e-83be8e877dfa', 'name': 'The Blueprint²: The Gift & The Curse'},
-            {'id': '3c535d03-2fcc-467a-8d47-34b3250b8211', 'name': 'The Hits Collection Volume One'},
-            {'id': 'c84d8fa8-6f8d-42c9-87cc-b726e859b41d', 'name': 'The Hits Collection Volume One'},
-            {'id': '4f41108c-db36-4616-8614-f504fdef287a', 'name': 'Blueprint 2.1'},
-            {'id': 'b0075ce9-58c8-47e2-8a72-5f783314a97e', 'name': 'The Hits Collection Volume One'},
-            {'id': 'd75e103c-5ef4-4146-ae81-e27d19dc7fc4', 'name': "The Blueprint Collector's Edition"},
-            {'id': '4a441628-2e4d-4032-825f-6bdf4aee382e', 'name': 'The Hits Collection, Volume 1'},
-            {'id': '5e782ae3-602b-48b7-99be-de6bcffa4aba', 'name': 'The Hits Collection, Volume 1'},
-            {'id': '7ebaaa95-e316-3b20-8819-7e4ca648c135', 'name': 'The Hits Collection, Volume 1'},
-            {'id': '0ff452e3-c306-4082-b0dc-223725f4fbbf', 'name': 'The Blueprint²: The Gift & The Curse'},
-            {'id': '801678aa-5d30-4342-8227-e9618f164cca', 'name': 'The Blueprint²: The Gift & The Curse'}
+            {'mbid': '89f64145-2f75-41d1-831a-517b785ed75a', 'name': "The Blueprint Collector's Edition"},
+            {'mbid': 'f1183a86-36d2-4f1f-ab8f-6f965dc0b033', 'name': 'The Hits Collection Volume One'},
+            {'mbid': '77a74b85-0ae0-338f-aaca-4f36cd394f88', 'name': 'Blueprint 2.1'},
+            {'mbid': '7111c8bc-8549-4abc-8ab9-db13f65b4a55', 'name': 'Blueprint 2.1'},
+            {'mbid': '2c5e4198-24cf-3c95-a16e-83be8e877dfa', 'name': 'The Blueprint²: The Gift & The Curse'},
+            {'mbid': '3c535d03-2fcc-467a-8d47-34b3250b8211', 'name': 'The Hits Collection Volume One'},
+            {'mbid': 'c84d8fa8-6f8d-42c9-87cc-b726e859b41d', 'name': 'The Hits Collection Volume One'},
+            {'mbid': '4f41108c-db36-4616-8614-f504fdef287a', 'name': 'Blueprint 2.1'},
+            {'mbid': 'b0075ce9-58c8-47e2-8a72-5f783314a97e', 'name': 'The Hits Collection Volume One'},
+            {'mbid': 'd75e103c-5ef4-4146-ae81-e27d19dc7fc4', 'name': "The Blueprint Collector's Edition"},
+            {'mbid': '4a441628-2e4d-4032-825f-6bdf4aee382e', 'name': 'The Hits Collection, Volume 1'},
+            {'mbid': '5e782ae3-602b-48b7-99be-de6bcffa4aba', 'name': 'The Hits Collection, Volume 1'},
+            {'mbid': '7ebaaa95-e316-3b20-8819-7e4ca648c135', 'name': 'The Hits Collection, Volume 1'},
+            {'mbid': '0ff452e3-c306-4082-b0dc-223725f4fbbf', 'name': 'The Blueprint²: The Gift & The Curse'},
+            {'mbid': '801678aa-5d30-4342-8227-e9618f164cca', 'name': 'The Blueprint²: The Gift & The Curse'}
         ]

@@ -11,14 +11,14 @@ class TestReleaseGroup:
                                                                    includes=['artists', 'releases',
                                                                              'release-group-rels', 'url-rels', 'tags'])
 
-        assert release_group['id'] == '0f18ec88-aa87-38a9-8a65-f03d81763560'
+        assert release_group['mbid'] == '0f18ec88-aa87-38a9-8a65-f03d81763560'
         assert release_group['title'] == 'Led Zeppelin'
         # Check if multiple artists are properly fetched
         assert release_group['artist-credit-phrase'] == 'Led Zeppelin'
         assert release_group['artist-credit'][0] == {
             'name': 'Led Zeppelin',
             'artist': {
-                'id': '678d88b2-87b0-403b-b63d-5da7465aecc3',
+                'mbid': '678d88b2-87b0-403b-b63d-5da7465aecc3',
                 'name': 'Led Zeppelin',
                 'sort_name': 'Led Zeppelin'
             }
@@ -27,7 +27,7 @@ class TestReleaseGroup:
     def test_get_release_group_by_mbid_redirect(self, engine):
         release_group = mb_release_group.get_release_group_by_mbid('358bbed4-1717-3e1c-ba8e-af54d2d3a5d6')
         assert release_group == {
-            'id': '8a01217e-6947-3927-a39b-6691104694f1',
+            'mbid': '8a01217e-6947-3927-a39b-6691104694f1',
             'title': 'The College Dropout',
             'first-release-year': 2003,
             'type': 'Album',
@@ -47,7 +47,7 @@ class TestReleaseGroup:
         )
         assert release_groups == {
             '358bbed4-1717-3e1c-ba8e-af54d2d3a5d6': {
-                'id': '8a01217e-6947-3927-a39b-6691104694f1',
+                'mbid': '8a01217e-6947-3927-a39b-6691104694f1',
                 'title': 'The College Dropout',
                 'first-release-year': 2003,
                 'type': 'Album',
@@ -67,7 +67,7 @@ class TestReleaseGroup:
         )
         assert release_groups[0] == [
             {
-                'id': '07f5e633-8846-3fe7-8e68-472b54dba159',
+                'mbid': '07f5e633-8846-3fe7-8e68-472b54dba159',
                 'title': 'This Is What the Edge of Your Seat Was Made For',
                 'first-release-year': 2004
             }

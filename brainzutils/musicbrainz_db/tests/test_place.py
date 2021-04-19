@@ -15,7 +15,7 @@ class TestPlace:
             'longitude': -0.17748
         }
         assert place['area'] == {
-            'id': 'b9576171-3434-4d1b-8883-165ed6e65d2f',
+            'mbid': 'b9576171-3434-4d1b-8883-165ed6e65d2f',
             'name': 'Kensington and Chelsea',
         }
 
@@ -23,9 +23,9 @@ class TestPlace:
         place = mb_place.get_place_by_mbid('b1690ae6-5a37-46d7-99ae-b7e2d790485f')
         assert place == {
             'address': 'Herbert-von-Karajan-Straße 1, 10785 Berlin, Germany',
-            'area': {'id': 'c9ac1239-e832-41bc-9930-e252a1fd1105', 'name': 'Berlin'},
+            'area': {'mbid': 'c9ac1239-e832-41bc-9930-e252a1fd1105', 'name': 'Berlin'},
             'coordinates': {'latitude': 52.51, 'longitude': 13.37},
-            'id': 'bea135c0-a32e-49be-85fd-9234c73fa0a8',
+            'mbid': 'bea135c0-a32e-49be-85fd-9234c73fa0a8',
             'name': 'Berliner Philharmonie',
             'type': 'Venue'
         }
@@ -42,7 +42,7 @@ class TestPlace:
             ['4352063b-a833-421b-a420-e7fb295dece0', 'b1690ae6-5a37-46d7-99ae-b7e2d790485f']
         )
         assert len(places) == 2
-        assert places['b1690ae6-5a37-46d7-99ae-b7e2d790485f']['id'] == 'bea135c0-a32e-49be-85fd-9234c73fa0a8'
+        assert places['b1690ae6-5a37-46d7-99ae-b7e2d790485f']['mbid'] == 'bea135c0-a32e-49be-85fd-9234c73fa0a8'
         assert places['b1690ae6-5a37-46d7-99ae-b7e2d790485f']['name'] == 'Berliner Philharmonie'
 
     def test_fetch_multiple_places_empty(self, engine):

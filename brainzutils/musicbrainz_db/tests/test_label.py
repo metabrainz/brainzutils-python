@@ -9,7 +9,7 @@ class TestLabel:
     def test_get_label_by_mbid(self, engine):
         label = mb_label.get_label_by_mbid('4cccc72a-0bd0-433a-905e-dad87871397d')
         assert label == {
-            "id": "4cccc72a-0bd0-433a-905e-dad87871397d",
+            "mbid": "4cccc72a-0bd0-433a-905e-dad87871397d",
             "name": "Roc‐A‐Fella Records",
             "type": "Original Production",
             "area": "United States",
@@ -18,7 +18,7 @@ class TestLabel:
     def test_get_label_by_mbid_redirect(self, engine):
         label = mb_label.get_label_by_mbid('67cf4cad-c039-4f01-bc84-f8dab7791ed7')
         assert label == {
-            "id": "50c384a2-0b44-401b-b893-8181173339c7",
+            "mbid": "50c384a2-0b44-401b-b893-8181173339c7",
             "name": "Atlantic",
             "type": "Imprint",
             "area": "United States",
@@ -32,14 +32,14 @@ class TestLabel:
         ])
         assert len(labels) == 2
         assert labels["c595c289-47ce-4fba-b999-b87503e8cb71"] == {
-            "id": "c595c289-47ce-4fba-b999-b87503e8cb71",
+            "mbid": "c595c289-47ce-4fba-b999-b87503e8cb71",
             "name": "Warner Bros. Records",
             "comment": '1958–2019; “WB” logo, with or without “records” beneath or on banner across',
             "type": "Imprint",
             "area": "United States",
         }
         assert labels["4cccc72a-0bd0-433a-905e-dad87871397d"] == {
-            "id": "4cccc72a-0bd0-433a-905e-dad87871397d",
+            "mbid": "4cccc72a-0bd0-433a-905e-dad87871397d",
             "name": "Roc‐A‐Fella Records",
             "type": "Original Production",
             "area": "United States",
@@ -51,7 +51,7 @@ class TestLabel:
         ])
         assert len(labels) == 1
         assert labels["67cf4cad-c039-4f01-bc84-f8dab7791ed7"] == {
-            "id": "50c384a2-0b44-401b-b893-8181173339c7",
+            "mbid": "50c384a2-0b44-401b-b893-8181173339c7",
             "name": "Atlantic",
             "type": "Imprint",
             "area": "United States",

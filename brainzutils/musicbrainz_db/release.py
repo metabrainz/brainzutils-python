@@ -127,7 +127,7 @@ def get_releases_using_recording_mbid(recording_mbid):
 
     # First fetch the recording so that redirects don't create any problem
     recording_redirect = recording.get_recording_by_mbid(recording_mbid)
-    recording_mbid = recording_redirect['id']
+    recording_mbid = recording_redirect['mbid']
     with mb_session() as db:
         releases = db.query(models.Release).\
                     join(models.Medium).\

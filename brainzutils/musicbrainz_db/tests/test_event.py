@@ -9,7 +9,7 @@ class TestEvent:
     def test_get_event_by_mbid(self, engine):
         event = mb_event.get_event_by_mbid('d4921d43-bf92-464e-aef4-bba8540fc5bd')
         assert event == {
-            'id': 'd4921d43-bf92-464e-aef4-bba8540fc5bd',
+            'mbid': 'd4921d43-bf92-464e-aef4-bba8540fc5bd',
             'name': 'Butterfly Whirl 2015',
         }
 
@@ -17,7 +17,7 @@ class TestEvent:
         """If using an id that is redirected, return the """
         event = mb_event.get_event_by_mbid('b8528315-ef77-46e2-bff9-d1b00d84dc3f')
         assert event == {
-            'id': '499559c8-b84b-422e-8ad7-b746d48c21aa',
+            'mbid': '499559c8-b84b-422e-8ad7-b746d48c21aa',
             'name': '1995-10-11: Riverport Amphitheatre, Maryland Heights, Missouri',
         }
 
@@ -34,7 +34,7 @@ class TestEvent:
             ['b8528315-ef77-46e2-bff9-d1b00d84dc3f'],
         )
         assert events == {'b8528315-ef77-46e2-bff9-d1b00d84dc3f': {
-            'id': '499559c8-b84b-422e-8ad7-b746d48c21aa',
+            'mbid': '499559c8-b84b-422e-8ad7-b746d48c21aa',
             'name': '1995-10-11: Riverport Amphitheatre, Maryland Heights, Missouri',
         }}
 
