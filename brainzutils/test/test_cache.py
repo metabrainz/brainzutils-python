@@ -27,6 +27,7 @@ class CacheTestCase(unittest.TestCase):
         cache.flush_all()
 
     def test_no_init(self):
+        assert False
         cache._r = None
         with self.assertRaises(RuntimeError):
             cache.set("test", "testing", expirein=0)
