@@ -37,7 +37,7 @@ class RatelimitTestCase(unittest.TestCase):
         """ Tests that the ratelimit decorator works
         """
 
-        # Three per token requests, three per IP requests in max 10 seconds
+        # Set the limits as per defines in this class
         set_rate_limits(self.max_token_requests, self.max_ip_requests, self.ratelimit_window)
 
         # create an app
