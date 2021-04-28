@@ -1,4 +1,6 @@
 import datetime
+from functools import wraps
+import os
 import socket
 from time import time_ns
 from typing import Dict
@@ -32,10 +34,15 @@ def set(metric_name: str, tags: Dict[str,str]=None, timestamp: int=None, **field
         Submit a metric to the MetaBrainz influx datastore for graphing/monitoring
         purposes. TBC.
     """
-    hostname = socket.gethostname()
 
-    tags["server"] = hostname 
+    hostid = os.environ['PRIVATE_IP']
+    if not hostid:
+        hostid = socket.gethostname()
+
+    tags["dc"] = "hetzner"
+    tags["server"] = hostid
     tag_string = ",".join([ "%s=%s" % (k, tags[k]) for k in tags ])
+
     fields = " ".join([ "%s=%s" % (k, fields[k]) for k in fields ])
 
     if timestamp is None:
