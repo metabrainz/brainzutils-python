@@ -10,10 +10,12 @@ from brainzutils.musicbrainz_db.helpers import get_relationship_info
 from brainzutils.musicbrainz_db import recording
 
 
-def get_release_by_id(mbid, includes=None, unknown_entities_for_missing=False):
+def get_release_by_mbid(mbid, includes=None):
     """Get release with the MusicBrainz ID.
     Args:
         mbid (uuid): MBID(gid) of the release.
+        includes (list): List of values to be included.
+                         For list of possible values see includes.py.
     Returns:
         Dictionary containing the release information.
     """
@@ -23,11 +25,10 @@ def get_release_by_id(mbid, includes=None, unknown_entities_for_missing=False):
     return fetch_multiple_releases(
         [mbid],
         includes=includes,
-        unknown_entities_for_missing=unknown_entities_for_missing,
     ).get(mbid)
 
 
-def fetch_multiple_releases(mbids, includes=None, unknown_entities_for_missing=False):
+def fetch_multiple_releases(mbids, includes=None):
     """Get info related to multiple releases using their MusicBrainz IDs.
     Args:
         mbids (list): List of MBIDs of releases.
@@ -53,7 +54,6 @@ def fetch_multiple_releases(mbids, includes=None, unknown_entities_for_missing=F
             query=query,
             entity_type='release',
             mbids=mbids,
-            unknown_entities_for_missing=unknown_entities_for_missing,
         )
         release_ids = [release.id for release in releases.values()]
 
@@ -73,7 +73,13 @@ def fetch_multiple_releases(mbids, includes=None, unknown_entities_for_missing=F
                 source_entity_ids=release_ids,
                 includes_data=includes_data,
             )
-        releases = {str(mbid): serialize_releases(releases[mbid], includes_data[releases[mbid].id]) for mbid in mbids}
+
+        if 'comment' in includes:
+            for release in releases.values():
+                includes_data[release.id]['comment'] = release.comment
+
+        releases = {str(mbid): serialize_releases(release, includes_data[release.id])
+                    for mbid, release in releases.items()}
     return releases
 
 
@@ -121,7 +127,7 @@ def get_releases_using_recording_mbid(recording_mbid):
 
     # First fetch the recording so that redirects don't create any problem
     recording_redirect = recording.get_recording_by_mbid(recording_mbid)
-    recording_mbid = recording_redirect['id']
+    recording_mbid = recording_redirect['mbid']
     with mb_session() as db:
         releases = db.query(models.Release).\
                     join(models.Medium).\

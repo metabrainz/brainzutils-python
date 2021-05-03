@@ -8,7 +8,7 @@ from mbdata.models import Recording
 from sqlalchemy.orm import joinedload, subqueryload
 
 
-def get_recording_by_mbid(mbid, includes=None, unknown_entities_for_missing=False):
+def get_recording_by_mbid(mbid, includes=None):
     """ Get recording with MusicBrainz ID.
 
     Args:
@@ -23,11 +23,10 @@ def get_recording_by_mbid(mbid, includes=None, unknown_entities_for_missing=Fals
     return fetch_multiple_recordings(
         [mbid],
         includes=includes,
-        unknown_entities_for_missing=unknown_entities_for_missing,
     ).get(mbid)
 
 
-def get_many_recordings_by_mbid(mbids, includes=None, unknown_entities_for_missing=False):
+def get_many_recordings_by_mbid(mbids, includes=None):
     """ Get multiple recordings with MusicBrainz IDs. It fetches recordings
     using fetch_multiple_recordings.
 
@@ -44,11 +43,10 @@ def get_many_recordings_by_mbid(mbids, includes=None, unknown_entities_for_missi
     return fetch_multiple_recordings(
         mbids,
         includes,
-        unknown_entities_for_missing=unknown_entities_for_missing,
     )
 
 
-def fetch_multiple_recordings(mbids, includes=None, unknown_entities_for_missing=False):
+def fetch_multiple_recordings(mbids, includes=None):
     """ Fetch multiple recordings with MusicBrainz IDs.
 
     Args:
@@ -83,7 +81,6 @@ def fetch_multiple_recordings(mbids, includes=None, unknown_entities_for_missing
             query=query,
             entity_type='recording',
             mbids=mbids,
-            unknown_entities_for_missing=unknown_entities_for_missing,
         )
 
         recording_ids = [recording.id for recording in recordings.values()]
@@ -119,6 +116,7 @@ def fetch_multiple_recordings(mbids, includes=None, unknown_entities_for_missing
                 includes_data=includes_data,
             )
 
-        serial_recordings = {str(mbid): serialize_recording(recordings[mbid], includes_data[recordings[mbid].id]) for mbid in mbids}
+        serial_recordings = {str(mbid): serialize_recording(recording, includes_data[recording.id])
+                             for mbid, recording in recordings.items()}
 
     return serial_recordings

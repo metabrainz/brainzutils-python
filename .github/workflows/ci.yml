@@ -1,0 +1,44 @@
+name: Docker Image CI
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Login to Docker Hub
+      run: echo ${{ secrets.DOCKER_HUB_PASSWORD }} | docker login -u ${{ secrets.DOCKER_HUB_USERNAME }} --password-stdin
+      continue-on-error: true
+
+    - name: Pull docker images
+      run: docker-compose -f test/docker-compose.yml pull
+
+    - uses: satackey/action-docker-layer-caching@v0.0.11
+      continue-on-error: true
+
+    - name: Build the Docker image
+      run: docker-compose -f test/docker-compose.yml -p brainzutils_test build
+    
+    - name: Bring up dependencies
+      run: docker-compose -f test/docker-compose.yml -p brainzutils_test up -d redis musicbrainz_db
+    
+    - name: Run tests
+      run: docker-compose -f test/docker-compose.yml -p brainzutils_test run --rm test
+
+    - name: Publish Unit Test Results
+      uses: EnricoMi/publish-unit-test-result-action@v1.11
+      if: ${{ always() }}
+      with:
+        files: reports/test_results.xml
+    
+    - name: Bring down containers
+      run: docker-compose -f test/docker-compose.yml -p brainzutils_test down

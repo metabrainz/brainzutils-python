@@ -135,6 +135,12 @@ class CacheTestCase(unittest.TestCase):
         sleep(1.1)
         self.assertEqual(cache.get("a"), None)
 
+    def test_sadd(self):
+        cache.sadd("myset", {"a", "b", "c"}, expirein=1000)
+        cache.sadd("myset", ["a", "f", "d"], expirein=1000)
+        cache.sadd("myset", "z", expirein=1000)
+        self.assertEqual({"a", "b", "c", "d", "f", "z"}, cache.smembers("myset"))
+
 
 class CacheKeyTestCase(unittest.TestCase):
     namespace = "NS_TEST"

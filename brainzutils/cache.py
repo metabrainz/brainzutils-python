@@ -12,6 +12,7 @@ versions of data saved in the cache.
 
 More information about Redis can be found at http://redis.io/.
 """
+import builtins
 from functools import wraps
 import datetime
 import re
@@ -21,7 +22,6 @@ import msgpack
 
 _r: redis.StrictRedis = None
 _glob_namespace: str = None
-
 
 NS_REGEX = re.compile('[a-zA-Z0-9_-]+$')
 CONTENT_ENCODING = "utf-8"
@@ -56,6 +56,7 @@ def init_required(f):
             raise RuntimeError("Cache module needs to be initialized before "
                                "use! See documentation for more info.")
         return f(*args, **kwargs)
+
     return decorated
 
 
@@ -197,17 +198,18 @@ def delete_many(keys, namespace=None):
 
 
 @init_required
-def increment(key, namespace=None):
+def increment(key, amount=1, namespace=None):
     """ Increment the value for given key using the INCR command.
 
     Args:
         key: Key of the item that needs to be incremented
+        amount: the amount to increment the value by
         namespace: Namespace for the key
 
     Returns:
         An integer equal to the value after increment
     """
-    return _r.incr(_prep_keys_list([key], namespace)[0])
+    return _r.incr(_prep_keys_list([key], namespace)[0], amount=amount)
 
 
 @init_required
@@ -289,6 +291,52 @@ def hdel(name, keys, namespace=None):
     if not isinstance(keys, list):
         keys = [keys]
     return _r.hdel(_prep_keys_list([name], namespace)[0], *keys)
+
+
+@init_required
+def sadd(name, keys, expirein, encode=True, namespace=None):
+    """Add the specified keys to the set stored at name using SADD
+    Note that it is not possible to expire a single value stored in a set.  The ``expirein``
+    argument will set the expiration period of the entire set stored at ``name``. Therefore,
+    any additions to a set will reset its expiry to the value of ``expirein`` passed in
+    last call.
+    Args:
+        name: Name of the set
+        keys: keys to add to the set
+        expirein: the number of seconds after which the item should expire
+        namespace: namespace for the name
+        encode: True if the value should be encoded with msgpack, False otherwise
+
+    Returns:
+        the number of elements that were added to the set, not including all the elements already present into the set.
+    """
+    prepared_name = _prep_key(name, namespace)
+    if not isinstance(keys, list) and not isinstance(keys, builtins.set):
+        keys = {keys}
+
+    if encode:
+        keys = {_encode_val(key) for key in keys}
+
+    result = _r.sadd(prepared_name, *keys)
+    expire(prepared_name, expirein, namespace)
+    return result
+
+
+@init_required
+def smembers(name, decode=True, namespace=None):
+    """Returns all the members of the set value stored at name.
+    Args:
+        name: Name of the set
+        decode: True if value should be decoded with msgpack, False otherwise
+        namespace: namespace for the name
+
+    Returns:
+        all members of the set
+    """
+    keys = _r.smembers(_prep_key(name, namespace))
+    if decode:
+        keys = {_decode_val(key) for key in keys}
+    return keys
 
 
 @init_required

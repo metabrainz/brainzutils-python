@@ -9,7 +9,7 @@ from brainzutils.musicbrainz_db.utils import get_entities_by_gids
 from brainzutils.musicbrainz_db.helpers import get_relationship_info, get_tags
 
 
-def get_release_group_by_id(mbid, includes=None, unknown_entities_for_missing=False):
+def get_release_group_by_mbid(mbid, includes=None):
     """Get release group with the MusicBrainz ID.
     Args:
         mbid (uuid): MBID(gid) of the release group.
@@ -22,11 +22,10 @@ def get_release_group_by_id(mbid, includes=None, unknown_entities_for_missing=Fa
     return fetch_multiple_release_groups(
         [mbid],
         includes=includes,
-        unknown_entities_for_missing=unknown_entities_for_missing,
     ).get(mbid)
 
 
-def fetch_multiple_release_groups(mbids, includes=None, unknown_entities_for_missing=False):
+def fetch_multiple_release_groups(mbids, includes=None):
     """Get info related to multiple release groups using their MusicBrainz IDs.
     Args:
         mbids (list): List of MBIDs of releases groups.
@@ -53,7 +52,6 @@ def fetch_multiple_release_groups(mbids, includes=None, unknown_entities_for_mis
             query=query,
             entity_type='release_group',
             mbids=mbids,
-            unknown_entities_for_missing=unknown_entities_for_missing,
         )
         release_group_ids = [release_group.id for release_group in release_groups.values()]
 
@@ -113,8 +111,8 @@ def fetch_multiple_release_groups(mbids, includes=None, unknown_entities_for_mis
         for release_group in release_groups.values():
             includes_data[release_group.id]['meta'] = release_group.meta
             includes_data[release_group.id]['type'] = release_group.type
-        release_groups = {str(mbid): serialize_release_groups(release_groups[mbid], includes_data[release_groups[mbid].id])
-                          for mbid in mbids}
+        release_groups = {str(mbid): serialize_release_groups(release_group, includes_data[release_group.id])
+                          for mbid, release_group in release_groups.items()}
         return release_groups
 
 

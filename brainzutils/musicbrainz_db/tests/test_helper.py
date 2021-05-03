@@ -60,7 +60,7 @@ class HelpersTestCase(TestCase):
                     'end-year': None,
                     'direction': 'forward',
                     'url': {
-                        'id': '7462ea62-7439-47f7-93bc-a425d1d989e8',
+                        'mbid': '7462ea62-7439-47f7-93bc-a425d1d989e8',
                         'url': 'http://www.suisto.fi/'
                     }
                 },
@@ -71,7 +71,7 @@ class HelpersTestCase(TestCase):
                     'end-year': None,
                     'direction': 'forward',
                     'url': {
-                        'id': '8de22e00-c8e8-475f-814e-160ef761da63',
+                        'mbid': '8de22e00-c8e8-475f-814e-160ef761da63',
                         'url': 'https://twitter.com/Suisto'
                     }
                 }

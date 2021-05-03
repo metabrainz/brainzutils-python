@@ -1,3 +1,3 @@
 #!/bin/bash
 
-docker-compose -f test/docker-compose.test.yml -p brainzutils_test run --rm test
+docker-compose -f test/docker-compose.yml -p brainzutils_test run --rm test
