@@ -8,7 +8,7 @@ from brainzutils.musicbrainz_db.serialize import serialize_works
 from brainzutils.musicbrainz_db.helpers import get_relationship_info
 
 
-def get_work_by_id(mbid, includes=None, unknown_entities_for_missing=False):
+def get_work_by_mbid(mbid, includes=None):
     """Get work with the MusicBrainz ID.
 
     Args:
@@ -22,11 +22,10 @@ def get_work_by_id(mbid, includes=None, unknown_entities_for_missing=False):
     return fetch_multiple_works(
         [mbid],
         includes=includes,
-        unknown_entities_for_missing=unknown_entities_for_missing,
     ).get(mbid)
 
 
-def fetch_multiple_works(mbids, includes=None, unknown_entities_for_missing=False):
+def fetch_multiple_works(mbids, includes=None):
     """Get info related to multiple works using their MusicBrainz IDs.
 
     Args:
@@ -47,7 +46,6 @@ def fetch_multiple_works(mbids, includes=None, unknown_entities_for_missing=Fals
             query=query,
             entity_type='work',
             mbids=mbids,
-            unknown_entities_for_missing=unknown_entities_for_missing,
         )
         work_ids = [work.id for work in works.values()]
 
@@ -71,8 +69,8 @@ def fetch_multiple_works(mbids, includes=None, unknown_entities_for_missing=Fals
 
         if 'rating' in includes:
             for work in works.values():
-                includes_data[work.id]['rating'] = work.rating    
+                includes_data[work.id]['rating'] = work.rating
 
         for work in works.values():
             includes_data[work.id]['type'] = work.type
-    return {str(mbid): serialize_works(works[mbid], includes_data[works[mbid].id]) for mbid in mbids}
+    return {str(mbid): serialize_works(work, includes_data[work.id]) for mbid, work in works.items()}

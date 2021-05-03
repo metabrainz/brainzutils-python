@@ -8,12 +8,14 @@ from brainzutils.musicbrainz_db.serialize import serialize_artists
 from brainzutils.musicbrainz_db.includes import check_includes
 
 
-def get_artist_by_id(mbid, includes=None, unknown_entities_for_missing=False):
+def get_artist_by_mbid(mbid, includes=None):
     """Get artist with MusicBrainz ID.
     Args:
         mbid (uuid): MBID(gid) of the artist.
+        includes (list): List of values to be included.
+                         For list of possible values see includes.py.
     Returns:
-        Dictionary containing the artist information
+        Dictionary containing the artist information.
     """
     if includes is None:
         includes = []
@@ -21,11 +23,10 @@ def get_artist_by_id(mbid, includes=None, unknown_entities_for_missing=False):
     return fetch_multiple_artists(
         [mbid],
         includes=includes,
-        unknown_entities_for_missing=unknown_entities_for_missing,
     ).get(mbid)
 
 
-def fetch_multiple_artists(mbids, includes=None, unknown_entities_for_missing=False):
+def fetch_multiple_artists(mbids, includes=None):
     """Get info related to multiple artists using their MusicBrainz IDs.
     Args:
         mbids (list): List of MBIDs of artists.
@@ -33,19 +34,24 @@ def fetch_multiple_artists(mbids, includes=None, unknown_entities_for_missing=Fa
     Returns:
         Dictionary containing info of multiple artists keyed by their mbid.
     """
+
     if includes is None:
         includes = []
     includes_data = defaultdict(dict)
     check_includes('artist', includes)
+
     with mb_session() as db:
-        query = db.query(models.Artist).\
-                options(joinedload("type"))
+        query = db.query(models.Artist)
+
+        if 'type' in includes:
+            query = query.options(joinedload('type'))
+
         artists = get_entities_by_gids(
             query=query,
             entity_type='artist',
             mbids=mbids,
-            unknown_entities_for_missing=unknown_entities_for_missing,
         )
+
         artist_ids = [artist.id for artist in artists.values()]
 
         if 'artist-rels' in includes:
@@ -69,7 +75,13 @@ def fetch_multiple_artists(mbids, includes=None, unknown_entities_for_missing=Fa
         for artist in artists.values():
             includes_data[artist.id]['rating'] = artist.rating
 
-    for artist in artists.values():
-        includes_data[artist.id]['type'] = artist.type
-    artists = {str(mbid): serialize_artists(artists[mbid], includes_data[artists[mbid].id]) for mbid in mbids}
+    if 'comment' in includes:
+        for artist in artists.values():
+            includes_data[artist.id]['comment'] = artist.comment
+
+    if 'type' in includes:
+        for artist in artists.values():
+            includes_data[artist.id]['type'] = artist.type
+
+    artists = {str(mbid): serialize_artists(artist, includes_data[artist.id]) for mbid, artist in artists.items()}
     return artists

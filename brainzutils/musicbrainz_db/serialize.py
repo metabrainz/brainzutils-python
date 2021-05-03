@@ -7,7 +7,7 @@ def serialize_areas(area, includes=None):
     if includes is None:
         includes = {}
     data = {
-        'id': area.gid,
+        'mbid': area.gid,
         'name': area.name,
     }
 
@@ -51,7 +51,7 @@ def serialize_artist_credit(artist_credit):
     data = []
     for artist_credit_name in artist_credit.artists:
         artist_credit_data = {
-            'id': artist_credit_name.artist.gid,
+            'mbid': artist_credit_name.artist.gid,
             'name': artist_credit_name.artist.name,
         }
 
@@ -71,7 +71,7 @@ def serialize_recording(recording, includes=None):
     if includes is None:
         includes = {}
     data = {
-        'id': recording.gid,
+        'mbid': recording.gid,
         'name': recording.name,
     }
 
@@ -104,7 +104,7 @@ def serialize_places(place, includes=None):
     if includes is None:
         includes = {}
     data = {
-        'id': place.gid,
+        'mbid': place.gid,
         'name': place.name,
         'address': place.address,
     }
@@ -130,7 +130,7 @@ def serialize_labels(label, includes=None):
     if includes is None:
         includes = {}
     data = {
-        'id': label.gid,
+        'mbid': label.gid,
         'name': label.name,
     }
 
@@ -156,19 +156,23 @@ def serialize_artists(artist, includes=None):
     if includes is None:
         includes = {}
     data = {
-        'id': artist.gid,
+        'mbid': artist.gid,
         'name': artist.name,
         'sort_name': artist.sort_name,
     }
 
-    if 'type' in includes and includes['type']:
-        data['type'] = includes['type'].name
+    if 'comment' in includes:
+        data['comment'] = artist.comment
+
+    if 'type' in includes:
+        data['type'] = artist.type.name
 
     if 'rating' in includes and includes['rating']:
         data['rating'] = artist.rating
 
     if 'relationship_objs' in includes:
         serialize_relationships(data, artist, includes['relationship_objs'])
+
     return data
 
 
@@ -187,7 +191,7 @@ def serialize_release_groups(release_group, includes=None):
         includes = {}
 
     data = {
-        'id': release_group.gid,
+        'mbid': release_group.gid,
         'title': release_group.name,
     }
 
@@ -238,7 +242,7 @@ def serialize_track(track, includes=None):
     if includes is None:
         includes = {}
     data = {
-        'id': track.gid,
+        'mbid': track.gid,
         'name': track.name,
         'number': track.number,
         'position': track.position,
@@ -254,7 +258,7 @@ def serialize_releases(release, includes=None):
         includes = {}
 
     data = {
-        'id': release.gid,
+        'mbid': release.gid,
         'name': release.name,
     }
 
@@ -267,6 +271,10 @@ def serialize_releases(release, includes=None):
     if 'media' in includes:
         data['medium-list'] = [serialize_medium(medium, includes={'tracks': medium.tracks})
                                for medium in includes['media']]
+
+    if 'comment' in includes:
+        data['comment'] = release.comment
+
     return data
 
 
@@ -274,7 +282,7 @@ def serialize_events(event, includes=None):
     if includes is None:
         includes = {}
     data = {
-        'id': event.gid,
+        'mbid': event.gid,
         'name': event.name,
     }
     if 'type' in includes and includes['type']:
@@ -292,7 +300,7 @@ def serialize_url(url, includes=None):
     if includes is None:
         includes = {}
     data = {
-        'id': url.gid,
+        'mbid': url.gid,
         'url': url.url,
     }
 
@@ -305,7 +313,7 @@ def serialize_works(work, includes=None):
     if includes is None:
         includes = {}
     data = {
-        'id': work.gid,
+        'mbid': work.gid,
         'name': work.name,
     }
 
@@ -334,7 +342,7 @@ def serialize_series(series, includes=None):
         includes = []
 
     data = {
-        'id': series.gid,
+        'mbid': series.gid,
         'name': series.name,
     }
 
