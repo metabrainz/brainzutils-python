@@ -12,6 +12,7 @@ versions of data saved in the cache.
 
 More information about Redis can be found at http://redis.io/.
 """
+import builtins
 from functools import wraps
 import shutil
 import hashlib
@@ -23,11 +24,9 @@ import redis
 import msgpack
 from brainzutils import locks
 
-
 _r = None  # type: redis.StrictRedis
-_glob_namespace = None  # type: bytes
+_glob_namespace = None  # type: str
 _ns_versions_loc = None  # type: str
-
 
 SHA1_LENGTH = 40
 MAX_KEY_LENGTH = 250
@@ -56,7 +55,6 @@ def init(host="localhost", port=6379, db_number=0, namespace=""):
     )
 
     _glob_namespace = namespace + ":"
-    _glob_namespace = _glob_namespace.encode(ENCODING_ASCII)
     if len(_glob_namespace) + SHA1_LENGTH > MAX_KEY_LENGTH:
         raise ValueError("Namespace is too long.")
 
@@ -68,6 +66,7 @@ def init_required(f):
             raise RuntimeError("Cache module needs to be initialized before "
                                "use! See documentation for more info.")
         return f(*args, **kwargs)
+
     return decorated
 
 
@@ -174,8 +173,8 @@ def set_many(mapping, expirein, namespace=None, encode=True):
     # TODO: Fix return value
     result = _r.mset(_prep_dict(mapping, namespace, encode))
     if expirein:
-        for key in _prep_keys_list(list(mapping.keys()), namespace):
-            _r.pexpire(key, expirein * 1000)
+        for key in list(mapping.keys()):
+            expire(key, expirein, namespace)
 
     return result
 
@@ -305,6 +304,52 @@ def hdel(name, keys, namespace=None):
 
 
 @init_required
+def sadd(name, keys, expirein, encode=True, namespace=None):
+    """Add the specified keys to the set stored at name using SADD
+    Note that it is not possible to expire a single value stored in a set.  The ``expirein``
+    argument will set the expiration period of the entire set stored at ``name``. Therefore,
+    any additions to a set will reset its expiry to the value of ``expirein`` passed in
+    last call.
+    Args:
+        name: Name of the set
+        keys: keys to add to the set
+        expirein: the number of seconds after which the item should expire
+        namespace: namespace for the name
+        encode: True if the value should be encoded with msgpack, False otherwise
+
+    Returns:
+        the number of elements that were added to the set, not including all the elements already present into the set.
+    """
+    prepared_name = _prep_key(name, namespace)
+    if not isinstance(keys, list) and not isinstance(keys, builtins.set):
+        keys = {keys}
+
+    if encode:
+        keys = {_encode_val(key) for key in keys}
+
+    result = _r.sadd(prepared_name, *keys)
+    expire(prepared_name, expirein, namespace)
+    return result
+
+
+@init_required
+def smembers(name, decode=True, namespace=None):
+    """Returns all the members of the set value stored at name.
+    Args:
+        name: Name of the set
+        decode: True if value should be decoded with msgpack, False otherwise
+        namespace: namespace for the name
+
+    Returns:
+        all members of the set
+    """
+    keys = _r.smembers(_prep_key(name, namespace))
+    if decode:
+        keys = {_decode_val(key) for key in keys}
+    return keys
+
+
+@init_required
 def flush_all():
     _r.flushdb()
 
@@ -321,14 +366,14 @@ def gen_key(key, *attributes):
     """
     if not isinstance(key, str):
         key = str(key)
-    key = key.encode(ENCODING_ASCII, errors='xmlcharrefreplace')
+    key = key.encode(ENCODING_ASCII, errors='xmlcharrefreplace').decode(ENCODING_ASCII)
 
     for attr in attributes:
         if not isinstance(attr, str):
             attr = str(attr)
-        key += b'_' + attr.encode(ENCODING_ASCII, errors='xmlcharrefreplace')
+        key += '_' + attr.encode(ENCODING_ASCII, errors='xmlcharrefreplace').decode(ENCODING_ASCII)
 
-    key = key.replace(b' ', b'_')  # spaces are not allowed
+    key = key.replace(' ', '_')  # spaces are not allowed
 
     return key
 
@@ -345,7 +390,7 @@ def _prep_key(key, namespace):
     if namespace:
         key = "%s:%s" % (namespace, key)
     if not isinstance(key, bytes):
-        key = key.encode(ENCODING_ASCII, errors='xmlcharrefreplace')
+        key = key.encode(ENCODING_ASCII, errors='xmlcharrefreplace').decode(ENCODING_ASCII)
     return _glob_namespace + key
 
 
