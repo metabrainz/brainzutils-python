@@ -1,11 +1,8 @@
-import datetime
 from functools import wraps
 import os
 import socket
 from time import time_ns
 from typing import Dict
-
-from redis import ResponseError
 
 from brainzutils import cache
 
@@ -29,10 +26,11 @@ def metrics_init_required(f):
 
 @cache.init_required
 @metrics_init_required
-def set(metric_name: str, tags: Dict[str,str]={}, timestamp: int=None, **fields):
+def set(metric_name: str, tags: Dict[str, str] = None, timestamp: int = None, **fields):
     """
-        Submit a metric to the MetaBrainz influx datastore for graphing/monitoring
-        purposes.
+        Submit a metric to be read by the MetaBrainz influx datastore for graphing/monitoring
+        purposes. These metrics are stored in redis in the influxdb line protocol format:
+        https://docs.influxdata.com/influxdb/v2.0/reference/syntax/line-protocol/
 
         Args:
           metric_name: The name of the metric to record.
@@ -48,23 +46,25 @@ def set(metric_name: str, tags: Dict[str,str]={}, timestamp: int=None, **fields)
     except KeyError:
         host = socket.gethostname()
 
+    if tags is None:
+        tags = {}
+
     tags["dc"] = "hetzner"
     tags["server"] = host
     tags["project"] = _metrics_project_name
-    tag_string = ",".join([ "%s=%s" % (k, tags[k]) for k in tags ])
+    tag_string = ",".join([ "%s=%s" % (k, v) for k, v in tags.items() ])
 
     fields_list = []
-    for k in fields:
-        if type(fields[k]) == int:
-            fields_list.append("%s=%di" % (k, fields[k]))
-        elif type(fields[k]) == bool and fields[k] == True:
-            fields_list.append("%s=t" % (k))
-        elif type(fields[k]) == bool and fields[k] == False:
-            fields_list.append("%s=f" % (k))
+    for k, v in fields.items():
+        if type(v) == int:
+            fields_list.append("%s=%di" % (k, v))
+        elif type(v) == bool:
+            val = "t" if v else "f"
+            fields_list.append("%s=%s" % (k, val))
         elif type(fields[k]) == str:
-            fields_list.append('%s="%s"' % (k, fields[k]))
+            fields_list.append('%s="%s"' % (k, v))
         else:
-            fields_list.append("%s=%s" % (k, str(fields[k])))
+            fields_list.append("%s=%s" % (k, str(v)))
 
     fields = " ".join(fields_list)
 

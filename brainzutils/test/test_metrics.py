@@ -1,7 +1,5 @@
 import os
 from unittest import mock, TestCase
-from freezegun import freeze_time
-from redis import ResponseError
 
 from brainzutils import cache
 from brainzutils import metrics
@@ -20,5 +18,5 @@ class MetricsTestCase(TestCase):
         metrics.init('listenbrainz.org')
         os.environ["PRIVATE_IP"] = "127.0.0.1"
         metrics.set("my_metric", timestamp=1619629462352960742, test_i=2, test_fl=.3, test_t=True, test_f=False, test_s="gobble")
-        rpush.assert_called_with(metrics.REDIS_METRICS_KEY, 
+        rpush.assert_called_with(metrics.REDIS_METRICS_KEY,
             'my_metric,dc=hetzner,server=127.0.0.1,project=listenbrainz.org test_i=2i test_fl=0.3 test_t=t test_f=f test_s="gobble" 1619629462352960742')
