@@ -374,7 +374,7 @@ def _prep_dict(dictionary, namespace=None, encode=True):
             for key, value in dictionary.items()}
 
 
-def _prep_key(key, namespace):
+def _prep_key(key, namespace=None):
     """Prepares a key for use with Redis."""
     if namespace:
         key = "%s:%s" % (namespace, key)
