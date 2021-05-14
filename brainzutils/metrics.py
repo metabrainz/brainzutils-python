@@ -66,7 +66,7 @@ def set(metric_name: str, tags: Dict[str, str] = None, timestamp: int = None, **
         else:
             fields_list.append("%s=%s" % (k, str(v)))
 
-    fields = " ".join(fields_list)
+    fields = ",".join(fields_list)
 
     if timestamp is None:
         timestamp = time_ns()
