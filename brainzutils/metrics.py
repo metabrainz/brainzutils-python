@@ -59,7 +59,7 @@ def set(metric_name: str, tags: Dict[str, str] = None, timestamp: int = None, **
         if type(v) == int:
             fields_list.append("%s=%di" % (k, v))
         elif type(v) == float:
-            fields_list.append('%s="%f"' % (k, v))
+            fields_list.append('%s=%f' % (k, v))
         elif type(v) == bool:
             val = "t" if v else "f"
             fields_list.append("%s=%s" % (k, val))
