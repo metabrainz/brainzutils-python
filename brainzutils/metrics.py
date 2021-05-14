@@ -1,6 +1,7 @@
 from functools import wraps
 import os
 import socket
+import logging
 from time import time_ns
 from typing import Dict
 
@@ -74,13 +75,9 @@ def set(metric_name: str, tags: Dict[str, str] = None, timestamp: int = None, **
         timestamp = time_ns()
 
     metric = "%s,%s %s %d" % (metric_name, tag_string, fields, timestamp)
-    print(metric)
-    import logging
-    logging.error(metric)
-
     try:
         cache._r.rpush(REDIS_METRICS_KEY, metric)
     except Exception as err:
-        print("Cannot set redis metric" % str(err))
+        logging.error("Cannot set redis metric" % str(err))
         # If we fail to push the metric to redis, so be it.
         pass
