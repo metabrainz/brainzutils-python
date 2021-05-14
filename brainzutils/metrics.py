@@ -74,6 +74,10 @@ def set(metric_name: str, tags: Dict[str, str] = None, timestamp: int = None, **
         timestamp = time_ns()
 
     metric = "%s,%s %s %d" % (metric_name, tag_string, fields, timestamp)
+    print(metric)
+    import logging
+    logging.error(metric)
+
     try:
         cache._r.rpush(REDIS_METRICS_KEY, metric)
     except Exception as err:
