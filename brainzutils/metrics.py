@@ -77,5 +77,5 @@ def set(metric_name: str, tags: Dict[str, str] = None, timestamp: int = None, **
     metric = "%s,%s %s %d" % (metric_name, tag_string, fields, timestamp)
     try:
         cache._r.rpush(REDIS_METRICS_KEY, metric)
-    except Exception as err:
-        logging.error("Cannot set redis metric" % str(err))
+    except Exception:
+        logging.error("Cannot set redis metric:", exc_info=True)
