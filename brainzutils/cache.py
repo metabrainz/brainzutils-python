@@ -13,9 +13,13 @@ versions of data saved in the cache.
 More information about Redis can be found at http://redis.io/.
 """
 import builtins
+import os
+import socket
 from functools import wraps
 import datetime
 import re
+from typing import Optional
+
 import redis
 import msgpack
 
@@ -28,7 +32,7 @@ CONTENT_ENCODING = "utf-8"
 ENCODING_ASCII = "ascii"
 
 
-def init(host="localhost", port=6379, db_number=0, namespace=""):
+def init(host="localhost", port=6379, db_number=0, namespace="", client_name: Optional[str] = None):
     """Initializes Redis client. Needs to be called before use.
 
     Namespace versions are stored in a local directory.
@@ -38,12 +42,25 @@ def init(host="localhost", port=6379, db_number=0, namespace=""):
         port (int): Redis port.
         db_number (int): Redis database number.
         namespace (str): Global namespace that will be prepended to all keys.
+        client_name: The client name to assign to the redis connection. usually
+         only needs to be specified if at all during testing or development.
     """
+
+    # The first priority in setting the client name is to set the user specified client_name
+    # as this can come in handy during testing and development. Otherwise, we use CONTAINER_NAME
+    # environment variable, this is always set in production. Finally, we fall back to the host
+    # name, not as informative as the container name but something is better than nothing.
+    if client_name is None:
+        client_name = os.getenv("CONTAINER_NAME", None)
+    if client_name is None:
+        client_name = socket.gethostname()
+
     global _r, _glob_namespace
     _r = redis.StrictRedis(
         host=host,
         port=port,
         db=db_number,
+        client_name=client_name
     )
 
     _glob_namespace = namespace + ":"
