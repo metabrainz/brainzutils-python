@@ -43,8 +43,8 @@ def init(host: str = "localhost", port: int = 6379, db_number: int = 0,
         port: Redis port.
         db_number: Redis database number.
         namespace: Global namespace that will be prepended to all keys.
-        client_name: The client name to assign to the redis connection. usually
-         only needs to be specified if at all during testing or development.
+        client_name: The client name to assign to the redis connection. This value is used to identify which clients
+          are connected to a server, and is only used for debugging purposes.
     """
 
     # The first priority in setting the client name is to set the user specified
