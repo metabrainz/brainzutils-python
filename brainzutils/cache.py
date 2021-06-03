@@ -33,7 +33,7 @@ ENCODING_ASCII = "ascii"
 
 
 def init(host: str = "localhost", port: int = 6379, db_number: int = 0,
-         namespace: str = "", client_name: Optional[str] = None):
+         namespace: str = "", client_name: str = None):
     """Initializes Redis client. Needs to be called before use.
 
     Namespace versions are stored in a local directory.
