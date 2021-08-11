@@ -6,7 +6,10 @@
 #
 import time
 from functools import update_wrapper
+
 from flask import request, g
+from werkzeug.exceptions import TooManyRequests
+
 from brainzutils import cache
 
 # g key for the timeout when limits must be refreshed from cache
@@ -155,8 +158,9 @@ def on_over_limit(limit):
     ''' 
         Set a nice and readable error message for over the limit requests.
     '''
-    return 'You have exceeded your rate limit. See the X-RateLimit-* response headers for more ' \
-           'information on your current rate limit.\n', 429
+    raise TooManyRequests(
+        'You have exceeded your rate limit. See the X-RateLimit-* response headers for more ' \
+        'information on your current rate limit.')
 
 
 def check_limit_freshness():
