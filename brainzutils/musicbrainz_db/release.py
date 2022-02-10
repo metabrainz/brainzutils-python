@@ -44,12 +44,15 @@ def fetch_multiple_releases(mbids, includes=None):
         query = db.query(models.Release)
         if 'release-groups' in includes:
             query = query.options(joinedload('release_group'))
+        if 'artists' in includes:
+            query = query.options(joinedload('artist_credit'))
         if 'media' in includes:
             # Fetch media with tracks
             query = query.options(joinedload('mediums')).\
                     options(joinedload('mediums.tracks')).\
                     options(joinedload('mediums.format')).\
-                    options(joinedload('mediums.tracks.recording'))
+                    options(joinedload('mediums.tracks.recording')).\
+                    options(joinedload('mediums.tracks.recording.artist_credit'))
         releases = get_entities_by_gids(
             query=query,
             entity_type='release',
@@ -57,9 +60,15 @@ def fetch_multiple_releases(mbids, includes=None):
         )
         release_ids = [release.id for release in releases.values()]
 
+        print(releases)
+
         if 'release-groups' in includes:
             for release in releases.values():
                 includes_data[release.id]['release-groups'] = release.release_group
+
+        if 'artists' in includes:
+            for release in releases.values():
+                includes_data[release.id]['artists'] = release.artist_credit
 
         if 'media' in includes:
             for release in releases.values():
