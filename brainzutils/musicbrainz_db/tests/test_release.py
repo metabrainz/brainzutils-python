@@ -11,79 +11,164 @@ class TestRelease:
                                                  includes=['media', 'release-groups'])
         assert release["name"] == "Master of Puppets"
         assert len(release["medium-list"][0]["track-list"]) == 8
-
         assert release["medium-list"][0]["track-list"] == [
             {
-               "mbid":"58c97804-bd98-3bc6-b8c7-5234db05bc2e",
-               "name":"Battery",
-               "number":"1",
-               "position":1,
-               "length":312373,
-               "recording_id":"3bfda26a-49fa-4bc4-a4d6-8bbfa0767ab7",
-               "recording_title":"Battery"
+                'mbid': '58c97804-bd98-3bc6-b8c7-5234db05bc2e',
+                'name': 'Battery',
+                'number': '1',
+                'position': 1,
+                'length': 312373,
+                'recording_id': '3bfda26a-49fa-4bc4-a4d6-8bbfa0767ab7',
+                'recording_title': 'Battery',
+                'artist-credit': [
+                    {
+                        'name': 'Metallica',
+                        'artist': {
+                            'mbid': '65f4f0c5-ef9e-490c-aee3-909e7ae6b2ab',
+                            'name': 'Metallica',
+                            'sort_name': 'Metallica'
+                        }
+                    }
+                ],
+                'artist-credit-phrase': 'Metallica'
             },
             {
-               "mbid":"51b179fa-8e72-383b-9549-0ae9a6dd9cfb",
-               "name":"Master of Puppets",
-               "number":"2",
-               "position":2,
-               "length":515226,
-               "recording_id":"0151d8a4-50c8-4036-b824-4a4f4b140e8e",
-               "recording_title":"Master of Puppets"
+                'mbid': '51b179fa-8e72-383b-9549-0ae9a6dd9cfb',
+                'name': 'Master of Puppets',
+                'number': '2',
+                'position': 2,
+                'length': 515226,
+                'recording_id': '0151d8a4-50c8-4036-b824-4a4f4b140e8e',
+                'recording_title': 'Master of Puppets',
+                'artist-credit': [
+                    {
+                        'name': 'Metallica',
+                        'artist': {
+                            'mbid': '65f4f0c5-ef9e-490c-aee3-909e7ae6b2ab',
+                            'name': 'Metallica',
+                            'sort_name': 'Metallica'
+                        }
+                    }
+                ],
+                'artist-credit-phrase': 'Metallica'
             },
             {
-               "mbid":"052e25d8-373e-3a5a-bced-bd47eb209dc5",
-               "name":"The Thing That Should Not Be",
-               "number":"3",
-               "position":3,
-               "length":396200,
-               "recording_id":"f5267fe1-5cb6-47f7-8df2-e6e8f09fa7ad",
-               "recording_title":"The Thing That Should Not Be"
+                'mbid': '052e25d8-373e-3a5a-bced-bd47eb209dc5',
+                'name': 'The Thing That Should Not Be',
+                'number': '3',
+                'position': 3,
+                'length': 396200,
+                'recording_id': 'f5267fe1-5cb6-47f7-8df2-e6e8f09fa7ad',
+                'recording_title': 'The Thing That Should Not Be',
+                'artist-credit': [
+                    {
+                        'name': 'Metallica',
+                        'artist': {
+                            'mbid': '65f4f0c5-ef9e-490c-aee3-909e7ae6b2ab',
+                            'name': 'Metallica',
+                            'sort_name': 'Metallica'
+                        }
+                    }
+                ],
+                'artist-credit-phrase': 'Metallica'},
+            {
+                'mbid': '00367246-d956-3a44-af4b-bc3cfd34ec49',
+                'name': 'Welcome Home (Sanitarium)',
+                'number': '4',
+                'position': 4,
+                'length': 386866,
+                'recording_id': 'a20860e9-7636-422b-a9cd-2da671b242a8',
+                'recording_title': 'Welcome Home (Sanitarium)',
+                'artist-credit': [
+                    {
+                        'name': 'Metallica',
+                        'artist': {
+                            'mbid': '65f4f0c5-ef9e-490c-aee3-909e7ae6b2ab',
+                            'name': 'Metallica',
+                            'sort_name': 'Metallica'
+                        }
+                    }
+                ],
+                'artist-credit-phrase': 'Metallica'
             },
             {
-               "mbid":"00367246-d956-3a44-af4b-bc3cfd34ec49",
-               "name":"Welcome Home (Sanitarium)",
-               "number":"4",
-               "position":4,
-               "length":386866,
-               "recording_id":"a20860e9-7636-422b-a9cd-2da671b242a8",
-               "recording_title":"Welcome Home (Sanitarium)"
+                'mbid': '77fac948-8223-3077-a25e-50d9512142f0',
+                'name': 'Disposable Heroes',
+                'number': '5',
+                'position': 5,
+                'length': 496640,
+                'recording_id': '93ae3251-d9b5-46ee-9849-7b16d5e57d8b',
+                'recording_title': 'Disposable Heroes',
+                'artist-credit': [
+                    {
+                        'name': 'Metallica',
+                        'artist': {
+                            'mbid': '65f4f0c5-ef9e-490c-aee3-909e7ae6b2ab',
+                            'name': 'Metallica',
+                            'sort_name': 'Metallica'
+                        }
+                    }
+                ],
+                'artist-credit-phrase': 'Metallica'},
+            {
+                'mbid': '7f97a9e0-89ec-37ed-a3d7-5a7390ffa43b',
+                'name': 'Leper Messiah',
+                'number': '6',
+                'position': 6,
+                'length': 339866,
+                'recording_id': '2d9a5b40-f5e6-4499-ab7a-567fe3b42ab9',
+                 'recording_title': 'Leper Messiah',
+                'artist-credit': [
+                    {
+                        'name': 'Metallica',
+                        'artist': {
+                            'mbid': '65f4f0c5-ef9e-490c-aee3-909e7ae6b2ab',
+                            'name': 'Metallica',
+                            'sort_name': 'Metallica'
+                        }
+                    }
+                ],
+                'artist-credit-phrase': 'Metallica'
             },
             {
-               "mbid":"77fac948-8223-3077-a25e-50d9512142f0",
-               "name":"Disposable Heroes",
-               "number":"5",
-               "position":5,
-               "length":496640,
-               "recording_id":"93ae3251-d9b5-46ee-9849-7b16d5e57d8b",
-               "recording_title":"Disposable Heroes"
+                'mbid': 'b7e772d3-3a9b-32ad-8e5c-e8c079d5e4f4',
+                'name': 'Orion',
+                'number': '7',
+                'position': 7,
+                'length': 507426,
+                'recording_id': 'b6cbe414-8b21-4600-8588-f6a80fd7043a',
+                'recording_title': 'Orion',
+                'artist-credit': [
+                    {
+                        'name': 'Metallica',
+                        'artist': {
+                            'mbid': '65f4f0c5-ef9e-490c-aee3-909e7ae6b2ab',
+                            'name': 'Metallica',
+                            'sort_name': 'Metallica'
+                        }
+                    }
+                ],
+                'artist-credit-phrase': 'Metallica'
             },
             {
-               "mbid":"7f97a9e0-89ec-37ed-a3d7-5a7390ffa43b",
-               "name":"Leper Messiah",
-               "number":"6",
-               "position":6,
-               "length":339866,
-               "recording_id":"2d9a5b40-f5e6-4499-ab7a-567fe3b42ab9",
-               "recording_title":"Leper Messiah"
-            },
-            {
-               "mbid":"b7e772d3-3a9b-32ad-8e5c-e8c079d5e4f4",
-               "name":"Orion",
-               "number":"7",
-               "position":7,
-               "length":507426,
-               "recording_id":"b6cbe414-8b21-4600-8588-f6a80fd7043a",
-               "recording_title":"Orion"
-            },
-            {
-               "mbid":"0949ef68-edef-39a1-a3a0-dc666920f629",
-               "name":"Damage, Inc.",
-               "number":"8",
-               "position":8,
-               "length":330933,
-               "recording_id":"01ea1189-e0d2-48a0-9dc2-c615785a5ae0",
-               "recording_title":"Damage, Inc."
+                'mbid': '0949ef68-edef-39a1-a3a0-dc666920f629',
+                'name': 'Damage, Inc.',
+                'number': '8',
+                'position': 8,
+                'length': 330933,
+                'recording_id': '01ea1189-e0d2-48a0-9dc2-c615785a5ae0',
+                'recording_title': 'Damage, Inc.',
+                'artist-credit': [
+                    {
+                        'name': 'Metallica',
+                        'artist': {
+                            'mbid': '65f4f0c5-ef9e-490c-aee3-909e7ae6b2ab',
+                            'name': 'Metallica',
+                            'sort_name': 'Metallica'
+                        }
+                    }
+                ],
+                'artist-credit-phrase': 'Metallica'
             }
         ]
 
