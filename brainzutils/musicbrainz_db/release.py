@@ -45,14 +45,19 @@ def fetch_multiple_releases(mbids, includes=None):
         if 'release-groups' in includes:
             query = query.options(joinedload('release_group'))
         if 'artists' in includes:
-            query = query.options(joinedload('artist_credit'))
+            query = query.\
+                options(joinedload("artist_credit")).\
+                options(joinedload("artist_credit.artists")).\
+                options(joinedload("artist_credit.artists.artist"))
         if 'media' in includes:
             # Fetch media with tracks
             query = query.options(joinedload('mediums')).\
                     options(joinedload('mediums.tracks')).\
                     options(joinedload('mediums.format')).\
                     options(joinedload('mediums.tracks.recording')).\
-                    options(joinedload('mediums.tracks.recording.artist_credit'))
+                    options(joinedload('mediums.tracks.recording.artist_credit')).\
+                    options(joinedload('mediums.tracks.recording.artist_credit.artists')).\
+                    options(joinedload('mediums.tracks.recording.artist_credit.artists.artist'))
         releases = get_entities_by_gids(
             query=query,
             entity_type='release',
@@ -66,7 +71,9 @@ def fetch_multiple_releases(mbids, includes=None):
 
         if 'artists' in includes:
             for release in releases.values():
-                includes_data[release.id]['artists'] = release.artist_credit
+                artist_credit_names = release.artist_credit.artists
+                includes_data[release.id]['artist-credit-names'] = artist_credit_names
+                includes_data[release.id]['artist-credit-phrase'] = release.artist_credit.name
 
         if 'media' in includes:
             for release in releases.values():
