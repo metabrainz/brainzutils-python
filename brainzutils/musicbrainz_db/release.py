@@ -60,8 +60,6 @@ def fetch_multiple_releases(mbids, includes=None):
         )
         release_ids = [release.id for release in releases.values()]
 
-        print(releases)
-
         if 'release-groups' in includes:
             for release in releases.values():
                 includes_data[release.id]['release-groups'] = release.release_group

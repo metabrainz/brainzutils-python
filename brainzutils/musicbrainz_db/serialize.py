@@ -249,6 +249,7 @@ def serialize_track(track, includes=None):
         'length': track.length,
         'recording_id': track.recording.gid,
         'recording_title': track.recording.name,
+        'artists': serialize_artist_credit(track.recording.artist_credit)
     }
     return data
 
@@ -267,6 +268,9 @@ def serialize_releases(release, includes=None):
 
     if 'release-groups' in includes:
         data['release-group'] = serialize_release_groups(includes['release-groups'])
+
+    if 'artists' in includes:
+        data['artists'] = serialize_artist_credit(release.artist_credit)
 
     if 'media' in includes:
         data['medium-list'] = [serialize_medium(medium, includes={'tracks': medium.tracks})
