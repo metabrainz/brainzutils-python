@@ -7,6 +7,8 @@ services:
       dockerfile: ./test/Dockerfile
     volumes:
       - ../:/code
+    environment:
+      PYTHONDONTWRITEBYTECODE: 1
     depends_on:
       - redis
       - musicbrainz_db
