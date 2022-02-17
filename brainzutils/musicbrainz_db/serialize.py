@@ -238,10 +238,8 @@ def serialize_medium(medium, includes=None):
     return data
 
 
-def serialize_track(track, includes=None):
-    if includes is None:
-        includes = {}
-    data = {
+def serialize_track(track):
+    return {
         'mbid': track.gid,
         'name': track.name,
         'number': track.number,
@@ -249,8 +247,10 @@ def serialize_track(track, includes=None):
         'length': track.length,
         'recording_id': track.recording.gid,
         'recording_title': track.recording.name,
+        'artist-credit': [serialize_artist_credit_names(artist_credit_name)
+                          for artist_credit_name in track.recording.artist_credit.artists],
+        'artist-credit-phrase': track.recording.artist_credit.name
     }
-    return data
 
 
 def serialize_releases(release, includes=None):
@@ -267,6 +267,13 @@ def serialize_releases(release, includes=None):
 
     if 'release-groups' in includes:
         data['release-group'] = serialize_release_groups(includes['release-groups'])
+
+    if 'artist-credit-phrase' in includes:
+        data['artist-credit-phrase'] = includes['artist-credit-phrase']
+
+    if 'artist-credit-names' in includes:
+        data['artist-credit'] = [serialize_artist_credit_names(artist_credit_name)
+                                 for artist_credit_name in includes['artist-credit-names']]
 
     if 'media' in includes:
         data['medium-list'] = [serialize_medium(medium, includes={'tracks': medium.tracks})
