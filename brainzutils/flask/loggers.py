@@ -36,6 +36,7 @@ def add_sentry(dsn, level=logging.WARNING, **options):
     sentry_sdk.init(dsn, integrations=[LoggingIntegration(level=level), FlaskIntegration(), RedisIntegration(),
                                        SqlalchemyIntegration()],
                     **options)
+    # This env variable is set in the MetaBrainz production infrastructure and is unique per container
     container_name = os.getenv("CONTAINER_NAME")
     if container_name:
         sentry_sdk.set_tag("container_name", container_name)
