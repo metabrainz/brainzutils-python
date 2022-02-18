@@ -1,7 +1,6 @@
 from flask import Flask
 from flask_uuid import FlaskUUID
 from flask_debugtoolbar import DebugToolbarExtension
-from brainzutils.flask import loggers
 
 
 class CustomFlask(Flask):
@@ -29,7 +28,6 @@ class CustomFlask(Flask):
         if use_flask_uuid:
             FlaskUUID(self)
 
-
     def init_debug_toolbar(self):
         """This method initializes the Flask-Debug extension toolbar for the
         Flask app.
@@ -39,38 +37,3 @@ class CustomFlask(Flask):
         """
         if self.debug:
             DebugToolbarExtension(self)
-
-
-    def init_loggers(self,
-                     file_config=None,
-                     sentry_config=None):
-        """This method attaches loggers to the Flask app.
-
-        Each type of logger has its own configuration which needs to be passed
-        as an argument to this method. If you don't want to enable one of
-        available loggers, set its configuration to None.
-
-        Logging levels (when specified) need to be one of supported by
-        `logging` module, as an integer or a valid string.
-
-        Args:
-            file_config (dict): Dictionary with the following structure::
-
-                {
-                    'filename': 'log.txt',
-                    'max_bytes': 512 * 1024,  # optional
-                    'backup_count': 100,      # optional
-                }
-
-            sentry_config (dict): Dictionary with the following structure::
-
-                {
-                    'dsn': 'YOUR_SENTRY_DSN',
-                    'environment': 'production',  # optional
-                    'level': 'WARNING',  # optional
-                }
-        """
-        if file_config:
-            loggers.add_file_handler(self, **file_config)
-        if sentry_config:
-            loggers.add_sentry(**sentry_config)
