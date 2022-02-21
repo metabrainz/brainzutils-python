@@ -13,3 +13,4 @@ mbdata==25.0.4
 sqlalchemy-dst>=1.0.1
 importlib-metadata>=3.10.0
 itsdangerous==2.0.1  # last version compatible with Flask 1.*
+MarkupSafe==2.0.1
