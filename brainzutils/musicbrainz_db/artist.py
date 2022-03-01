@@ -15,7 +15,7 @@ def get_artist_by_mbid(mbid, includes=None):
         includes (list): List of values to be included.
                          For list of possible values see includes.py.
     Returns:
-        Dictionary containing the artist information.
+        Dictionary containing the artist information, or None if the artist doesn't exist.
     """
     if includes is None:
         includes = []
@@ -32,7 +32,10 @@ def fetch_multiple_artists(mbids, includes=None):
         mbids (list): List of MBIDs of artists.
         includes (list): List of information to be included.
     Returns:
-        Dictionary containing info of multiple artists keyed by their mbid.
+        A dictionary containing info of multiple artists keyed by their MBID.
+        If an MBID doesn't exist in the database, it isn't returned.
+        If an MBID is a redirect, the dictionary key will be the MBID given as an argument,
+         but the returned object will contain the new MBID in the 'mbid' key.
     """
 
     if includes is None:

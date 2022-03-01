@@ -14,7 +14,7 @@ def get_release_group_by_mbid(mbid, includes=None):
     Args:
         mbid (uuid): MBID(gid) of the release group.
     Returns:
-        Dictionary containing the release group information.
+        Dictionary containing the release group information, or None if the release group doesn't exist.
     """
     if includes is None:
         includes = []
@@ -31,7 +31,10 @@ def fetch_multiple_release_groups(mbids, includes=None):
         mbids (list): List of MBIDs of releases groups.
         includes (list): List of information to be included.
     Returns:
-        Dictionary containing info of multiple release groups keyed by their mbid.
+        A dictionary containing info of multiple release groups keyed by their MBID.
+        If an MBID doesn't exist in the database, it isn't returned.
+        If an MBID is a redirect, the dictionary key will be the MBID given as an argument,
+         but the returned object will contain the new MBID in the 'mbid' key.
     """
     if includes is None:
         includes = []

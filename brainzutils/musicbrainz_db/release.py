@@ -17,7 +17,7 @@ def get_release_by_mbid(mbid, includes=None):
         includes (list): List of values to be included.
                          For list of possible values see includes.py.
     Returns:
-        Dictionary containing the release information.
+        Dictionary containing the release information, or None if the release doesn't exist.
     """
     if includes is None:
         includes = []
@@ -34,7 +34,10 @@ def fetch_multiple_releases(mbids, includes=None):
         mbids (list): List of MBIDs of releases.
         includes (list): List of information to be included.
     Returns:
-        Dictionary containing info of multiple releases keyed by their mbid.
+        A dictionary containing info of multiple releases keyed by their MBID.
+        If an MBID doesn't exist in the database, it isn't returned.
+        If an MBID is a redirect, the dictionary key will be the MBID given as an argument,
+         but the returned object will contain the new MBID in the 'mbid' key.
     """
     if includes is None:
         includes = []
