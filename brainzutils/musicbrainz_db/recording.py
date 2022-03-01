@@ -16,7 +16,7 @@ def get_recording_by_mbid(mbid, includes=None):
         includes (list): List of values to be included.
                         For list of possible values visit https://bitbucket.org/lalinsky/mbdata/wiki/API/v1/includes#!recording
     Returns:
-        Dictionary containing the recording information.
+        Dictionary containing the recording information, or None if the recording doesn't exist.
     """
     if includes is None:
         includes = []
@@ -35,7 +35,10 @@ def get_many_recordings_by_mbid(mbids, includes=None):
         includes (list): List of values to be included.
                         For list of possible values visit https://bitbucket.org/lalinsky/mbdata/wiki/API/v1/includes#!recording
     Returns:
-        Dictionary containing the recordings information with MBIDs as keys.
+        A dictionary containing the recording's information with MBIDs as keys.
+        If an MBID doesn't exist in the database, it isn't returned.
+        If an MBID is a redirect, the dictionary key will be the MBID given as an argument,
+         but the returned object will contain the new MBID in the 'mbid' key.
     """
     if includes is None:
         includes = []

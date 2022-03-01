@@ -14,7 +14,7 @@ def get_work_by_mbid(mbid, includes=None):
     Args:
         mbid (uuid): MBID(gid) of the work.
     Returns:
-        Dictionary containing the work information.
+        Dictionary containing the work information, or None if the work doesn't exist.
     """
     if includes is None:
         includes = []
@@ -33,7 +33,10 @@ def fetch_multiple_works(mbids, includes=None):
         includes (list): List of information to be included.
 
     Returns:
-        Dictionary containing info of multiple works keyed by their mbid.
+        A dictionary containing info of multiple works keyed by their MBID.
+        If an MBID doesn't exist in the database, it isn't returned.
+        If an MBID is a redirect, the dictionary key will be the MBID given as an argument,
+         but the returned object will contain the new MBID in the 'mbid' key.
     """
     if includes is None:
         includes = []
