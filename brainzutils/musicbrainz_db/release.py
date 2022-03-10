@@ -91,10 +91,6 @@ def fetch_multiple_releases(mbids, includes=None):
                 includes_data=includes_data,
             )
 
-        if 'comment' in includes:
-            for release in releases.values():
-                includes_data[release.id]['comment'] = release.comment
-
         releases = {str(mbid): serialize_releases(release, includes_data[release.id])
                     for mbid, release in releases.items()}
     return releases

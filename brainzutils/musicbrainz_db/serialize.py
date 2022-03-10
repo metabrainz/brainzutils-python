@@ -11,6 +11,9 @@ def serialize_areas(area, includes=None):
         'name': area.name,
     }
 
+    if area.comment:
+        data['comment'] = area.comment
+
     if 'relationship_objs' in includes:
         serialize_relationships(data, area, includes['relationship_objs'])
     return data
@@ -109,6 +112,9 @@ def serialize_places(place, includes=None):
         'address': place.address,
     }
 
+    if place.comment:
+        data['comment'] = place.comment
+
     if 'type' in includes and includes['type']:
         data['type'] = includes['type'].name
 
@@ -161,7 +167,7 @@ def serialize_artists(artist, includes=None):
         'sort_name': artist.sort_name,
     }
 
-    if 'comment' in includes:
+    if artist.comment:
         data['comment'] = artist.comment
 
     if 'type' in includes:
@@ -194,6 +200,9 @@ def serialize_release_groups(release_group, includes=None):
         'mbid': release_group.gid,
         'title': release_group.name,
     }
+
+    if release_group.comment:
+        data['comment'] = release_group.comment
 
     if 'type' in includes and includes['type']:
         data['type'] = includes['type'].name
@@ -279,7 +288,7 @@ def serialize_releases(release, includes=None):
         data['medium-list'] = [serialize_medium(medium, includes={'tracks': medium.tracks})
                                for medium in includes['media']]
 
-    if 'comment' in includes:
+    if release.comment:
         data['comment'] = release.comment
 
     return data
@@ -292,6 +301,10 @@ def serialize_events(event, includes=None):
         'mbid': event.gid,
         'name': event.name,
     }
+
+    if event.comment:
+        data['comment'] = event.comment
+
     if 'type' in includes and includes['type']:
         data['type'] = includes['type'].name
 
@@ -324,6 +337,9 @@ def serialize_works(work, includes=None):
         'name': work.name,
     }
 
+    if work.comment:
+        data['comment'] = work.comment
+
     if 'type' in includes and includes['type']:
         data['type'] = includes['type'].name
 
@@ -346,12 +362,15 @@ def serialize_editor(editor, includes=None):
 
 def serialize_series(series, includes=None):
     if includes is None:
-        includes = []
+        includes = {}
 
     data = {
         'mbid': series.gid,
         'name': series.name,
     }
+
+    if series.comment:
+        data['comment'] = series.comment
 
     if 'relationship_objs' in includes:
         serialize_relationships(data, series, includes['relationship_objs'])

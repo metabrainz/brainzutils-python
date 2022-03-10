@@ -12,6 +12,7 @@ class TestArtist:
             "mbid": "f59c5520-5f46-4d2c-b2c4-822eabf53419",
             "name": "Linkin Park",
             "sort_name": "Linkin Park",
+            "comment": "American rock band",
         }
 
     def test_get_artist_by_mbid_redirect(self, engine):
@@ -21,6 +22,7 @@ class TestArtist:
             "mbid": "79239441-bfd5-4981-a70c-55c3f15c1287",
             "name": "Madonna",
             "sort_name": "Madonna",
+            "comment": "American singer-songwriter, actress, businesswoman, “Queen of Pop”"
         }
 
     def test_fetch_multiple_artists(self, engine):
@@ -33,12 +35,14 @@ class TestArtist:
             "name": "JAY‐Z",
             "sort_name": "JAY‐Z",
             "type": "Person",
+            "comment": "US rapper",
         }
         assert artists["f59c5520-5f46-4d2c-b2c4-822eabf53419"] == {
             "mbid": "f59c5520-5f46-4d2c-b2c4-822eabf53419",
             "name": "Linkin Park",
             "sort_name": "Linkin Park",
             "type": "Group",
+            "comment": "American rock band",
         }
 
     def test_fetch_multiple_artists_redirect(self, engine):
@@ -48,7 +52,8 @@ class TestArtist:
         assert artists["fe008f22-07be-46f0-9206-7cab2d26e89d"] == {
             "mbid": "f59c5520-5f46-4d2c-b2c4-822eabf53419",
             "name": "Linkin Park",
-            "sort_name": "Linkin Park"
+            "sort_name": "Linkin Park",
+            "comment": "American rock band",
         }
 
     def test_fetch_multiple_artists_missing(self, engine):
