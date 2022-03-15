@@ -88,10 +88,6 @@ def fetch_multiple_recordings(mbids, includes=None):
 
         recording_ids = [recording.id for recording in recordings.values()]
 
-        if 'rating' in includes:
-            for recording in recordings.values():
-                includes_data[recording.id]['rating'] = recording.rating
-
         if 'artist' in includes:
             for recording in recordings.values():
                 includes_data[recording.id]['artist'] = recording.artist_credit

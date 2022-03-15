@@ -15,6 +15,7 @@ class TestRecording:
             'name': 'Numb / Encore',
             'comment': 'explicit',
             'length': 205.28,
+            'rating': 78,
             'artist-credit-phrase': 'Jay-Z / Linkin Park',
             'artists': [
                 {
@@ -35,7 +36,8 @@ class TestRecording:
         assert recording == {
             'mbid': 'fbe3d0b9-3990-4a76-bddb-12f4a0447a2c',
             'name': 'The Perfect Drug (Nine Inch Nails)',
-            'length': 499
+            'length': 499,
+            'rating': 60,
         }
 
     def test_fetch_multiple_recordings(self, engine):
@@ -50,6 +52,7 @@ class TestRecording:
                 'name': 'Numb / Encore',
                 'comment': 'explicit',
                 'length': 205.28,
+                'rating': 78,
                 'artist-credit-phrase': 'Jay-Z / Linkin Park',
                 'artists': [
                     {
@@ -91,7 +94,8 @@ class TestRecording:
             'e00d4dce-097e-4098-bbb3-77db884566f3': {
                 'mbid': 'fbe3d0b9-3990-4a76-bddb-12f4a0447a2c',
                 'name': 'The Perfect Drug (Nine Inch Nails)',
-                'length': 499
+                'length': 499,
+                'rating': 60,
             }
         }
 

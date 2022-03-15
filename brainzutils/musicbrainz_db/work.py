@@ -70,10 +70,6 @@ def fetch_multiple_works(mbids, includes=None):
                 includes_data=includes_data,
             )
 
-        if 'rating' in includes:
-            for work in works.values():
-                includes_data[work.id]['rating'] = work.rating
-
         for work in works.values():
             includes_data[work.id]['type'] = work.type
     return {str(mbid): serialize_works(work, includes_data[work.id]) for mbid, work in works.items()}

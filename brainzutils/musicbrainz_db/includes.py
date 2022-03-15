@@ -18,21 +18,19 @@ RELATABLE_TYPES = [
 
 RELATION_INCLUDES = [entity + '-rels' for entity in RELATABLE_TYPES]
 
-TAG_INCLUDES = ["tags", "user-tags"]
-
-RATING_INCLUDES = ["ratings", "user-ratings"]
+TAG_INCLUDES = ["tags"]
 
 VALID_INCLUDES = {
     'place': ["aliases", "annotation"] + RELATION_INCLUDES + TAG_INCLUDES,
-    'event': ["aliases"] + RELATION_INCLUDES + TAG_INCLUDES + RATING_INCLUDES,
-    'recording': ["artist", "artists", "isrc"] + TAG_INCLUDES + RELATION_INCLUDES + RATING_INCLUDES,
-    'release_group': ["artists", "media", "releases"] + TAG_INCLUDES + RELATION_INCLUDES + RATING_INCLUDES,
+    'event': ["aliases"] + RELATION_INCLUDES + TAG_INCLUDES,
+    'recording': ["artist", "artists", "isrc"] + TAG_INCLUDES + RELATION_INCLUDES,
+    'release_group': ["artists", "media", "releases"] + TAG_INCLUDES + RELATION_INCLUDES,
     'release': [
         "artists", "labels", "recordings", "release-groups", "media", "annotation", "aliases"
     ] + TAG_INCLUDES + RELATION_INCLUDES,
-    'artist': ["recordings", "releases", "media", "aliases", "annotation", "type"] + RELATION_INCLUDES + TAG_INCLUDES + RATING_INCLUDES,
-    'label': ["area", "aliases", "annotation"] + RELATION_INCLUDES + TAG_INCLUDES + RATING_INCLUDES,
-    'work': ["artists", "recordings", "aliases", "annotation"] + RELATION_INCLUDES + TAG_INCLUDES + RATING_INCLUDES,
+    'artist': ["recordings", "releases", "media", "aliases", "annotation", "type"] + RELATION_INCLUDES + TAG_INCLUDES,
+    'label': ["area", "aliases", "annotation"] + RELATION_INCLUDES + TAG_INCLUDES,
+    'work': ["artists", "recordings", "aliases", "annotation"] + RELATION_INCLUDES + TAG_INCLUDES,
     'editor': [],  # TODO: List includes here (BU-18)
 }
 

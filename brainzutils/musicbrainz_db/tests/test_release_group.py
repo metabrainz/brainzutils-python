@@ -32,6 +32,7 @@ class TestReleaseGroup:
             'title': 'The College Dropout',
             'first-release-year': 2003,
             'type': 'Album',
+            'rating': 88,
         }
 
     def test_fetch_release_groups(self, engine):
@@ -52,6 +53,7 @@ class TestReleaseGroup:
                 'title': 'The College Dropout',
                 'first-release-year': 2003,
                 'type': 'Album',
+                'rating': 88,
             }
         }
 

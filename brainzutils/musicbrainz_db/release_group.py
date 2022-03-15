@@ -107,10 +107,6 @@ def fetch_multiple_release_groups(mbids, includes=None):
             for release_group_id, tags in release_group_tags:
                 includes_data[release_group_id]['tags'] = tags
 
-        if 'rating' in includes:
-            for release_group in release_groups.values():
-                includes_data[release_group.id]['rating'] = release_group.rating
-
         for release_group in release_groups.values():
             includes_data[release_group.id]['meta'] = release_group.meta
             includes_data[release_group.id]['type'] = release_group.type

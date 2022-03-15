@@ -20,18 +20,23 @@ def get_entities_by_gids(query, entity_type, mbids):
         Dictionary of objects of target entities keyed by their MBID.
     """
     entity_model = ENTITY_MODELS[entity_type]
-    results = query.filter(entity_model.gid.in_(mbids)).all()
-    remaining_gids = list(set(mbids) - {entity.gid for entity in results})
-    entities = {str(entity.gid): entity for entity in results}
-
     if entity_type in META_MODELS:
         meta_model = META_MODELS[entity_type]
         query = query.add_entity(meta_model).join(meta_model)
-        entity_ids = list({entity.id for entity in results})
-        results = query.filter(meta_model.id.in_(entity_ids))
-        for entity, entity_meta in results:
-            entities[entity.gid].rating = entity_meta.rating
 
+    results = query.filter(entity_model.gid.in_(mbids)).all()
+    entity_gids = set()
+    entities = {}
+    if entity_type in META_MODELS:
+        for entity, entity_meta in results:
+            entities[entity.gid] = entity
+            entities[entity.gid].rating = entity_meta.rating
+            entity_gids.add(entity.gid)
+    else:
+        entities = {str(entity.gid): entity for entity in results}
+        entity_gids = {entity.gid for entity in results}
+
+    remaining_gids = list(set(mbids) - entity_gids)
     if remaining_gids:
         redirect_model = REDIRECT_MODELS[entity_type]
         query = query.add_entity(redirect_model).join(redirect_model)
@@ -39,8 +44,9 @@ def get_entities_by_gids(query, entity_type, mbids):
 
         redirect_gids = set()
         if entity_type in META_MODELS:
-            for entity, _, redirect_obj in results:
+            for entity, entity_meta, redirect_obj in results:
                 entities[redirect_obj.gid] = entity
+                entities[redirect_obj.gid].rating = entity_meta.rating
                 redirect_gids.add(redirect_obj.gid)
         else:
             for entity, redirect_obj in results:

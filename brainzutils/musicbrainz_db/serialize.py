@@ -118,7 +118,7 @@ def serialize_recording(recording, includes=None):
     if recording.video:
         data['video'] = True
 
-    if 'rating' in includes and includes['rating']:
+    if getattr(recording, 'rating', None):
         data['rating'] = recording.rating
 
     if 'artist' in includes:
@@ -187,7 +187,7 @@ def serialize_labels(label, includes=None):
     if 'area' in includes and includes['area']:
         data['area'] = includes['area'].name
 
-    if 'rating' in includes and includes['rating']:
+    if getattr(label, 'rating', None):
         data['rating'] = label.rating
 
     if 'relationship_objs' in includes:
@@ -215,7 +215,7 @@ def serialize_artists(artist, includes=None):
     if 'type' in includes:
         data['type'] = artist.type.name
 
-    if 'rating' in includes and includes['rating']:
+    if getattr(artist, 'rating', None):
         data['rating'] = artist.rating
 
     if 'relationship_objs' in includes:
@@ -249,7 +249,7 @@ def serialize_release_groups(release_group, includes=None):
     if 'type' in includes and includes['type']:
         data['type'] = includes['type'].name
 
-    if 'rating' in includes and includes['rating']:
+    if getattr(release_group, 'rating', None):
         data['rating'] = release_group.rating
 
     if 'artist-credit-phrase' in includes:
@@ -354,7 +354,7 @@ def serialize_events(event, includes=None):
     if 'type' in includes and includes['type']:
         data['type'] = includes['type'].name
 
-    if 'rating' in includes and includes['rating']:
+    if getattr(event, 'rating', None):
         data['rating'] = event.rating
 
     if 'relationship_objs' in includes:
@@ -389,7 +389,7 @@ def serialize_works(work, includes=None):
     if 'type' in includes and includes['type']:
         data['type'] = includes['type'].name
 
-    if 'rating' in includes and includes['rating']:
+    if getattr(work, 'rating', None):
         data['rating'] = work.rating
 
     if 'relationship_objs' in includes:

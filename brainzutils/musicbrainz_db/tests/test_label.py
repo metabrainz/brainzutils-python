@@ -14,6 +14,7 @@ class TestLabel:
             "type": "Original Production",
             "area": "United States",
             "life-span": {"begin": "1996"},
+            "rating": 100,
         }
 
     def test_get_label_by_mbid_redirect(self, engine):
@@ -25,6 +26,7 @@ class TestLabel:
             "area": "United States",
             "comment": "Warner Music imprint",
             "life-span": {"begin": "1947"},
+            "rating": 100,
         }
 
     def test_fetch_multiple_labels(self, engine):
@@ -47,6 +49,7 @@ class TestLabel:
             "type": "Original Production",
             "area": "United States",
             "life-span": {"begin": "1996"},
+            "rating": 100
         }
 
     def test_fetch_multiple_labels_redirect(self, engine):
@@ -61,6 +64,7 @@ class TestLabel:
             "area": "United States",
             "comment": "Warner Music imprint",
             "life-span": {"begin": "1947"},
+            "rating": 100,
         }
 
     def test_fetch_multiple_labels_missing(self, engine):

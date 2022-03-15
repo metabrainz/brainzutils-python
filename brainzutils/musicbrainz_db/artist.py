@@ -74,10 +74,6 @@ def fetch_multiple_artists(mbids, includes=None):
                 includes_data=includes_data,
             )
 
-    if 'rating' in includes:
-        for artist in artists.values():
-            includes_data[artist.id]['rating'] = artist.rating
-
     if 'type' in includes:
         for artist in artists.values():
             includes_data[artist.id]['type'] = artist.type

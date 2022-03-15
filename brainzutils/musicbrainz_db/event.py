@@ -91,8 +91,4 @@ def fetch_multiple_events(mbids, includes=None):
                 includes_data=includes_data,
             )
 
-    if 'rating' in includes:
-        for event in events.values():
-            includes_data[event.id]['rating'] = event.rating
-
     return {str(mbid): serialize_events(event, includes_data[event.id]) for mbid, event in events.items()}

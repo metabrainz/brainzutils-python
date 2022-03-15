@@ -13,7 +13,8 @@ class TestArtist:
             "name": "Linkin Park",
             "sort_name": "Linkin Park",
             "comment": "American rock band",
-            "life-span": {"begin": "1999"}
+            "life-span": {"begin": "1999"},
+            "rating": 86,
         }
 
     def test_get_artist_by_mbid_redirect(self, engine):
@@ -25,6 +26,7 @@ class TestArtist:
             "sort_name": "Madonna",
             "comment": "American singer-songwriter, actress, businesswoman, “Queen of Pop”",
             "life-span": {"begin": "1958-08-16"},
+            "rating": 88,
         }
 
     def test_fetch_multiple_artists(self, engine):
@@ -38,7 +40,8 @@ class TestArtist:
             "sort_name": "JAY‐Z",
             "type": "Person",
             "comment": "US rapper",
-            "life-span": {"begin": "1969-12-04"}
+            "life-span": {"begin": "1969-12-04"},
+            "rating": 71,
         }
         assert artists["f59c5520-5f46-4d2c-b2c4-822eabf53419"] == {
             "mbid": "f59c5520-5f46-4d2c-b2c4-822eabf53419",
@@ -46,7 +49,8 @@ class TestArtist:
             "sort_name": "Linkin Park",
             "type": "Group",
             "comment": "American rock band",
-            "life-span": {"begin": "1999"}
+            "life-span": {"begin": "1999"},
+            "rating": 86,
         }
 
     def test_fetch_multiple_artists_redirect(self, engine):
@@ -59,6 +63,7 @@ class TestArtist:
             "sort_name": "Linkin Park",
             "comment": "American rock band",
             "life-span": {"begin": "1999"},
+            "rating": 86
         }
 
     def test_fetch_multiple_artists_missing(self, engine):
