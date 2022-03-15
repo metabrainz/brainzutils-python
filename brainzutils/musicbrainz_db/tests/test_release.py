@@ -6,7 +6,7 @@ from brainzutils.musicbrainz_db import release as mb_release
 @pytest.mark.database
 class TestRelease:
 
-    def test_get_recording_by_mbid(self, engine):
+    def test_get_release_by_mbid(self, engine):
         release = mb_release.get_release_by_mbid('fed37cfc-2a6d-4569-9ac0-501a7c7598eb',
                                                  includes=['media', 'release-groups'])
         assert release["name"] == "Master of Puppets"
@@ -26,7 +26,8 @@ class TestRelease:
                         'artist': {
                             'mbid': '65f4f0c5-ef9e-490c-aee3-909e7ae6b2ab',
                             'name': 'Metallica',
-                            'sort_name': 'Metallica'
+                            'sort_name': 'Metallica',
+                            'life-span': {'begin': '1981-10-28'},
                         }
                     }
                 ],
@@ -46,7 +47,8 @@ class TestRelease:
                         'artist': {
                             'mbid': '65f4f0c5-ef9e-490c-aee3-909e7ae6b2ab',
                             'name': 'Metallica',
-                            'sort_name': 'Metallica'
+                            'sort_name': 'Metallica',
+                            'life-span': {'begin': '1981-10-28'},
                         }
                     }
                 ],
@@ -66,7 +68,8 @@ class TestRelease:
                         'artist': {
                             'mbid': '65f4f0c5-ef9e-490c-aee3-909e7ae6b2ab',
                             'name': 'Metallica',
-                            'sort_name': 'Metallica'
+                            'sort_name': 'Metallica',
+                            'life-span': {'begin': '1981-10-28'},
                         }
                     }
                 ],
@@ -85,7 +88,8 @@ class TestRelease:
                         'artist': {
                             'mbid': '65f4f0c5-ef9e-490c-aee3-909e7ae6b2ab',
                             'name': 'Metallica',
-                            'sort_name': 'Metallica'
+                            'sort_name': 'Metallica',
+                            'life-span': {'begin': '1981-10-28'},
                         }
                     }
                 ],
@@ -105,7 +109,8 @@ class TestRelease:
                         'artist': {
                             'mbid': '65f4f0c5-ef9e-490c-aee3-909e7ae6b2ab',
                             'name': 'Metallica',
-                            'sort_name': 'Metallica'
+                            'sort_name': 'Metallica',
+                            'life-span': {'begin': '1981-10-28'},
                         }
                     }
                 ],
@@ -124,7 +129,8 @@ class TestRelease:
                         'artist': {
                             'mbid': '65f4f0c5-ef9e-490c-aee3-909e7ae6b2ab',
                             'name': 'Metallica',
-                            'sort_name': 'Metallica'
+                            'sort_name': 'Metallica',
+                            'life-span': {'begin': '1981-10-28'},
                         }
                     }
                 ],
@@ -144,7 +150,8 @@ class TestRelease:
                         'artist': {
                             'mbid': '65f4f0c5-ef9e-490c-aee3-909e7ae6b2ab',
                             'name': 'Metallica',
-                            'sort_name': 'Metallica'
+                            'sort_name': 'Metallica',
+                            'life-span': {'begin': '1981-10-28'},
                         }
                     }
                 ],
@@ -164,7 +171,8 @@ class TestRelease:
                         'artist': {
                             'mbid': '65f4f0c5-ef9e-490c-aee3-909e7ae6b2ab',
                             'name': 'Metallica',
-                            'sort_name': 'Metallica'
+                            'sort_name': 'Metallica',
+                            'life-span': {'begin': '1981-10-28'},
                         }
                     }
                 ],

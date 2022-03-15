@@ -20,7 +20,8 @@ class TestReleaseGroup:
             'artist': {
                 'mbid': '678d88b2-87b0-403b-b63d-5da7465aecc3',
                 'name': 'Led Zeppelin',
-                'sort_name': 'Led Zeppelin'
+                'sort_name': 'Led Zeppelin',
+                'life-span': {'begin': '1968', 'end': '1980-09-25'},
             }
         }
 

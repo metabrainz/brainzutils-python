@@ -27,7 +27,8 @@ class TestPlace:
             'coordinates': {'latitude': 52.51, 'longitude': 13.37},
             'mbid': 'bea135c0-a32e-49be-85fd-9234c73fa0a8',
             'name': 'Berliner Philharmonie',
-            'type': 'Venue'
+            'type': 'Venue',
+            'life-span': {'begin': '1963'},
         }
 
     def test_fetch_multiple_places(self, engine):

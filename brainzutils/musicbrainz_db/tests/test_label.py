@@ -13,6 +13,7 @@ class TestLabel:
             "name": "Roc‐A‐Fella Records",
             "type": "Original Production",
             "area": "United States",
+            "life-span": {"begin": "1996"},
         }
 
     def test_get_label_by_mbid_redirect(self, engine):
@@ -23,6 +24,7 @@ class TestLabel:
             "type": "Imprint",
             "area": "United States",
             "comment": "Warner Music imprint",
+            "life-span": {"begin": "1947"},
         }
 
     def test_fetch_multiple_labels(self, engine):
@@ -37,12 +39,14 @@ class TestLabel:
             "comment": '1958–2019; “WB” logo, with or without “records” beneath or on banner across',
             "type": "Imprint",
             "area": "United States",
+            "life-span": {"begin": "1958-03-19", "end": "2019-05-28"},
         }
         assert labels["4cccc72a-0bd0-433a-905e-dad87871397d"] == {
             "mbid": "4cccc72a-0bd0-433a-905e-dad87871397d",
             "name": "Roc‐A‐Fella Records",
             "type": "Original Production",
             "area": "United States",
+            "life-span": {"begin": "1996"},
         }
 
     def test_fetch_multiple_labels_redirect(self, engine):
@@ -56,6 +60,7 @@ class TestLabel:
             "type": "Imprint",
             "area": "United States",
             "comment": "Warner Music imprint",
+            "life-span": {"begin": "1947"},
         }
 
     def test_fetch_multiple_labels_missing(self, engine):

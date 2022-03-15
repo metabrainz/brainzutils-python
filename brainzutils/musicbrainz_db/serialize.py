@@ -3,6 +3,32 @@ from mbdata.utils.models import get_link_target
 from sqlalchemy_dst import row2dict
 
 
+def serialize_begin_end(entity):
+    begin_date = entity.begin_date
+    end_date = entity.end_date
+    begin = []
+    end = []
+    if begin_date.year:
+        begin.append(f'{begin_date.year:04}')
+        if begin_date.month:
+            begin.append(f'{begin_date.month:02}')
+            if begin_date.day:
+                begin.append(f'{begin_date.day:02}')
+    if end_date.year:
+        end.append(f'{end_date.year:04}')
+        if end_date.month:
+            end.append(f'{end_date.month:02}')
+            if end_date.day:
+                end.append(f'{end_date.day:02}')
+
+    data = {}
+    if begin:
+        data["begin"] = "-".join(begin)
+    if end:
+        data["end"] = "-".join(end)
+    return data
+
+
 def serialize_areas(area, includes=None):
     if includes is None:
         includes = {}
@@ -13,6 +39,10 @@ def serialize_areas(area, includes=None):
 
     if area.comment:
         data['comment'] = area.comment
+
+    dates = serialize_begin_end(area)
+    if dates:
+        data['life-span'] = dates
 
     if 'relationship_objs' in includes:
         serialize_relationships(data, area, includes['relationship_objs'])
@@ -124,6 +154,10 @@ def serialize_places(place, includes=None):
             'longitude': place.coordinates[1],
         }
 
+    dates = serialize_begin_end(place)
+    if dates:
+        data['life-span'] = dates
+
     if 'area' in includes and includes['area']:
         data['area'] = serialize_areas(includes['area'])
 
@@ -142,6 +176,10 @@ def serialize_labels(label, includes=None):
 
     if label.comment:
         data['comment'] = label.comment
+
+    dates = serialize_begin_end(label)
+    if dates:
+        data['life-span'] = dates
 
     if 'type' in includes and includes['type']:
         data['type'] = includes['type'].name
@@ -169,6 +207,10 @@ def serialize_artists(artist, includes=None):
 
     if artist.comment:
         data['comment'] = artist.comment
+
+    dates = serialize_begin_end(artist)
+    if dates:
+        data['life-span'] = dates
 
     if 'type' in includes:
         data['type'] = artist.type.name
@@ -304,6 +346,10 @@ def serialize_events(event, includes=None):
 
     if event.comment:
         data['comment'] = event.comment
+
+    dates = serialize_begin_end(event)
+    if dates:
+        data['life-span'] = dates
 
     if 'type' in includes and includes['type']:
         data['type'] = includes['type'].name

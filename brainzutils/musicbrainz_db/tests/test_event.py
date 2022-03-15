@@ -11,6 +11,7 @@ class TestEvent:
         assert event == {
             'mbid': 'd4921d43-bf92-464e-aef4-bba8540fc5bd',
             'name': 'Butterfly Whirl 2015',
+            'life-span': {'begin': '2015-05-22', 'end': '2015-05-25'},
         }
 
     def test_get_event_by_mbid_redirect(self, engine):
@@ -19,6 +20,7 @@ class TestEvent:
         assert event == {
             'mbid': '499559c8-b84b-422e-8ad7-b746d48c21aa',
             'name': '1995-10-11: Riverport Amphitheatre, Maryland Heights, Missouri',
+            'life-span': {'begin': '1995-10-11', 'end': '1995-10-11'},
         }
 
     def test_fetch_multiple_events(self, engine):
@@ -36,6 +38,7 @@ class TestEvent:
         assert events == {'b8528315-ef77-46e2-bff9-d1b00d84dc3f': {
             'mbid': '499559c8-b84b-422e-8ad7-b746d48c21aa',
             'name': '1995-10-11: Riverport Amphitheatre, Maryland Heights, Missouri',
+            'life-span': {'begin': '1995-10-11', 'end': '1995-10-11'},
         }}
 
     def test_fetch_multiple_events_empty(self, engine):
