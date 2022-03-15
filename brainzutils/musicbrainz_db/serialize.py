@@ -145,8 +145,11 @@ def serialize_places(place, includes=None):
     if place.comment:
         data['comment'] = place.comment
 
-    if 'type' in includes and includes['type']:
-        data['type'] = includes['type'].name
+    if place.type:
+        data['type'] = place.type.name
+
+    if place.area:
+        data['area'] = serialize_areas(place.area)
 
     if place.coordinates:
         data['coordinates'] = {
@@ -157,9 +160,6 @@ def serialize_places(place, includes=None):
     dates = serialize_begin_end(place)
     if dates:
         data['life-span'] = dates
-
-    if 'area' in includes and includes['area']:
-        data['area'] = serialize_areas(includes['area'])
 
     if 'relationship_objs' in includes:
         serialize_relationships(data, place, includes['relationship_objs'])
@@ -181,11 +181,11 @@ def serialize_labels(label, includes=None):
     if dates:
         data['life-span'] = dates
 
-    if 'type' in includes and includes['type']:
-        data['type'] = includes['type'].name
+    if label.type:
+        data['type'] = label.type.name
 
-    if 'area' in includes and includes['area']:
-        data['area'] = includes['area'].name
+    if label.area:
+        data['area'] = label.area.name
 
     if getattr(label, 'rating', None):
         data['rating'] = label.rating
@@ -212,7 +212,7 @@ def serialize_artists(artist, includes=None):
     if dates:
         data['life-span'] = dates
 
-    if 'type' in includes:
+    if artist.type:
         data['type'] = artist.type.name
 
     if getattr(artist, 'rating', None):
@@ -246,8 +246,8 @@ def serialize_release_groups(release_group, includes=None):
     if release_group.comment:
         data['comment'] = release_group.comment
 
-    if 'type' in includes and includes['type']:
-        data['type'] = includes['type'].name
+    if release_group.type:
+        data['type'] = release_group.type.name
 
     if getattr(release_group, 'rating', None):
         data['rating'] = release_group.rating
@@ -255,7 +255,7 @@ def serialize_release_groups(release_group, includes=None):
     if 'artist-credit-phrase' in includes:
         data['artist-credit-phrase'] = includes['artist-credit-phrase']
 
-    if 'meta' in includes and includes['meta'] and includes['meta'].first_release_date_year:
+    if 'meta' in includes and includes['meta'].first_release_date_year:
         data['first-release-year'] = includes['meta'].first_release_date_year
 
     if 'artist-credit-names' in includes:
@@ -351,8 +351,8 @@ def serialize_events(event, includes=None):
     if dates:
         data['life-span'] = dates
 
-    if 'type' in includes and includes['type']:
-        data['type'] = includes['type'].name
+    if event.type:
+        data['type'] = event.type.name
 
     if getattr(event, 'rating', None):
         data['rating'] = event.rating
@@ -386,8 +386,8 @@ def serialize_works(work, includes=None):
     if work.comment:
         data['comment'] = work.comment
 
-    if 'type' in includes and includes['type']:
-        data['type'] = includes['type'].name
+    if work.type:
+        data['type'] = work.type.name
 
     if getattr(work, 'rating', None):
         data['rating'] = work.rating

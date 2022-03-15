@@ -78,9 +78,5 @@ def fetch_multiple_places(mbids, includes=None):
                 includes_data=includes_data,
             )
 
-        for place in places.values():
-            includes_data[place.id]['area'] = place.area
-            includes_data[place.id]['type'] = place.type
-
         places = {str(mbid): serialize_places(place, includes_data[place.id]) for mbid, place in places.items()}
     return places

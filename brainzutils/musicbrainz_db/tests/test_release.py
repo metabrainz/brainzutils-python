@@ -28,6 +28,7 @@ class TestRelease:
                             'name': 'Metallica',
                             'sort_name': 'Metallica',
                             'life-span': {'begin': '1981-10-28'},
+                            'type': 'Group',
                         }
                     }
                 ],
@@ -49,6 +50,7 @@ class TestRelease:
                             'name': 'Metallica',
                             'sort_name': 'Metallica',
                             'life-span': {'begin': '1981-10-28'},
+                            'type': 'Group',
                         }
                     }
                 ],
@@ -70,6 +72,7 @@ class TestRelease:
                             'name': 'Metallica',
                             'sort_name': 'Metallica',
                             'life-span': {'begin': '1981-10-28'},
+                            'type': 'Group',
                         }
                     }
                 ],
@@ -90,6 +93,7 @@ class TestRelease:
                             'name': 'Metallica',
                             'sort_name': 'Metallica',
                             'life-span': {'begin': '1981-10-28'},
+                            'type': 'Group',
                         }
                     }
                 ],
@@ -111,6 +115,7 @@ class TestRelease:
                             'name': 'Metallica',
                             'sort_name': 'Metallica',
                             'life-span': {'begin': '1981-10-28'},
+                            'type': 'Group',
                         }
                     }
                 ],
@@ -131,6 +136,7 @@ class TestRelease:
                             'name': 'Metallica',
                             'sort_name': 'Metallica',
                             'life-span': {'begin': '1981-10-28'},
+                            'type': 'Group',
                         }
                     }
                 ],
@@ -152,6 +158,7 @@ class TestRelease:
                             'name': 'Metallica',
                             'sort_name': 'Metallica',
                             'life-span': {'begin': '1981-10-28'},
+                            'type': 'Group',
                         }
                     }
                 ],
@@ -173,6 +180,7 @@ class TestRelease:
                             'name': 'Metallica',
                             'sort_name': 'Metallica',
                             'life-span': {'begin': '1981-10-28'},
+                            'type': 'Group',
                         }
                     }
                 ],

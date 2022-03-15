@@ -44,10 +44,7 @@ def fetch_multiple_artists(mbids, includes=None):
     check_includes('artist', includes)
 
     with mb_session() as db:
-        query = db.query(models.Artist)
-
-        if 'type' in includes:
-            query = query.options(joinedload('type'))
+        query = db.query(models.Artist).options(joinedload('type'))
 
         artists = get_entities_by_gids(
             query=query,
@@ -74,9 +71,5 @@ def fetch_multiple_artists(mbids, includes=None):
                 includes_data=includes_data,
             )
 
-    if 'type' in includes:
-        for artist in artists.values():
-            includes_data[artist.id]['type'] = artist.type
-
-    artists = {str(mbid): serialize_artists(artist, includes_data[artist.id]) for mbid, artist in artists.items()}
-    return artists
+        artists = {str(mbid): serialize_artists(artist, includes_data[artist.id]) for mbid, artist in artists.items()}
+        return artists

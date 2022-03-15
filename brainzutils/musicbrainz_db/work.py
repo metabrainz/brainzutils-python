@@ -43,8 +43,8 @@ def fetch_multiple_works(mbids, includes=None):
     includes_data = defaultdict(dict)
     check_includes('work', includes)
     with mb_session() as db:
-        query = db.query(models.Work).\
-            options(joinedload("type"))
+        query = db.query(models.Work).options(joinedload("type"))
+
         works = get_entities_by_gids(
             query=query,
             entity_type='work',
@@ -70,6 +70,4 @@ def fetch_multiple_works(mbids, includes=None):
                 includes_data=includes_data,
             )
 
-        for work in works.values():
-            includes_data[work.id]['type'] = work.type
     return {str(mbid): serialize_works(work, includes_data[work.id]) for mbid, work in works.items()}

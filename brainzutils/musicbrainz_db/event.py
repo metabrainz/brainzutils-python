@@ -1,4 +1,5 @@
 from collections import defaultdict
+from sqlalchemy.orm import joinedload
 from mbdata import models
 from brainzutils.musicbrainz_db import mb_session
 from brainzutils.musicbrainz_db.utils import get_entities_by_gids
@@ -42,7 +43,7 @@ def fetch_multiple_events(mbids, includes=None):
     includes_data = defaultdict(dict)
     check_includes('event', includes)
     with mb_session() as db:
-        query = db.query(models.Event)
+        query = db.query(models.Event).options(joinedload('type'))
         events = get_entities_by_gids(
             query=query,
             entity_type='event',

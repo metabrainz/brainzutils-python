@@ -22,6 +22,7 @@ class TestReleaseGroup:
                 'name': 'Led Zeppelin',
                 'sort_name': 'Led Zeppelin',
                 'life-span': {'begin': '1968', 'end': '1980-09-25'},
+                'type': 'Group',
             }
         }
 
@@ -72,7 +73,8 @@ class TestReleaseGroup:
             {
                 'mbid': '07f5e633-8846-3fe7-8e68-472b54dba159',
                 'title': 'This Is What the Edge of Your Seat Was Made For',
-                'first-release-year': 2004
+                'first-release-year': 2004,
+                'type': 'EP',
             }
         ]
         assert release_groups[1] == 1

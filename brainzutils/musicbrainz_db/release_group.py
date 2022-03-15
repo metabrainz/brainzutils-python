@@ -109,7 +109,6 @@ def fetch_multiple_release_groups(mbids, includes=None):
 
         for release_group in release_groups.values():
             includes_data[release_group.id]['meta'] = release_group.meta
-            includes_data[release_group.id]['type'] = release_group.type
         release_groups = {str(mbid): serialize_release_groups(release_group, includes_data[release_group.id])
                           for mbid, release_group in release_groups.items()}
         return release_groups
@@ -149,11 +148,12 @@ def get_release_groups_for_artist(artist_id, release_types=None, limit=None, off
             case([(models.ReleaseGroupMeta.first_release_date_year.is_(None), 1)], else_=0),
             models.ReleaseGroupMeta.first_release_date_year.desc()
         ).limit(limit).offset(offset).all()
-    for release_group in release_groups:
-        includes_data[release_group.id]['meta'] = release_group.meta
-    release_groups = ([serialize_release_groups(release_group, includes_data[release_group.id])
-                        for release_group in release_groups], count)
-    return release_groups
+
+        for release_group in release_groups:
+            includes_data[release_group.id]['meta'] = release_group.meta
+        release_groups = ([serialize_release_groups(release_group, includes_data[release_group.id])
+                            for release_group in release_groups], count)
+        return release_groups
 
 
 def _get_release_groups_for_artist_query(db, artist_id, release_types):
