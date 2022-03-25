@@ -26,6 +26,13 @@ class TestEvent:
             'type': 'Concert',
         }
 
+    def test_get_event_by_mbid_with_includes(self, engine):
+        event = mb_event.get_event_by_mbid('b8528315-ef77-46e2-bff9-d1b00d84dc3f',
+            includes=['artist-rels'])
+        assert event['mbid'] == '499559c8-b84b-422e-8ad7-b746d48c21aa'
+        assert len(event['artist-rels']) == 1
+        assert event['artist-rels'][0]['type-id'] == '936c7c95-3156-3889-a062-8a0cd57f8946'
+
     def test_fetch_multiple_events(self, engine):
         events = mb_event.fetch_multiple_events(
             ['d4921d43-bf92-464e-aef4-bba8540fc5bd', 'b335b093-b3a0-411f-9f3d-7f680a4992d6'],

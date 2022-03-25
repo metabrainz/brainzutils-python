@@ -70,4 +70,4 @@ def fetch_multiple_works(mbids, includes=None):
                 includes_data=includes_data,
             )
 
-    return {str(mbid): serialize_works(work, includes_data[work.id]) for mbid, work in works.items()}
+        return {str(mbid): serialize_works(work, includes_data[work.id]) for mbid, work in works.items()}

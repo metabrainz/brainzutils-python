@@ -21,6 +21,13 @@ class TestWork:
             "type": "Song",
         }
 
+    def test_get_work_by_mbid_with_includes(self, engine):
+        work = mb_work.get_work_by_mbid('4531bed5-073c-37a8-9500-70de8583c0a1',
+            includes=['artist-rels', 'recording-rels'])
+        assert work["mbid"] == "36e33f94-ef5f-36b5-97b0-c1ed9c5a542f"
+        assert len(work["artist-rels"]) == 4
+        assert len(work["recording-rels"]) == 51
+
     def test_fetch_multiple_works(self, engine):
         works = mb_work.fetch_multiple_works([
             'd35f8fb8-52ab-4a12-b1c8-f2054d10cf88',

@@ -92,4 +92,4 @@ def fetch_multiple_events(mbids, includes=None):
                 includes_data=includes_data,
             )
 
-    return {str(mbid): serialize_events(event, includes_data[event.id]) for mbid, event in events.items()}
+        return {str(mbid): serialize_events(event, includes_data[event.id]) for mbid, event in events.items()}
