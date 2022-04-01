@@ -2,12 +2,14 @@
 from email.mime.application import MIMEApplication
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-from flask import current_app
-
+from typing import List
 import smtplib
 import socket
 
-def send_mail(subject, text, recipients, attachments=None,
+from flask import current_app
+
+
+def send_mail(subject: str, text: str, recipients: List[str], attachments=None,
               from_name="MetaBrainz Notifications",
               from_addr=None, boundary=None):
     """This function can be used as a foundation for sending email.
@@ -21,6 +23,12 @@ def send_mail(subject, text, recipients, attachments=None,
         from_name: Name of the sender.
         from_addr: Email address of the sender.
     """
+    if not isinstance(recipients, list):
+        raise ValueError("recipients must be a list of email addresses")
+
+    if 'SMTP_SERVER' not in current_app.config or 'SMTP_PORT' not in current_app.config:
+        raise ValueError("Flask current_app requires config items SMTP_SERVER and SMTP_PORT to be set")
+
     if attachments is None:
         attachments = []
     if from_addr is None:
@@ -32,12 +40,12 @@ def send_mail(subject, text, recipients, attachments=None,
     if not recipients:
         return
 
-    message =MIMEMultipart()
+    message = MIMEMultipart()
 
     if boundary is not None:
         message = MIMEMultipart(boundary=boundary)
      
-    message['To']="<%s>" %(recipients)
+    message['To'] = ", ".join(recipients)
     message['Subject'] = subject
     message['From'] = "%s <%s>" % (from_name, from_addr)
     message.attach(MIMEText(text, _charset='utf-8'))
