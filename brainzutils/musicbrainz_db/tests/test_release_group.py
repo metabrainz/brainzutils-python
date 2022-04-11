@@ -78,3 +78,18 @@ class TestReleaseGroup:
             }
         ]
         assert release_groups[1] == 1
+
+    def test_fetch_get_release_groups_for_label(self, engine):
+        release_groups = mb_release_group.get_release_groups_for_label(
+            label_id='4cccc72a-0bd0-433a-905e-dad87871397d',
+            release_types=['Album'],
+        )
+        assert release_groups[0][0] == {
+            'mbid': 'a96597aa-93b4-4e14-9e6e-03892ab24979',
+            'title': 'Watch the Throne',
+            'first-release-year': 2011,
+            'type': 'Album',
+        }
+
+        assert release_groups[1] == 75
+     
