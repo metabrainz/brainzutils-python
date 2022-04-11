@@ -163,3 +163,55 @@ def _get_release_groups_for_artist_query(db, artist_id, release_types):
         join(models.ArtistCreditName, models.ArtistCreditName.artist_credit_id == models.ReleaseGroup.artist_credit_id).\
         join(models.Artist, models.Artist.id == models.ArtistCreditName.artist_id).\
         filter(models.Artist.gid == artist_id).filter(models.ReleaseGroupPrimaryType.name.in_(release_types))
+
+
+def get_release_groups_for_label(label_id, release_types=None, limit=None, offset=None):
+    """Get all release groups linked to a label.
+
+    Args:
+        label_id (uuid): MBID of the label.
+        release_types (list): List of types of release groups to be fetched.
+        limit (int): Max number of release groups to return.
+        offset (int): Offset that can be used in conjunction with the limit.
+
+    Returns:
+        Tuple containing the list of dictionaries of release groups ordered by release year
+        and the total count of the release groups.
+    """
+    label_id = str(label_id)
+    includes_data = defaultdict(dict)
+    if release_types is None:
+        release_types = []
+    release_types = [release_type.lower() for release_type in release_types]
+    # map release types to their case sensitive name in musicbrainz.release_group_primary_type table in the database
+    release_types_mapping = {
+        'album': 'Album',
+        'single': 'Single',
+        'ep': 'EP',
+        'broadcast': 'Broadcast',
+        'other': 'Other'
+    }
+    release_types = [release_types_mapping[release_type] for release_type in release_types]
+    with mb_session() as db:
+        release_groups_query = _get_release_groups_for_label_query(db, label_id, release_types)
+        count = release_groups_query.count()
+        release_groups = release_groups_query.order_by(
+            case([(models.ReleaseGroupMeta.first_release_date_year.is_(None), 1)], else_=0),
+            models.ReleaseGroupMeta.first_release_date_year.desc()
+        ).limit(limit).offset(offset).all()
+
+        for release_group in release_groups:
+            includes_data[release_group.id]['meta'] = release_group.meta
+        release_groups = ([serialize_release_groups(release_group, includes_data[release_group.id])
+                            for release_group in release_groups], count)
+        return release_groups
+
+
+def _get_release_groups_for_label_query(db, label_id, release_types):
+    return db.query(models.ReleaseGroup).\
+        options(joinedload('meta')).\
+        join(models.ReleaseGroupPrimaryType).join(models.ReleaseGroupMeta).\
+        join(models.Release, models.Release.release_group_id == models.ReleaseGroup.id).\
+        join(models.ReleaseLabel, models.ReleaseLabel.release_id == models.Release.id).\
+        join(models.Label, models.Label.id == models.ReleaseLabel.label_id).\
+        filter(models.Label.gid == label_id).filter(models.ReleaseGroupPrimaryType.name.in_(release_types))
