@@ -93,3 +93,30 @@ def fetch_multiple_events(mbids, includes=None):
             )
 
         return {str(mbid): serialize_events(event, includes_data[event.id]) for mbid, event in events.items()}
+
+
+def get_event_for_place(place_id, limit=None, offset=None):
+    """Get all events linked to a place.
+
+    Args:
+        place_id (uuid): MBID of the place.
+        limit (int): Max number of events to return.
+        offset (int): Offset that can be used in conjunction with the limit.
+
+    Returns:
+        A tuple containing a dictionary containing info of multiple events keyed by their MBID, and the total number of events.
+    """
+
+    place_id = str(place_id)
+    with mb_session() as db:
+        event_query = db.query(models.Event.gid).\
+            join(models.LinkEventPlace, models.Event.id == models.LinkEventPlace.entity0_id).\
+            join(models.Place, models.LinkEventPlace.entity1_id == models.Place.id).\
+            filter(models.Place.gid == place_id)
+        
+        count = event_query.count()
+        events = event_query.limit(limit).offset(offset).all()
+        event_ids = [event[0] for event in events]
+    
+    event = fetch_multiple_events(event_ids)
+    return event, count
