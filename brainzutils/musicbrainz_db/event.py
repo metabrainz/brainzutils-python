@@ -95,28 +95,44 @@ def fetch_multiple_events(mbids, includes=None):
         return {str(mbid): serialize_events(event, includes_data[event.id]) for mbid, event in events.items()}
 
 
-def get_event_for_place(place_id, limit=None, offset=None):
+def get_event_for_place(place_id, event_types=None, limit=None, offset=None):
     """Get all events linked to a place.
 
     Args:
         place_id (uuid): MBID of the place.
+        event_types (list): List of types of events to be fetched.
         limit (int): Max number of events to return.
         offset (int): Offset that can be used in conjunction with the limit.
 
     Returns:
-        A tuple containing a dictionary containing info of multiple events keyed by their MBID, and the total number of events.
+        Tuple containing the list of dictionaries of events ordered by begin date
+        and the total count of the events.
     """
 
     place_id = str(place_id)
+    if event_types is None:
+        event_types = []
+    event_types = [event_type.lower() for event_type in event_types]
+    # map event types to their case sensitive name in musicbrainz.event_type table in the database
+    event_types_mapping = {
+        'award ceremony': 'Award ceremony',
+        'concert': 'Concert',
+        'convention/expo': 'Convention/Expo',
+        'festival': 'Festival',
+        'launch event': 'Launch event',
+        'masterclass/clinic': 'Masterclass/Clinic',
+        'stage performance': 'Stage performance',
+    }
+    event_types = [event_types_mapping[event_type] for event_type in event_types]
+
     with mb_session() as db:
-        event_query = db.query(models.Event.gid).\
+        event_query = db.query(models.Event).join(models.EventType).\
             join(models.LinkEventPlace, models.Event.id == models.LinkEventPlace.entity0_id).\
             join(models.Place, models.LinkEventPlace.entity1_id == models.Place.id).\
-            filter(models.Place.gid == place_id)
-        
+            filter(models.Place.gid == place_id).filter(models.EventType.name.in_(event_types)).\
+            order_by(models.Event.begin_date_year.desc())
+
         count = event_query.count()
         events = event_query.limit(limit).offset(offset).all()
-        event_ids = [event[0] for event in events]
-    
-    event = fetch_multiple_events(event_ids)
-    return event, count
+
+        return ([serialize_events(event) for event in events], count)
