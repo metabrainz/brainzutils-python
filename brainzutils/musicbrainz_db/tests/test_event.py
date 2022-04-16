@@ -64,18 +64,17 @@ class TestEvent:
 
     def test_fetch_get_event_for_place(self, engine):
         events = mb_event.get_event_for_place(
-            place_id='97b9d0d3-ae52-4cdf-9a0d-149547297c5f'
+            place_id='97b9d0d3-ae52-4cdf-9a0d-149547297c5f',
+            event_types=['Concert'],
         )
-        assert events[0] == {
-            "415f97bf-b51c-46d8-9841-778f1c791d85": {
-                "life-span": {
-                    "begin": "1965-12-13",
-                    "end": "1965-12-13"
-                },
-                "mbid": "415f97bf-b51c-46d8-9841-778f1c791d85",
-                "name": "Anon concert premiere at Charterhouse School Hall",
-                "type": "Concert"
-            }
-        }
+        assert events[0] == [{
+            "life-span": {
+                "begin": "1965-12-13",
+                "end": "1965-12-13"
+            },
+            "mbid": "415f97bf-b51c-46d8-9841-778f1c791d85",
+            "name": "Anon concert premiere at Charterhouse School Hall",
+            "type": "Concert"
+        }]
 
         assert events[1] == 1
