@@ -1,4 +1,5 @@
 from collections import defaultdict
+from sqlalchemy import or_
 from sqlalchemy.orm import joinedload
 from mbdata import models
 from brainzutils.musicbrainz_db import mb_session
@@ -113,6 +114,12 @@ def get_event_for_place(place_id, event_types=None, limit=None, offset=None):
     if event_types is None:
         event_types = []
     event_types = [event_type.lower() for event_type in event_types]
+
+    includeNULL = False
+    if 'none' in event_types:
+        includeNULL = True
+        event_types.remove('none')
+    
     # map event types to their case sensitive name in musicbrainz.event_type table in the database
     event_types_mapping = {
         'award ceremony': 'Award ceremony',
@@ -126,12 +133,17 @@ def get_event_for_place(place_id, event_types=None, limit=None, offset=None):
     event_types = [event_types_mapping[event_type] for event_type in event_types]
 
     with mb_session() as db:
-        event_query = db.query(models.Event).join(models.EventType).\
+        event_query = db.query(models.Event).outerjoin(models.EventType).\
             join(models.LinkEventPlace, models.Event.id == models.LinkEventPlace.entity0_id).\
             join(models.Place, models.LinkEventPlace.entity1_id == models.Place.id).\
-            filter(models.Place.gid == place_id).filter(models.EventType.name.in_(event_types)).\
-            order_by(models.Event.begin_date_year.desc())
+            filter(models.Place.gid == place_id)
 
+        if includeNULL:
+            event_query = event_query.filter(or_(models.Event.type == None, models.EventType.name.in_(event_types)))
+        else:
+            event_query = event_query.filter(models.EventType.name.in_(event_types))
+        
+        event_query = event_query.order_by(models.Event.begin_date_year.desc())
         count = event_query.count()
         events = event_query.limit(limit).offset(offset).all()
 
