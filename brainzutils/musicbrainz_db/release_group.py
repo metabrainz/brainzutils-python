@@ -1,6 +1,6 @@
 from collections import defaultdict
 from mbdata import models
-from sqlalchemy import case
+from sqlalchemy import nullslast
 from sqlalchemy.orm import joinedload
 from brainzutils.musicbrainz_db import mb_session
 from brainzutils.musicbrainz_db.includes import check_includes
@@ -145,8 +145,7 @@ def get_release_groups_for_artist(artist_id, release_types=None, limit=None, off
         release_groups_query = _get_release_groups_for_artist_query(db, artist_id, release_types)
         count = release_groups_query.count()
         release_groups = release_groups_query.order_by(
-            case([(models.ReleaseGroupMeta.first_release_date_year.is_(None), 1)], else_=0),
-            models.ReleaseGroupMeta.first_release_date_year.desc()
+            nullslast(models.ReleaseGroupMeta.first_release_date_year.desc())
         ).limit(limit).offset(offset).all()
 
         for release_group in release_groups:
@@ -196,8 +195,7 @@ def get_release_groups_for_label(label_id, release_types=None, limit=None, offse
         release_groups_query = _get_release_groups_for_label_query(db, label_id, release_types)
         count = release_groups_query.count()
         release_groups = release_groups_query.order_by(
-            case([(models.ReleaseGroupMeta.first_release_date_year.is_(None), 1)], else_=0),
-            models.ReleaseGroupMeta.first_release_date_year.desc()
+            nullslast(models.ReleaseGroupMeta.first_release_date_year.desc())
         ).limit(limit).offset(offset).all()
 
         for release_group in release_groups:
