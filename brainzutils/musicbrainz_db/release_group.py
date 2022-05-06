@@ -202,9 +202,9 @@ def get_release_groups_for_label(label_id, release_types=None, limit=None, offse
 
         for release_group in release_groups:
             includes_data[release_group.id]['meta'] = release_group.meta
-        release_groups = ([serialize_release_groups(release_group, includes_data[release_group.id])
-                            for release_group in release_groups], count)
-        return release_groups
+        release_groups = [serialize_release_groups(release_group, includes_data[release_group.id])
+                            for release_group in release_groups]
+        return release_groups, count
 
 
 def _get_release_groups_for_label_query(db, label_id, release_types):
