@@ -3,10 +3,35 @@ from mbdata import models
 from sqlalchemy import nullslast
 from sqlalchemy.orm import joinedload
 from brainzutils.musicbrainz_db import mb_session
+import brainzutils.musicbrainz_db.exceptions as mb_exceptions
 from brainzutils.musicbrainz_db.includes import check_includes
 from brainzutils.musicbrainz_db.serialize import serialize_release_groups
 from brainzutils.musicbrainz_db.utils import get_entities_by_gids
 from brainzutils.musicbrainz_db.helpers import get_relationship_info, get_tags
+
+def get_mapped_release_types(release_types):
+    """Get release types mapped to their case sensitive name in musicbrainz.
+    release_group_primary_type table.
+    
+    Args:
+        release_types (list): List of release types.
+    Returns:
+        List of mapped release types.
+    """
+    
+    release_types = [release_type.lower() for release_type in release_types]
+    mapped_release_types = []
+    with mb_session() as db:
+        supported_types = [release_group_type.name for release_group_type in db.query(models.ReleaseGroupPrimaryType)]
+        release_type_mapping = {supported_type.lower(): supported_type for supported_type in supported_types}
+
+        for release_type in release_types:
+            if release_type not in release_type_mapping:
+                raise mb_exceptions.InvalidTypeError("Bad release_types: {rtype} is not supported".format(rtype = release_type))
+            else:
+                mapped_release_types.append(release_type_mapping[release_type])
+        
+        return mapped_release_types
 
 
 def get_release_group_by_mbid(mbid, includes=None):
@@ -182,16 +207,7 @@ def get_release_groups_for_label(label_id, release_types=None, limit=None, offse
     includes_data = defaultdict(dict)
     if release_types is None:
         release_types = []
-    release_types = [release_type.lower() for release_type in release_types]
-    # map release types to their case sensitive name in musicbrainz.release_group_primary_type table in the database
-    release_types_mapping = {
-        'album': 'Album',
-        'single': 'Single',
-        'ep': 'EP',
-        'broadcast': 'Broadcast',
-        'other': 'Other'
-    }
-    release_types = [release_types_mapping[release_type] for release_type in release_types]
+    release_types = get_mapped_release_types(release_types)
     with mb_session() as db:
         release_groups_query = _get_release_groups_for_label_query(db, label_id, release_types)
         count = release_groups_query.count()
