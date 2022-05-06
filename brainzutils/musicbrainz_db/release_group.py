@@ -174,8 +174,9 @@ def get_release_groups_for_label(label_id, release_types=None, limit=None, offse
         offset (int): Offset that can be used in conjunction with the limit.
 
     Returns:
-        Tuple containing the list of dictionaries of release groups ordered by release year
-        and the total count of the release groups.
+        Tuple containing the list of dictionaries of release groups and the total count of the release groups.
+        The list of dictionaries of release groups is ordered by release year, release month,
+        release date, and release name. In case one of these is set to NULL, it will be ordered last.
     """
     label_id = str(label_id)
     includes_data = defaultdict(dict)
@@ -195,7 +196,10 @@ def get_release_groups_for_label(label_id, release_types=None, limit=None, offse
         release_groups_query = _get_release_groups_for_label_query(db, label_id, release_types)
         count = release_groups_query.count()
         release_groups = release_groups_query.order_by(
-            nullslast(models.ReleaseGroupMeta.first_release_date_year.desc())
+            nullslast(models.ReleaseGroupMeta.first_release_date_year.desc()),
+            nullslast(models.ReleaseGroupMeta.first_release_date_month.desc()),
+            nullslast(models.ReleaseGroupMeta.first_release_date_day.desc()),
+            nullslast(models.ReleaseGroup.name.asc())
         ).limit(limit).offset(offset).all()
 
         for release_group in release_groups:
