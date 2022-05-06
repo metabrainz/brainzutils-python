@@ -66,6 +66,7 @@ class TestEvent:
         events = mb_event.get_event_for_place(
             place_id='97b9d0d3-ae52-4cdf-9a0d-149547297c5f',
             event_types=['Concert'],
+            includeNullType= True,
         )
         assert events[0] == [{
             "life-span": {
