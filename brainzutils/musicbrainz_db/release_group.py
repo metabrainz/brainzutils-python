@@ -1,6 +1,6 @@
 from collections import defaultdict
 from mbdata import models
-from sqlalchemy import nullslast
+from sqlalchemy import nullslast, or_
 from sqlalchemy.orm import joinedload
 from brainzutils.musicbrainz_db import mb_session
 import brainzutils.musicbrainz_db.exceptions as mb_exceptions
@@ -202,14 +202,16 @@ def get_release_groups_for_label(label_id, release_types=None, limit=None, offse
         Tuple containing the list of dictionaries of release groups and the total count of the release groups.
         The list of dictionaries of release groups is ordered by release year, release month,
         release date, and release name. In case one of these is set to NULL, it will be ordered last.
+        List also contains release groups with null type if 'Other' is in the list of release types.
     """
     label_id = str(label_id)
     includes_data = defaultdict(dict)
     if release_types is None:
         release_types = []
     release_types = get_mapped_release_types(release_types)
+    include_null_type = True if "Other" in release_types else False
     with mb_session() as db:
-        release_groups_query = _get_release_groups_for_label_query(db, label_id, release_types)
+        release_groups_query = _get_release_groups_for_label_query(db, label_id, release_types, include_null_type)
         count = release_groups_query.count()
         release_groups = release_groups_query.order_by(
             nullslast(models.ReleaseGroupMeta.first_release_date_year.desc()),
@@ -225,11 +227,18 @@ def get_release_groups_for_label(label_id, release_types=None, limit=None, offse
         return release_groups, count
 
 
-def _get_release_groups_for_label_query(db, label_id, release_types):
-    return db.query(models.ReleaseGroup).\
+def _get_release_groups_for_label_query(db, label_id, release_types, include_null_type=False):
+    release_groups = db.query(models.ReleaseGroup).\
         options(joinedload('meta')).\
-        join(models.ReleaseGroupPrimaryType).join(models.ReleaseGroupMeta).\
+        outerjoin(models.ReleaseGroupPrimaryType).join(models.ReleaseGroupMeta).\
         join(models.Release, models.Release.release_group_id == models.ReleaseGroup.id).\
         join(models.ReleaseLabel, models.ReleaseLabel.release_id == models.Release.id).\
         join(models.Label, models.Label.id == models.ReleaseLabel.label_id).\
-        filter(models.Label.gid == label_id).filter(models.ReleaseGroupPrimaryType.name.in_(release_types))
+        filter(models.Label.gid == label_id)
+
+    if include_null_type:
+        release_groups = release_groups.filter(or_(models.ReleaseGroup.type == None, models.ReleaseGroupPrimaryType.name.in_(release_types)))
+    else:
+        release_groups = release_groups.filter(models.ReleaseGroupPrimaryType.name.in_(release_types))
+
+    return release_groups
