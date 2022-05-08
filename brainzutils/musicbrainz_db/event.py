@@ -1,5 +1,5 @@
 from collections import defaultdict
-from sqlalchemy import or_
+from sqlalchemy import or_, nullslast
 from sqlalchemy.orm import joinedload
 from mbdata import models
 from uuid import UUID
@@ -133,8 +133,9 @@ def get_event_for_place(place_id: UUID, event_types: list = [],  includeNullType
         offset (int): Offset that can be used in conjunction with the limit.
 
     Returns:
-        Tuple containing the list of dictionaries of events ordered by begin date
-        and the total count of the events.
+        Tuple containing the list of dictionaries of events and the total count of the events.
+        The list of dictionaries of events is ordered by event begin year, begin month, begin date
+        begin time, and begin name. In case one of these is set to NULL, it will be ordered last.
     """
 
     place_id = str(place_id)
@@ -151,7 +152,13 @@ def get_event_for_place(place_id: UUID, event_types: list = [],  includeNullType
         else:
             event_query = event_query.filter(models.EventType.name.in_(event_types))
         
-        event_query = event_query.order_by(models.Event.begin_date_year.desc())
+        event_query = event_query.order_by(
+            nullslast(models.Event.begin_date_year.desc()),
+            nullslast(models.Event.begin_date_month.desc()),
+            nullslast(models.Event.begin_date_day.desc()),
+            nullslast(models.Event.time.desc()),
+            nullslast(models.Event.name.asc())
+        )
         count = event_query.count()
         events = event_query.limit(limit).offset(offset).all()
 
