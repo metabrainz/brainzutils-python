@@ -194,7 +194,8 @@ def get_release_groups_for_label(label_id, release_types=None, limit=None, offse
 
     Args:
         label_id (uuid): MBID of the label.
-        release_types (list): List of types of release groups to be fetched.
+        release_types (list): List of types of release groups to be fetched. The supported release_types are 
+        'album', 'single', 'ep', 'broadcast', and 'other'.
         limit (int): Max number of release groups to return.
         offset (int): Offset that can be used in conjunction with the limit.
 
