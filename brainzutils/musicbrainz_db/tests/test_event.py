@@ -64,18 +64,35 @@ class TestEvent:
 
     def test_fetch_get_event_for_place(self, engine):
         events = mb_event.get_event_for_place(
-            place_id='97b9d0d3-ae52-4cdf-9a0d-149547297c5f',
-            event_types=['Concert'],
+            place_id='4352063b-a833-421b-a420-e7fb295dece0',
+            event_types=['Concert', 'Festival'],
+            includeNullType= False,
+        )
+        assert events[0][0] == {
+            "life-span": {
+                "begin": "2015-07-17",
+                "end": "2015-09-12"
+            },
+            "mbid": "00d6449e-c6d2-42f1-a09e-c01668af1dd7",
+            "name": "The Proms 2015",
+            "type": "Festival"
+        }
+
+        assert events[1] == 5
+
+        events2 = mb_event.get_event_for_place(
+            place_id='98b46124-cf84-4747-ab01-151163d63360',
+            event_types=[],
             includeNullType= True,
         )
-        assert events[0] == [{
-            "life-span": {
-                "begin": "1965-12-13",
-                "end": "1965-12-13"
-            },
-            "mbid": "415f97bf-b51c-46d8-9841-778f1c791d85",
-            "name": "Anon concert premiere at Charterhouse School Hall",
-            "type": "Concert"
-        }]
 
-        assert events[1] == 1
+        assert events2[0][0] == {
+            "life-span": {
+                "begin": "1986-03-27",
+                "end": "1986-03-27"
+            },
+            "mbid": "ddec565a-6140-4146-af5c-0ebb9429d6ef",
+            "name": "Blue Öyster Cult at Santa Monica Civic Auditorium",
+        }
+
+        assert events2[1] == 1
