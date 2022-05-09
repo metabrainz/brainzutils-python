@@ -30,7 +30,7 @@ def get_mapped_event_types(event_types: list) -> list:
             if event_type in event_type_mapping:
                 mapped_event_types.append(event_type_mapping[event_type])
             else:
-                raise mb_exceptions.InvalidReleaseTypesError("Bad event_type: {etype} is not supported".format(etype = event_type))
+                raise mb_exceptions.InvalidTypeError("Bad event_type: {etype} is not supported".format(etype = event_type))
 
         return mapped_event_types
 
@@ -127,7 +127,8 @@ def get_event_for_place(place_id: UUID, event_types: list = [],  includeNullType
 
     Args:
         place_id (uuid): MBID of the place.
-        event_types (list): List of types of events to be fetched.
+        event_types (list): List of types of events to be fetched. The supported event_types are
+        'Concert', 'Festival', 'Convention/Expo', 'Launch event', 'Award ceremony', 'Stage performance', and 'Masterclass/Clinic'.
         includeNullType (bool): Whether to include events with no type.
         limit (int): Max number of events to return.
         offset (int): Offset that can be used in conjunction with the limit.
