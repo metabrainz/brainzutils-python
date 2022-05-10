@@ -13,7 +13,7 @@ class TestLabel:
             "name": "Roc‐A‐Fella Records",
             "type": "Original Production",
             "area": "United States",
-            "life-span": {"begin": "1996"},
+            "life-span": {"begin": "1996", "end": "2013"},
             "rating": 100,
         }
 
@@ -48,7 +48,7 @@ class TestLabel:
             "name": "Roc‐A‐Fella Records",
             "type": "Original Production",
             "area": "United States",
-            "life-span": {"begin": "1996"},
+            "life-span": {"begin": "1996", "end": "2013"},
             "rating": 100
         }
 

@@ -36,7 +36,7 @@ class TestPlace:
             ['4352063b-a833-421b-a420-e7fb295dece0', '2056ad56-cea9-4536-9f2d-58765a38829c']
         )
         assert places['4352063b-a833-421b-a420-e7fb295dece0']['name'] == 'Royal Albert Hall'
-        assert places['2056ad56-cea9-4536-9f2d-58765a38829c']['name'] == 'Finnvox Studios'
+        assert places['2056ad56-cea9-4536-9f2d-58765a38829c']['name'] == 'Finnvox'
 
     def test_fetch_multiple_places_redirect(self, engine):
         places = mb_place.fetch_multiple_places(

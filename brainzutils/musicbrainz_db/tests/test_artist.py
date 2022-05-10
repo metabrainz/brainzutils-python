@@ -14,7 +14,7 @@ class TestArtist:
             "sort_name": "Linkin Park",
             "comment": "American rock band",
             "life-span": {"begin": "1999"},
-            "rating": 86,
+            "rating": 85,
             "type": "Group",
         }
 
@@ -25,7 +25,7 @@ class TestArtist:
             "mbid": "79239441-bfd5-4981-a70c-55c3f15c1287",
             "name": "Madonna",
             "sort_name": "Madonna",
-            "comment": "American singer-songwriter, actress, businesswoman, “Queen of Pop”",
+            "comment": "“Queen of Pop”",
             "life-span": {"begin": "1958-08-16"},
             "rating": 88,
             "type": "Person",
@@ -52,7 +52,7 @@ class TestArtist:
             "type": "Group",
             "comment": "American rock band",
             "life-span": {"begin": "1999"},
-            "rating": 86,
+            "rating": 85,
         }
 
     def test_fetch_multiple_artists_redirect(self, engine):
@@ -65,7 +65,7 @@ class TestArtist:
             "sort_name": "Linkin Park",
             "comment": "American rock band",
             "life-span": {"begin": "1999"},
-            "rating": 86,
+            "rating": 85,
             "type": "Group"
         }
 
