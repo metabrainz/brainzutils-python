@@ -127,7 +127,7 @@ class TestRelease:
                 'position': 6,
                 'length': 339866,
                 'recording_id': '2d9a5b40-f5e6-4499-ab7a-567fe3b42ab9',
-                 'recording_title': 'Leper Messiah',
+                'recording_title': 'Leper Messiah',
                 'artist-credit': [
                     {
                         'name': 'Metallica',
@@ -222,21 +222,27 @@ class TestRelease:
 
     def test_get_releases_using_recording_mbid(self, engine):
         """Tests if releases are fetched correctly for a given recording MBID"""
+        self.maxDiff = None
+
         releases = mb_release.get_releases_using_recording_mbid('5465ca86-3881-4349-81b2-6efbd3a59451')
+
         assert releases == [
-            {'mbid': '89f64145-2f75-41d1-831a-517b785ed75a', 'name': "The Blueprint Collector's Edition"},
+            {'mbid': 'cb48685f-beea-4ca6-93f3-49ef4d8cbf28', 'name': 'The Blueprint²: The Gift & The Curse'},
+            {'mbid': '4c9bd72b-dae9-44bf-a052-9b2f6c0d50de', 'name': 'Back to Bey-Sic', 'comment': 'deluxe edition'},
+            {'mbid': '89f64145-2f75-41d1-831a-517b785ed75a', 'name': 'The Blueprint Collector’s Edition'},
             {'mbid': 'f1183a86-36d2-4f1f-ab8f-6f965dc0b033', 'name': 'The Hits Collection Volume One'},
+            {'mbid': '7c77ca4d-d84b-4b67-8705-e6afe9eb5878', 'name': 'The Blueprint²: The Gift & The Curse', 'comment': 'MQA, explicit'},
             {'mbid': '77a74b85-0ae0-338f-aaca-4f36cd394f88', 'name': 'Blueprint 2.1'},
+            {'mbid': 'cb180855-979d-4d5d-9024-3bc97c64d19c', 'name': 'The Blueprint²: The Gift & The Curse', 'comment': 'explicit'},
+            {'mbid': 'b207b569-6323-4426-801b-3d5dbaf28d49', 'name': 'The Blueprint²: The Gift & The Curse', 'comment': 'explicit'},
             {'mbid': '7111c8bc-8549-4abc-8ab9-db13f65b4a55', 'name': 'Blueprint 2.1'},
-            {'mbid': '2c5e4198-24cf-3c95-a16e-83be8e877dfa', 'name': 'The Blueprint²: The Gift & The Curse', 'comment': 'clean/edited'},
             {'mbid': '3c535d03-2fcc-467a-8d47-34b3250b8211', 'name': 'The Hits Collection Volume One', 'comment': 'explicit'},
             {'mbid': 'c84d8fa8-6f8d-42c9-87cc-b726e859b41d', 'name': 'The Hits Collection Volume One', 'comment': 'edited version'},
+            {'mbid': '8d51f750-7ee9-4937-8907-0243efc2f6df', 'name': 'The Blueprint²: The Gift & The Curse', 'comment': 'explicit'},
             {'mbid': '4f41108c-db36-4616-8614-f504fdef287a', 'name': 'Blueprint 2.1'},
             {'mbid': 'b0075ce9-58c8-47e2-8a72-5f783314a97e', 'name': 'The Hits Collection Volume One', 'comment': 'explicit'},
-            {'mbid': 'd75e103c-5ef4-4146-ae81-e27d19dc7fc4', 'name': "The Blueprint Collector's Edition"},
             {'mbid': '4a441628-2e4d-4032-825f-6bdf4aee382e', 'name': 'The Hits Collection, Volume 1'},
             {'mbid': '5e782ae3-602b-48b7-99be-de6bcffa4aba', 'name': 'The Hits Collection, Volume 1', 'comment': 'Deluxe edition'},
             {'mbid': '7ebaaa95-e316-3b20-8819-7e4ca648c135', 'name': 'The Hits Collection, Volume 1'},
-            {'mbid': '0ff452e3-c306-4082-b0dc-223725f4fbbf', 'name': 'The Blueprint²: The Gift & The Curse'},
-            {'mbid': '801678aa-5d30-4342-8227-e9618f164cca', 'name': 'The Blueprint²: The Gift & The Curse'}
+            {'mbid': '240f52cd-9120-452d-98de-8df087e389e8', 'name': 'The Real Best of Both Worlds'}
         ]

@@ -8,6 +8,7 @@ class TestRecording:
 
     def test_get_recording_by_mbid(self, engine):
         """ Tests if appropriate recording is returned for a given MBID. """
+        self.maxDiff = None
         recording = mb_recording.get_recording_by_mbid('daccb724-8023-432a-854c-e0accb6c8678', includes=['artists'])
 
         assert recording == {
@@ -16,13 +17,13 @@ class TestRecording:
             'comment': 'explicit',
             'length': 205.28,
             'rating': 78,
-            'artist-credit-phrase': 'Jay-Z / Linkin Park',
+            'artist-credit-phrase': 'Jay‐Z / Linkin Park',
             'artists': [
                 {
                     'mbid': 'f82bcf78-5b69-4622-a5ef-73800768d9ac',
                     'name': 'JAY‐Z',
-                    'credited_name': 'Jay-Z',
-                    'join_phrase': ' / '
+                    'credited_name': 'Jay‐Z',
+                    'join_phrase': ' / ',
                 },
                 {
                     'mbid': 'f59c5520-5f46-4d2c-b2c4-822eabf53419',
@@ -42,6 +43,7 @@ class TestRecording:
 
     def test_fetch_multiple_recordings(self, engine):
         """ Tests if appropriate recordings are returned for a given list of MBIDs. """
+        self.maxDiff = None
 
         mbids = ['daccb724-8023-432a-854c-e0accb6c8678', 'ae83579c-5f33-4a35-83f3-89206c44a426']
         recordings = mb_recording.fetch_multiple_recordings(mbids, includes=['artists'])
@@ -53,13 +55,13 @@ class TestRecording:
                 'comment': 'explicit',
                 'length': 205.28,
                 'rating': 78,
-                'artist-credit-phrase': 'Jay-Z / Linkin Park',
+                'artist-credit-phrase': 'Jay‐Z / Linkin Park',
                 'artists': [
                     {
                         'mbid': 'f82bcf78-5b69-4622-a5ef-73800768d9ac',
                         'name': 'JAY‐Z',
-                        'credited_name': 'Jay-Z',
-                        'join_phrase': ' / '
+                        'credited_name': 'Jay‐Z',
+                        'join_phrase': ' / ',
                     },
                     {
                         'mbid': 'f59c5520-5f46-4d2c-b2c4-822eabf53419',

@@ -26,7 +26,7 @@ class TestWork:
             includes=['artist-rels', 'recording-rels'])
         assert work["mbid"] == "36e33f94-ef5f-36b5-97b0-c1ed9c5a542f"
         assert len(work["artist-rels"]) == 4
-        assert len(work["recording-rels"]) == 51
+        assert len(work["recording-rels"]) == 55
 
     def test_fetch_multiple_works(self, engine):
         works = mb_work.fetch_multiple_works([
