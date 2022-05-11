@@ -81,18 +81,19 @@ class TestEvent:
         assert events[1] == 5
 
         events2 = mb_event.get_event_for_place(
-            place_id='98b46124-cf84-4747-ab01-151163d63360',
+            place_id='06e5431e-ef98-424c-a43a-4b7a3cf26327',
             event_types=[],
             includeNullType= True,
         )
 
         assert events2[0][0] == {
             "life-span": {
-                "begin": "1986-03-27",
-                "end": "1986-03-27"
+                "begin": "2015-12-19",
+                "end": "2015-12-19"
             },
-            "mbid": "ddec565a-6140-4146-af5c-0ebb9429d6ef",
-            "name": "Blue Öyster Cult at Santa Monica Civic Auditorium",
+            "mbid": "6cc3999a-2f19-433e-b760-f2ff2a6bc86b",
+            "name": "2015-12-19: Studio 8H, GE Building, Rockefeller Center, New York City, NY, USA",
+            'comment': 'Saturday Night Live',
         }
 
-        assert events2[1] == 1
+        assert events2[1] == 4
