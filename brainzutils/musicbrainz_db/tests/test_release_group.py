@@ -91,17 +91,17 @@ class TestReleaseGroup:
             'type': 'Album',
         }
 
-        assert release_groups[1] == 75
+        assert release_groups[1] == 78
 
         # Test release group with null type
         release_groups_1 = mb_release_group.get_release_groups_for_label(
-            label_id='13a464dc-b9fd-4d16-a4f4-d4316f6a46c7',
+            label_id='d835e36a-78ee-48ba-ac04-b46fb37df41f',
             release_types=['Other'],
         )
         assert release_groups_1[0][0] == {
-            'mbid': '445d5983-9b66-4c43-a915-15fcf20f3e84',
-            'title': 'Delicious Japanese',
-            'first-release-year': 2009,
+            'mbid': '39d08e6e-b877-4c64-aef9-ce79a19f6075',
+            'title': 'American Songbook: The American Music Collection, Vol. III',
+            'first-release-year': 1996,
         }
 
-        assert release_groups_1[1] == 1
+        assert release_groups_1[1] == 2
