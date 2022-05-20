@@ -81,7 +81,7 @@ class TestReleaseGroup:
 
     def test_fetch_get_release_groups_for_label(self, engine):
         release_groups = mb_release_group.get_release_groups_for_label(
-            label_id='4cccc72a-0bd0-433a-905e-dad87871397d',
+            label_mbid='4cccc72a-0bd0-433a-905e-dad87871397d',
             release_types=['Album'],
         )
         assert release_groups[0][0] == {
@@ -91,11 +91,12 @@ class TestReleaseGroup:
             'type': 'Album',
         }
 
-        assert release_groups[1] == 78
+        assert release_groups[1] == 19
+        assert len(release_groups[0]) == 19
 
         # Test release group with null type
         release_groups_1 = mb_release_group.get_release_groups_for_label(
-            label_id='d835e36a-78ee-48ba-ac04-b46fb37df41f',
+            label_mbid='d835e36a-78ee-48ba-ac04-b46fb37df41f',
             release_types=['Other'],
         )
         assert release_groups_1[0][0] == {

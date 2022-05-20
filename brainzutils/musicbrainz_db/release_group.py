@@ -1,7 +1,7 @@
 from collections import defaultdict
 from mbdata import models
 from sqlalchemy import nullslast, or_
-from sqlalchemy.orm import joinedload
+from sqlalchemy.orm import contains_eager, joinedload
 from brainzutils.musicbrainz_db import mb_session
 import brainzutils.musicbrainz_db.exceptions as mb_exceptions
 from brainzutils.musicbrainz_db.includes import check_includes
@@ -189,7 +189,7 @@ def _get_release_groups_for_artist_query(db, artist_id, release_types):
         filter(models.Artist.gid == artist_id).filter(models.ReleaseGroupPrimaryType.name.in_(release_types))
 
 
-def get_release_groups_for_label(label_id, release_types=None, limit=None, offset=None):
+def get_release_groups_for_label(label_mbid, release_types=None, limit=None, offset=None):
     """Get all release groups linked to a label.
 
     Args:
@@ -205,14 +205,14 @@ def get_release_groups_for_label(label_id, release_types=None, limit=None, offse
         release date, and release name. In case one of these is set to NULL, it will be ordered last.
         List also contains release groups with null type if 'Other' is in the list of release types.
     """
-    label_id = str(label_id)
+    label_mbid = str(label_mbid)
     includes_data = defaultdict(dict)
     if release_types is None:
         release_types = []
     release_types = get_mapped_release_types(release_types)
     include_null_type = True if "Other" in release_types else False
     with mb_session() as db:
-        release_groups_query = _get_release_groups_for_label_query(db, label_id, release_types, include_null_type)
+        release_groups_query = _get_release_groups_for_label_query(db, label_mbid, release_types, include_null_type)
         count = release_groups_query.count()
         release_groups = release_groups_query.order_by(
             nullslast(models.ReleaseGroupMeta.first_release_date_year.desc()),
@@ -228,18 +228,20 @@ def get_release_groups_for_label(label_id, release_types=None, limit=None, offse
         return release_groups, count
 
 
-def _get_release_groups_for_label_query(db, label_id, release_types, include_null_type=False):
+def _get_release_groups_for_label_query(db, label_mbid, release_types, include_null_type=False):
     release_groups = db.query(models.ReleaseGroup).\
-        options(joinedload('meta')).\
         outerjoin(models.ReleaseGroupPrimaryType).join(models.ReleaseGroupMeta).\
+        options(contains_eager(models.ReleaseGroup.meta)).\
+        options(contains_eager(models.ReleaseGroup.type)).\
         join(models.Release, models.Release.release_group_id == models.ReleaseGroup.id).\
         join(models.ReleaseLabel, models.ReleaseLabel.release_id == models.Release.id).\
         join(models.Label, models.Label.id == models.ReleaseLabel.label_id).\
-        filter(models.Label.gid == label_id)
+        group_by(models.ReleaseGroup, models.ReleaseGroupMeta, models.ReleaseGroupPrimaryType).\
+        filter(models.Label.gid == label_mbid)
 
     if include_null_type:
         release_groups = release_groups.filter(or_(models.ReleaseGroup.type == None, models.ReleaseGroupPrimaryType.name.in_(release_types)))
-    else:
+    elif release_types:
         release_groups = release_groups.filter(models.ReleaseGroupPrimaryType.name.in_(release_types))
 
     return release_groups
