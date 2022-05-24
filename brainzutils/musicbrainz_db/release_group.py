@@ -239,7 +239,7 @@ def _get_release_groups_for_label_query(db, label_mbid, release_types, include_n
         filter(models.Label.gid == label_mbid).\
         group_by(models.ReleaseGroup, models.ReleaseGroupMeta, models.ReleaseGroupPrimaryType)
 
-    if include_null_type:
+    if include_null_type and release_types:
         release_groups = release_groups.filter(or_(models.ReleaseGroup.type == None, models.ReleaseGroupPrimaryType.name.in_(release_types)))
     elif release_types:
         release_groups = release_groups.filter(models.ReleaseGroupPrimaryType.name.in_(release_types))
