@@ -236,8 +236,8 @@ def _get_release_groups_for_label_query(db, label_mbid, release_types, include_n
         join(models.Release, models.Release.release_group_id == models.ReleaseGroup.id).\
         join(models.ReleaseLabel, models.ReleaseLabel.release_id == models.Release.id).\
         join(models.Label, models.Label.id == models.ReleaseLabel.label_id).\
-        group_by(models.ReleaseGroup, models.ReleaseGroupMeta, models.ReleaseGroupPrimaryType).\
-        filter(models.Label.gid == label_mbid)
+        filter(models.Label.gid == label_mbid).\
+        group_by(models.ReleaseGroup, models.ReleaseGroupMeta, models.ReleaseGroupPrimaryType)
 
     if include_null_type:
         release_groups = release_groups.filter(or_(models.ReleaseGroup.type == None, models.ReleaseGroupPrimaryType.name.in_(release_types)))
