@@ -1,8 +1,11 @@
 from collections import defaultdict
-from sqlalchemy import or_, nullslast
-from sqlalchemy.orm import joinedload
-from mbdata import models
+from typing import List
 from uuid import UUID
+
+from mbdata import models
+from sqlalchemy import or_, nullslast
+from sqlalchemy.orm import contains_eager, joinedload
+
 from brainzutils.musicbrainz_db import mb_session
 import brainzutils.musicbrainz_db.exceptions as mb_exceptions
 from brainzutils.musicbrainz_db.utils import get_entities_by_gids
@@ -122,16 +125,16 @@ def fetch_multiple_events(mbids, includes=None):
         return {str(mbid): serialize_events(event, includes_data[event.id]) for mbid, event in events.items()}
 
 
-def get_event_for_place(place_id: UUID, event_types: list = [],  includeNullType: bool = True, limit: int = None, offset: int = None) -> tuple:
-    """Get all events linked to a place.
+def get_events_for_place(place_id: UUID, event_types: List[str] = [],  include_null_type: bool = True, limit: int = None, offset: int = None) -> tuple:
+    """Get all events that occurred at a place.
 
     Args:
-        place_id (uuid): MBID of the place.
-        event_types (list): List of types of events to be fetched. The supported event_types are
+        place_id: MBID of the place.
+        event_types: List of types of events to be fetched. The supported event_types are
         'Concert', 'Festival', 'Convention/Expo', 'Launch event', 'Award ceremony', 'Stage performance', and 'Masterclass/Clinic'.
-        includeNullType (bool): Whether to include events with no type.
-        limit (int): Max number of events to return.
-        offset (int): Offset that can be used in conjunction with the limit.
+        include_null_type: Whether to include events with no type.
+        limit: Max number of events to return.
+        offset: Offset that can be used in conjunction with the limit.
 
     Returns:
         Tuple containing the list of dictionaries of events and the total count of the events.
@@ -144,13 +147,14 @@ def get_event_for_place(place_id: UUID, event_types: list = [],  includeNullType
 
     with mb_session() as db:
         event_query = db.query(models.Event).outerjoin(models.EventType).\
+            options(contains_eager(models.Event.type)).\
             join(models.LinkEventPlace, models.Event.id == models.LinkEventPlace.entity0_id).\
             join(models.Place, models.LinkEventPlace.entity1_id == models.Place.id).\
             filter(models.Place.gid == place_id)
 
-        if includeNullType:
+        if include_null_type and event_types:
             event_query = event_query.filter(or_(models.Event.type == None, models.EventType.name.in_(event_types)))
-        else:
+        elif event_types:
             event_query = event_query.filter(models.EventType.name.in_(event_types))
         
         event_query = event_query.order_by(

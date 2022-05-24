@@ -62,11 +62,11 @@ class TestEvent:
             includes=['artist-rels', 'place-rels', 'series-rels', 'url-rels', 'release-group-rels'])
         assert list(events.keys()) == ['d4921d43-bf92-464e-aef4-bba8540fc5bd']
 
-    def test_fetch_get_event_for_place(self, engine):
-        events = mb_event.get_event_for_place(
+    def test_get_events_for_place(self, engine):
+        events = mb_event.get_events_for_place(
             place_id='4352063b-a833-421b-a420-e7fb295dece0',
             event_types=['Concert', 'Festival'],
-            includeNullType= False,
+            include_null_type=False,
         )
         assert events[0][0] == {
             "life-span": {
@@ -79,13 +79,15 @@ class TestEvent:
         }
 
         assert events[1] == 5
+        assert len(events[0]) == 5
 
-        events2 = mb_event.get_event_for_place(
+        events2 = mb_event.get_events_for_place(
             place_id='06e5431e-ef98-424c-a43a-4b7a3cf26327',
             event_types=[],
-            includeNullType= True,
+            include_null_type=True,
         )
 
+        # first item doesn't have a 'type' key
         assert events2[0][0] == {
             "life-span": {
                 "begin": "2015-12-19",
@@ -96,4 +98,4 @@ class TestEvent:
             'comment': 'Saturday Night Live',
         }
 
-        assert events2[1] == 4
+        assert events2[1] == 5
