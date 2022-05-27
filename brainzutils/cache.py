@@ -337,7 +337,7 @@ def sadd(name, keys, expirein, encode=True, namespace=None):
         keys = {_encode_val(key) for key in keys}
 
     result = _r.sadd(prepared_name, *keys)
-    expire(prepared_name, expirein, namespace)
+    expire(name, expirein, namespace)
     return result
 
 
