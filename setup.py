@@ -12,5 +12,5 @@ setup(
     packages=find_packages(),
     use_scm_version=True,
     setup_requires=['setuptools_scm'],
-    install_requires=open("requirements.txt").read().split(),
+    install_requires=open("requirements.txt").read().splitlines(),
 )
