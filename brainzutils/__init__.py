@@ -1,9 +1,13 @@
-# TODO: We are the backport of importlib to support python 3.7.
-#  When we raise the minimum to python 3.8, we can remove this and use the builtin importlib module.
-from importlib_metadata import version, PackageNotFoundError
+import sys
+
+if sys.version_info >= (3, 10):
+    from importlib.metadata import version, PackageNotFoundError
+else:
+    # importlib.metadata's API changed in 3.10, so use a backport for versions less than this.
+    from importlib_metadata import version, PackageNotFoundError
 
 try:
     __version__ = version(__name__)
 except PackageNotFoundError:
     # package is not installed
-    pass
+    __version__ = "unknown"
