@@ -9,6 +9,7 @@ services:
       - ../:/code
     environment:
       PYTHONDONTWRITEBYTECODE: 1
+      SQLALCHEMY_WARN_20: 1
     depends_on:
       - redis
       - musicbrainz_db
