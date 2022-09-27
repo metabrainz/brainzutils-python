@@ -44,7 +44,7 @@ def fetch_multiple_artists(mbids, includes=None):
     check_includes('artist', includes)
 
     with mb_session() as db:
-        query = db.query(models.Artist).options(joinedload('type'))
+        query = db.query(models.Artist).options(joinedload(models.Artist.type))
 
         artists = get_entities_by_gids(
             query=query,

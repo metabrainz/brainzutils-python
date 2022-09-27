@@ -1,5 +1,5 @@
 from collections import defaultdict
-from mbdata import models
+from mbdata.models import Release, ReleaseGroup, Medium, Track, Recording, ArtistCredit, ArtistCreditName
 from sqlalchemy.orm import joinedload
 from brainzutils.musicbrainz_db import exceptions as mb_exceptions
 from brainzutils.musicbrainz_db import mb_session
@@ -44,23 +44,28 @@ def fetch_multiple_releases(mbids, includes=None):
     includes_data = defaultdict(dict)
     check_includes('release', includes)
     with mb_session() as db:
-        query = db.query(models.Release)
+        query = db.query(Release)
         if 'release-groups' in includes:
-            query = query.options(joinedload('release_group'))
+            query = query.options(joinedload(Release.release_group))
         if 'artists' in includes:
-            query = query.\
-                options(joinedload("artist_credit")).\
-                options(joinedload("artist_credit.artists")).\
-                options(joinedload("artist_credit.artists.artist"))
+            query = query.options(
+                joinedload(Recording.artist_credit).
+                joinedload(ArtistCredit.artists).
+                joinedload(ArtistCreditName.artist)
+            )
         if 'media' in includes:
             # Fetch media with tracks
-            query = query.options(joinedload('mediums')).\
-                    options(joinedload('mediums.tracks')).\
-                    options(joinedload('mediums.format')).\
-                    options(joinedload('mediums.tracks.recording')).\
-                    options(joinedload('mediums.tracks.recording.artist_credit')).\
-                    options(joinedload('mediums.tracks.recording.artist_credit.artists')).\
-                    options(joinedload('mediums.tracks.recording.artist_credit.artists.artist'))
+            query = query\
+                .options(
+                    joinedload(Release.mediums)
+                    .options(
+                        joinedload(Medium.format),
+                        joinedload(Medium.tracks).
+                        joinedload(Track.recording).
+                        joinedload(Recording.artist_credit).
+                        joinedload(ArtistCredit.artists).
+                        joinedload(ArtistCreditName.artist))
+                    )
         releases = get_entities_by_gids(
             query=query,
             entity_type='release',
@@ -103,9 +108,9 @@ def browse_releases(release_group_id, includes=None):
     if includes is None:
         includes = []
     with mb_session() as db:
-        release_ids = db.query(models.Release.gid).\
-                      join(models.ReleaseGroup).\
-                      filter(models.ReleaseGroup.gid == release_group_id).all()
+        release_ids = db.query(Release.gid).\
+                      join(ReleaseGroup).\
+                      filter(ReleaseGroup.gid == release_group_id).all()
         release_ids = [release_id[0] for release_id in release_ids]
     releases = fetch_multiple_releases(release_ids, includes=includes)
     return releases
@@ -142,11 +147,11 @@ def get_releases_using_recording_mbid(recording_mbid):
     recording_redirect = recording.get_recording_by_mbid(recording_mbid)
     recording_mbid = recording_redirect['mbid']
     with mb_session() as db:
-        releases = db.query(models.Release).\
-                    join(models.Medium).\
-                    join(models.Track).\
-                    join(models.Recording).\
-                    filter(models.Recording.gid == recording_mbid).all()
+        releases = db.query(Release).\
+                    join(Medium).\
+                    join(Track).\
+                    join(Recording).\
+                    filter(Recording.gid == recording_mbid).all()
 
         serial_releases = [serialize_releases(release) for release in releases]
         if not serial_releases:
