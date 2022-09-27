@@ -43,7 +43,7 @@ def fetch_multiple_works(mbids, includes=None):
     includes_data = defaultdict(dict)
     check_includes('work', includes)
     with mb_session() as db:
-        query = db.query(models.Work).options(joinedload("type"))
+        query = db.query(models.Work).options(joinedload(models.Work.type))
 
         works = get_entities_by_gids(
             query=query,

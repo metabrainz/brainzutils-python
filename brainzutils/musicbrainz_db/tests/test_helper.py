@@ -1,80 +1,79 @@
 from collections import defaultdict
-from unittest import TestCase
-from unittest.mock import MagicMock
+
+import pytest
 from mbdata import models
+
 from brainzutils.musicbrainz_db.serialize import serialize_relationships
 from brainzutils.musicbrainz_db.helpers import get_relationship_info
 import brainzutils.musicbrainz_db as mb
 from brainzutils.musicbrainz_db.helpers import get_tags
-from brainzutils.musicbrainz_db.test_data import linkplaceurl_1, linkplaceurl_2, place_suisto
+from brainzutils.musicbrainz_db.utils import get_entities_by_gids
 
 
-class HelpersTestCase(TestCase):
+@pytest.mark.database
+class TestHelpers:
 
-    def setUp(self):
-        mb.mb_session = MagicMock()
-        self.mock_db = mb.mb_session.return_value.__enter__.return_value
-        self.tags_query = self.mock_db.query.return_value.join.return_value.\
-            join.return_value.filter.return_value.group_by.return_value.all
-        self.relationships_query = self.mock_db.query.return_value.options.return_value.\
-            options.return_value.filter.return_value.options
-
-    def test_get_tags(self):
+    def test_get_tags(self, engine):
         data = defaultdict(dict)
-        self.tags_query.return_value = [(1820974, ['hip hop', 'hip-hop/rap'])]
-        release_group_tags = get_tags(
-            db=self.mock_db,
-            entity_model=models.ReleaseGroup,
-            tag_model=models.ReleaseGroupTag,
-            foreign_tag_id=models.ReleaseGroupTag.release_group_id,
-            entity_ids=['1820974'],
-        )
-        for release_group_id, tags in release_group_tags:
-            data[release_group_id]['tags'] = tags
-        expected_data = {
-            1820974: {
-                'tags': ['hip hop', 'hip-hop/rap']
-            }
-        }
-        data = dict(data)
-        self.assertDictEqual(data, expected_data)
-
-    def test_get_relationship_info(self):
-        data = {}
-        self.relationships_query.return_value = [linkplaceurl_1, linkplaceurl_2]
-        includes_data = defaultdict(dict)
-        get_relationship_info(
-            db=self.mock_db,
-            target_type='url',
-            source_type='place',
-            source_entity_ids=['955'],
-            includes_data=includes_data,
-        )
-        serialize_relationships(data, place_suisto, includes_data[place_suisto.id]['relationship_objs'])
-        expected_data = {
-            'url-rels': [
-                {
-                    'type': 'official homepage',
-                    'type-id': '696b79da-7e45-40e6-a9d4-b31438eb7e5d',
-                    'begin-year': None,
-                    'end-year': None,
-                    'direction': 'forward',
-                    'url': {
-                        'mbid': '7462ea62-7439-47f7-93bc-a425d1d989e8',
-                        'url': 'http://www.suisto.fi/'
-                    }
-                },
-                {
-                    'type': 'social network',
-                    'type-id': '040de4d5-ace5-4cfb-8a45-95c5c73bce01',
-                    'begin-year': None,
-                    'end-year': None,
-                    'direction': 'forward',
-                    'url': {
-                        'mbid': '8de22e00-c8e8-475f-814e-160ef761da63',
-                        'url': 'https://twitter.com/Suisto'
-                    }
+        with mb.mb_session() as db:
+            release_group_tags = get_tags(
+                db=db,
+                entity_model=models.ReleaseGroup,
+                tag_model=models.ReleaseGroupTag,
+                foreign_tag_id=models.ReleaseGroupTag.release_group_id,
+                entity_ids=[253487],
+            )
+            for release_group_id, tags in release_group_tags:
+                data[release_group_id]['tags'] = tags
+            expected_data = {
+                253487: {
+                    'tags': ['classical', 'ballet']
                 }
-            ]
-        }
-        self.assertDictEqual(data, expected_data)
+            }
+            assert dict(data) == expected_data
+
+    def test_get_relationship_info(self, engine):
+        data = {}
+        includes_data = defaultdict(dict)
+        with mb.mb_session() as db:
+            gid = "3185e028-9a08-448b-83e3-873dfda40476"
+            place = get_entities_by_gids(
+                query=db.query(models.Place),
+                entity_type='place',
+                mbids=[gid],
+            )[gid]
+            get_relationship_info(
+                db=db,
+                target_type='url',
+                source_type='place',
+                source_entity_ids=[place.id],
+                includes_data=includes_data,
+            )
+            serialize_relationships(data, place, includes_data[place.id]['relationship_objs'])
+            expected_data = {
+                'url-rels': [
+                    {
+                        'type': 'wikidata',
+                        'type-id': 'e6826618-b410-4b8d-b3b5-52e29eac5e1f',
+                        'begin-year': None,
+                        'end-year': None,
+                        'direction': 'forward',
+                        'url': {
+                            'mbid': '86d64bb6-bcee-4cda-b1f8-050394664671',
+                            'url': 'https://www.wikidata.org/wiki/Q2489904'
+                        }
+                    },
+                    {
+                        'type': 'discogs',
+                        'type-id': '1c140ac8-8dc2-449e-92cb-52c90d525640',
+                        'begin-year': None,
+                        'end-year': None,
+                        'direction': 'forward',
+                        'url': {
+                            'mbid': '06332787-5aac-4e4c-95b9-75cf729ae308',
+                            'url': 'https://www.discogs.com/label/266610'
+                        }
+                    }
+                ]
+            }
+            assert data == expected_data

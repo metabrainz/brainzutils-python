@@ -18,7 +18,7 @@ def get_mapped_release_types(release_types):
     Returns:
         List of mapped release types.
     """
-    
+
     release_types = [release_type.lower() for release_type in release_types]
     mapped_release_types = []
     with mb_session() as db:
@@ -30,7 +30,7 @@ def get_mapped_release_types(release_types):
                 raise mb_exceptions.InvalidTypeError("Bad release_types: {rtype} is not supported".format(rtype = release_type))
             else:
                 mapped_release_types.append(release_type_mapping[release_type])
-        
+
         return mapped_release_types
 
 
@@ -67,14 +67,16 @@ def fetch_multiple_release_groups(mbids, includes=None):
     check_includes('release_group', includes)
     with mb_session() as db:
         # Join table meta which contains release date for a release group
-        query = db.query(models.ReleaseGroup).options(joinedload("meta")).\
-                options(joinedload("type"))
+        query = db.query(models.ReleaseGroup).options(joinedload(models.ReleaseGroup.meta)).\
+                options(joinedload(models.ReleaseGroup.type))
 
         if 'artists' in includes:
             query = query.\
-                options(joinedload("artist_credit")).\
-                options(joinedload("artist_credit.artists")).\
-                options(joinedload("artist_credit.artists.artist"))
+                options(
+                    joinedload(models.ReleaseGroup.artist_credit).
+                    joinedload(models.ArtistCredit.artists).
+                    joinedload(models.ArtistCreditName.artist)
+                )
 
         release_groups = get_entities_by_gids(
             query=query,
@@ -182,7 +184,7 @@ def get_release_groups_for_artist(artist_id, release_types=None, limit=None, off
 
 def _get_release_groups_for_artist_query(db, artist_id, release_types):
     return db.query(models.ReleaseGroup).\
-        options(joinedload('meta')).\
+        options(joinedload(models.ReleaseGroup.meta)).\
         join(models.ReleaseGroupPrimaryType).join(models.ReleaseGroupMeta).\
         join(models.ArtistCreditName, models.ArtistCreditName.artist_credit_id == models.ReleaseGroup.artist_credit_id).\
         join(models.Artist, models.Artist.id == models.ArtistCreditName.artist_id).\

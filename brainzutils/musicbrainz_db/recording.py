@@ -4,7 +4,7 @@ from brainzutils.musicbrainz_db.includes import check_includes
 from brainzutils.musicbrainz_db.serialize import serialize_recording
 from brainzutils.musicbrainz_db.utils import get_entities_by_gids
 from collections import defaultdict
-from mbdata.models import Recording
+from mbdata.models import Recording, ArtistCredit, ArtistCreditName
 from sqlalchemy.orm import joinedload, subqueryload
 
 
@@ -72,13 +72,15 @@ def fetch_multiple_recordings(mbids, includes=None):
     with mb_session() as db:
         query = db.query(Recording)
 
-        if 'artist' in includes or 'artists' in includes:
-            query = query.options(joinedload("artist_credit", innerjoin=True))
+        if 'artist' in includes:
+            query = query.options(joinedload(Recording.artist_credit, innerjoin=True))
 
         if 'artists' in includes:
-            query = query.\
-            options(subqueryload("artist_credit.artists")).\
-            options(joinedload("artist_credit.artists.artist", innerjoin=True))
+            query = query.options(
+                joinedload(Recording.artist_credit, innerjoin=True).
+                joinedload(ArtistCredit.artists).
+                joinedload(ArtistCreditName.artist)
+            )
 
         recordings = get_entities_by_gids(
             query=query,

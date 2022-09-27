@@ -73,7 +73,7 @@ def fetch_multiple_events(mbids, includes=None):
     includes_data = defaultdict(dict)
     check_includes('event', includes)
     with mb_session() as db:
-        query = db.query(models.Event).options(joinedload('type'))
+        query = db.query(models.Event).options(joinedload(models.Event.type))
         events = get_entities_by_gids(
             query=query,
             entity_type='event',

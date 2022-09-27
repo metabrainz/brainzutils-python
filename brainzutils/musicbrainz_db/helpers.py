@@ -1,5 +1,5 @@
 from mbdata.utils.models import get_link_model
-from mbdata.models import Tag
+from mbdata.models import Tag, Link
 from sqlalchemy.orm import joinedload
 from sqlalchemy import func
 from brainzutils.musicbrainz_db.models import ENTITY_MODELS
@@ -23,8 +23,10 @@ def get_relationship_info(db, target_type, source_type, source_entity_ids, inclu
     relation = get_link_model(source_model, target_model)
 
     query = db.query(relation).\
-        options(joinedload("link", innerjoin=True)).\
-        options(joinedload("link.link_type", innerjoin=True))
+        options(
+            joinedload(relation.link, innerjoin=True).
+            joinedload(Link.link_type, innerjoin=True)
+        )
     if relation.entity0.property.mapper.class_ == relation.entity1.property.mapper.class_:
         _relationship_link_helper(relation, query, "entity0", "entity1", target_type, source_entity_ids, includes_data)
         _relationship_link_helper(relation, query, "entity1", "entity0", target_type, source_entity_ids, includes_data)
@@ -52,7 +54,7 @@ def _relationship_link_helper(relation, query, source_attr, target_attr, target_
    """
     source_id_attr = source_attr + "_id"
     query = query.filter(getattr(relation, source_id_attr).in_(source_entity_ids))
-    query = query.options(joinedload(target_attr, innerjoin=True))
+    query = query.options(joinedload(getattr(relation, target_attr), innerjoin=True))
     relation_type = target_type + "-rels"
     for link in query:
         includes_data[getattr(link, source_id_attr)].setdefault('relationship_objs', {}).\
