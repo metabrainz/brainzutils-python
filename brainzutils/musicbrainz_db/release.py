@@ -49,7 +49,7 @@ def fetch_multiple_releases(mbids, includes=None):
             query = query.options(joinedload(Release.release_group))
         if 'artists' in includes:
             query = query.options(
-                joinedload(Recording.artist_credit).
+                joinedload(Release.artist_credit).
                 joinedload(ArtistCredit.artists).
                 joinedload(ArtistCreditName.artist)
             )
