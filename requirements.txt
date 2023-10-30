@@ -3,7 +3,7 @@ Jinja2>=3.0
 itsdangerous>=2.0
 click>=8.0
 Werkzeug>=2.0
-Flask-DebugToolbar>=0.13.1
+Flask-DebugToolbar@git+https://github.com/pallets-eco/flask-debugtoolbar.git@9571d06df527344f7dd310f95017cf761600ec0b
 Flask-UUID>=0.2
 sentry-sdk[flask]>=1.5.8
 certifi
