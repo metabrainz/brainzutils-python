@@ -1,6 +1,5 @@
 from brainzutils.musicbrainz_db.models import ENTITY_MODELS
 from mbdata.utils.models import get_link_target
-from sqlalchemy_dst import row2dict
 
 
 def serialize_begin_end(entity):
@@ -8,13 +7,14 @@ def serialize_begin_end(entity):
     end_date = entity.end_date
     begin = []
     end = []
-    if begin_date.year:
+    if begin_date and begin_date.year:
         begin.append(f'{begin_date.year:04}')
         if begin_date.month:
             begin.append(f'{begin_date.month:02}')
             if begin_date.day:
                 begin.append(f'{begin_date.day:02}')
-    if end_date.year:
+
+    if end_date and end_date.year:
         end.append(f'{end_date.year:04}')
         if end_date.month:
             end.append(f'{end_date.month:02}')
@@ -33,7 +33,7 @@ def serialize_areas(area, includes=None):
     if includes is None:
         includes = {}
     data = {
-        'mbid': area.gid,
+        'mbid': str(area.gid),
         'name': area.name,
     }
 
@@ -68,7 +68,7 @@ def serialize_relationships(data, source_obj, relationship_objs):
             for obj in relationship_objs[relation]:
                 link_data = {
                     'type': obj.link.link_type.name,
-                    'type-id': obj.link.link_type.gid,
+                    'type-id': str(obj.link.link_type.gid),
                     'begin-year': obj.link.begin_date_year,
                     'end-year': obj.link.end_date_year,
                 }
@@ -84,7 +84,7 @@ def serialize_artist_credit(artist_credit):
     data = []
     for artist_credit_name in artist_credit.artists:
         artist_credit_data = {
-            'mbid': artist_credit_name.artist.gid,
+            'mbid': str(artist_credit_name.artist.gid),
             'name': artist_credit_name.artist.name,
         }
 
@@ -104,7 +104,7 @@ def serialize_recording(recording, includes=None):
     if includes is None:
         includes = {}
     data = {
-        'mbid': recording.gid,
+        'mbid': str(recording.gid),
         'name': recording.name,
     }
 
@@ -137,7 +137,7 @@ def serialize_places(place, includes=None):
     if includes is None:
         includes = {}
     data = {
-        'mbid': place.gid,
+        'mbid': str(place.gid),
         'name': place.name,
         'address': place.address,
     }
@@ -170,7 +170,7 @@ def serialize_labels(label, includes=None):
     if includes is None:
         includes = {}
     data = {
-        'mbid': label.gid,
+        'mbid': str(label.gid),
         'name': label.name,
     }
 
@@ -200,7 +200,7 @@ def serialize_artists(artist, includes=None):
     if includes is None:
         includes = {}
     data = {
-        'mbid': artist.gid,
+        'mbid': str(artist.gid),
         'name': artist.name,
         'sort_name': artist.sort_name,
     }
@@ -239,7 +239,7 @@ def serialize_release_groups(release_group, includes=None):
         includes = {}
 
     data = {
-        'mbid': release_group.gid,
+        'mbid': str(release_group.gid),
         'title': release_group.name,
     }
 
@@ -291,12 +291,12 @@ def serialize_medium(medium, includes=None):
 
 def serialize_track(track):
     return {
-        'mbid': track.gid,
+        'mbid': str(track.gid),
         'name': track.name,
         'number': track.number,
         'position': track.position,
         'length': track.length,
-        'recording_id': track.recording.gid,
+        'recording_id': str(track.recording.gid),
         'recording_title': track.recording.name,
         'artist-credit': [serialize_artist_credit_names(artist_credit_name)
                           for artist_credit_name in track.recording.artist_credit.artists],
@@ -309,7 +309,7 @@ def serialize_releases(release, includes=None):
         includes = {}
 
     data = {
-        'mbid': release.gid,
+        'mbid': str(release.gid),
         'name': release.name,
     }
 
@@ -340,7 +340,7 @@ def serialize_events(event, includes=None):
     if includes is None:
         includes = {}
     data = {
-        'mbid': event.gid,
+        'mbid': str(event.gid),
         'name': event.name,
     }
 
@@ -366,7 +366,7 @@ def serialize_url(url, includes=None):
     if includes is None:
         includes = {}
     data = {
-        'mbid': url.gid,
+        'mbid': str(url.gid),
         'url': url.url,
     }
 
@@ -379,7 +379,7 @@ def serialize_works(work, includes=None):
     if includes is None:
         includes = {}
     data = {
-        'mbid': work.gid,
+        'mbid': str(work.gid),
         'name': work.name,
     }
 
@@ -399,10 +399,25 @@ def serialize_works(work, includes=None):
 
 
 def serialize_editor(editor, includes=None):
-    data = row2dict(editor, exclude_pk=True, exclude={'password', 'ha1'})
-
     # TODO: Add includes to data here (BU-18)
-
+    data = {
+        "id": editor.id,
+        "name": editor.name,
+        "privs": editor.privs,
+        "email": editor.email,
+        "website": editor.website,
+        "bio": editor.bio,
+        "member_since": editor.member_since,
+        "email_confirm_date": editor.email_confirm_date,
+        "last_login_date": editor.last_login_date,
+        "last_updated": editor.last_updated,
+        "birth_date": editor.birth_date,
+        "deleted": editor.deleted,
+        "gender": editor.gender,
+        "area": None
+    }
+    if editor.area:
+        data["area"] = serialize_areas(editor.area)
     return data
 
 
@@ -411,7 +426,7 @@ def serialize_series(series, includes=None):
         includes = {}
 
     data = {
-        'mbid': series.gid,
+        'mbid': str(series.gid),
         'name': series.name,
     }
 

@@ -19,10 +19,18 @@ fi
 COMPOSE_FILE_LOC=test/docker-compose.yml
 COMPOSE_PROJECT_NAME=brainzutils_test
 
+echo "Checking docker compose version"
+if docker compose version &> /dev/null; then
+    DOCKER_COMPOSE_CMD="docker compose"
+else
+    DOCKER_COMPOSE_CMD="docker-compose"
+fi
+
 function invoke_docker_compose {
-    docker-compose -f $COMPOSE_FILE_LOC \
-                   -p $COMPOSE_PROJECT_NAME \
-                   "$@"
+    $DOCKER_COMPOSE_CMD \
+      -f $COMPOSE_FILE_LOC \
+      -p $COMPOSE_PROJECT_NAME \
+      "$@"
 }
 
 function docker_compose_run {
