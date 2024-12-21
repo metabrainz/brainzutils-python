@@ -30,5 +30,6 @@ jobs:
     
     - name: Run tests
       run: docker compose -f test/docker-compose.yml -p brainzutils_test run --rm test
-
+      
+    - name: Bring down containers
       run: docker compose -f test/docker-compose.yml -p brainzutils_test down
