@@ -8,7 +8,7 @@ setup(
     author="MetaBrainz Foundation",
     author_email="support@metabrainz.org",
     py_modules=["brainzutils"],
-    python_requires='>=3.7',
+    python_requires='>=3.10',
     packages=find_packages(),
     use_scm_version=True,
     setup_requires=['setuptools_scm'],
