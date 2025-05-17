@@ -7,6 +7,13 @@ Note that v1.18.* will be the last line of releases compatible with Python 2.
 
 Please report issues at https://tickets.musicbrainz.org/browse/BU.
 
+# Development
+To develop BrainzUtils itself, install it locally in editable mode with development
+dependencies by running: `pip install --group dev -e .`. 
+
+> [!NOTE]  
+> Support for dependency groups (`--group`) was added to pip in 25.1.0.
+
 ## Usage
 
 You can include this line into a `requirements.txt` file:

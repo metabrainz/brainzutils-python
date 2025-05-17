@@ -1,0 +1,31 @@
+[project]
+name = "brainzutils"
+description = "Python tools for MetaBrainz projects"
+authors = [
+    { name = "MetaBrainz Foundation", email = "support@metabrainz.org" }
+]
+dynamic = ["version"]
+requires-python = ">=3.10"
+dependencies = [
+    "Flask>=3.1.0",
+    "Jinja2>=3.1.6",
+    "itsdangerous>=2.2.0",
+    "click>=8.1.8",
+    "Werkzeug>=3.1.3",
+    "Flask-DebugToolbar",
+    "sentry-sdk[flask]>=2.27.0",
+    "redis>=5.2.1",
+    "msgpack>=1.1.0",
+    "requests>=2.32.3",
+    "SQLAlchemy>=2.0.40",
+    "mbdata@git+https://github.com/metabrainz/mbdata.git@v30.0.0"
+]
+
+[tool.setuptools]
+packages = ["brainzutils"]
+
+[tool.setuptools_scm]
+
+[build-system]
+requires = ["setuptools>=80", "setuptools-scm>=8"]
+build-backend = "setuptools.build_meta"

@@ -9,4 +9,4 @@ redis>=5.2.1
 msgpack>=1.1.0
 requests>=2.32.3
 SQLAlchemy>=2.0.40
-mbdata@git+https://github.com/acoustid/mbdata.git@v29.0.0
+mbdata@git+https://github.com/metabrainz/mbdata.git@v30.0.0
