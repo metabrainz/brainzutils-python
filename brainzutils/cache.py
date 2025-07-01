@@ -277,9 +277,7 @@ def hkeys(name, namespace=None):
 
 @init_required
 def hset(name, key, value, namespace=None):
-    """Delete the specified keys from a hash using HDEL.
-    Note that the ``keys`` argument must be a list. This differs from the underlying redis
-    library's version of this command, which takes varargs.
+    """Set the value of a key in a hash using HSET.
 
     Args:
         name: Name of the hash
@@ -288,7 +286,7 @@ def hset(name, key, value, namespace=None):
         namespace: Namespace for the name
 
     Returns:
-        the number of keys deleted from the hash
+        number of fields that were added to the hash.
     """
     return _r.hset(_prep_keys_list([name], namespace)[0], key, value)
 
