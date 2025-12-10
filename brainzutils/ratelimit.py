@@ -6,6 +6,7 @@
 #
 import time
 from functools import update_wrapper
+from typing import Literal
 
 from flask import request, g
 from werkzeug.exceptions import TooManyRequests
@@ -17,6 +18,11 @@ ratelimit_refresh = 60 # in seconds
 ratelimit_timeout = "rate_limits_timeout"
 
 # Defaults
+ratelimit_defaults = {
+    "per_token": 50,
+    "per_ip": 30,
+    "window": 10
+}
 ratelimit_per_token_default = 50
 ratelimit_per_ip_default = 30
 ratelimit_window_default = 10
@@ -72,6 +78,26 @@ class RateLimit(object):
          def index():
              return '<html><body>test</body></html>'
 
+       You can also pass custom rate limit parameters directly to the decorator to override
+       the global/cached values::
+
+         @app.route('/expensive')
+         @ratelimit(per_token_limit=10, per_ip_limit=5, window=60)
+         def expensive_endpoint():
+             return 'This endpoint has stricter rate limits'
+
+       Use the scope parameter to isolate rate limits for different endpoints::
+
+         @app.route('/api/v1/search')
+         @ratelimit(scope='search')
+         def search():
+             return 'Search results'
+
+         @app.route('/api/v1/upload')
+         @ratelimit(scope='upload', per_ip_limit=5, window=60)
+         def upload():
+             return 'Upload complete'
+
     3. The default rate limits are defined above (see comment Defaults). If you want to set different
        rate limits, which can be also done dynamically without restarting the application, call
        the set_rate_limits function::
@@ -79,6 +105,18 @@ class RateLimit(object):
           from brainzutils.ratelimit import set_rate_limits
 
           set_rate_limits(per_token_limit, per_ip_limit, rate_limit_window)
+
+       You can also set scope-specific limits in cache::
+
+          from brainzutils.ratelimit import set_rate_limits
+
+          set_rate_limits(per_token=100, per_ip=50, window=60, scope='search')
+          set_rate_limits(per_token=10, per_ip=5, window=120, scope='upload')
+
+       Limit resolution order (first non-None value wins):
+           1. Decorator parameters (per_token_limit, per_ip_limit, window)
+           2. Scope-specific limits from cache (if scope is provided)
+           3. Global limits from cache
 
     4. To enable token based rate limiting, callers need to pass the Authorization header (see above)
        and the application needs to provide a user validation function::
@@ -114,148 +152,190 @@ class RateLimit(object):
 
 
 def set_user_validation_function(func):
-    '''
+    """
         The function passed to this method should accept on argument, the Authorization header contents
         and return a True/False value if this user is a valid user.
-    '''
-
+    """
     global ratelimit_user_validation
     ratelimit_user_validation = func
 
 
-def set_rate_limits(per_token, per_ip, window):
-    '''
-        Update the current rate limits. This will affect all new rate limiting windows and existing windows will not be changed.
-    '''
-    cache.set(ratelimit_per_token_key, per_token, expirein=0, namespace=ratelimit_cache_namespace)
-    cache.set(ratelimit_per_ip_key, per_ip, expirein=0, namespace=ratelimit_cache_namespace)
-    cache.set(ratelimit_window_key, window, expirein=0, namespace=ratelimit_cache_namespace)
+def set_rate_limits(per_token, per_ip, window, scope=None):
+    """
+        Update the current global rate limits. This will affect all new rate limiting windows
+        and existing windows will not be changed. If a scope is provided, the limits will be
+        changed only for that scope.
+    """
+    prefix = f"{scope}:" if scope else ""
+    cache.set_many({
+        f"{prefix}{ratelimit_per_token_key}": per_token,
+        f"{prefix}{ratelimit_per_ip_key}": per_ip,
+        f"{prefix}{ratelimit_window_key}": window,
+    }, expirein=0, namespace=ratelimit_cache_namespace)
+
+
+def get_rate_limits(scope=None):
+    """
+        Get rate limits for global or specific scope from cache.
+
+        Args:
+            scope: The scope name to get limits for
+
+        Returns:
+            A dict with 'per_token', 'per_ip', 'window' keys if scope limits exist,
+            or None if no scope-specific limits are set.
+    """
+    prefix = f"{scope}:" if scope else ""
+    keys = {
+        "per_token": f"{prefix}{ratelimit_per_token_key}",
+        "per_ip": f"{prefix}{ratelimit_per_ip_key}",
+        "window": f"{prefix}{ratelimit_window_key}"
+    }
+    cache_values = cache.get_many(list(keys.values()), namespace=ratelimit_cache_namespace)
+
+    result = {}
+    for key in keys:
+        if (value := cache_values.get(keys[key])) is not None:
+            result[key] = value
+        # if returning global rate limits and value is not in cache,
+        # return global defaults
+        elif scope is None:
+            result[key] = ratelimit_defaults[key]
+        else:
+            result[key] = None
+
+    return result
 
 
 def inject_x_rate_headers(response):
-    '''
+    """
         Add rate limit headers to responses
-    '''
+    """
     limit = get_view_rate_limit()
     if limit:
         h = response.headers
-        h.add('Access-Control-Expose-Headers', 'X-RateLimit-Remaining,X-RateLimit-Limit,X-RateLimit-Reset,X-RateLimit-Reset-In')
-        h.add('X-RateLimit-Remaining', str(limit.remaining))
-        h.add('X-RateLimit-Limit', str(limit.limit))
-        h.add('X-RateLimit-Reset', str(limit.reset))
-        h.add('X-RateLimit-Reset-In', str(limit.seconds_before_reset))
+        h.add("Access-Control-Expose-Headers", "X-RateLimit-Remaining,X-RateLimit-Limit,X-RateLimit-Reset,X-RateLimit-Reset-In")
+        h.add("X-RateLimit-Remaining", str(limit.remaining))
+        h.add("X-RateLimit-Limit", str(limit.limit))
+        h.add("X-RateLimit-Reset", str(limit.reset))
+        h.add("X-RateLimit-Reset-In", str(limit.seconds_before_reset))
     return response
 
 
 def get_view_rate_limit():
-    '''
+    """
         Helper function to fetch the ratelimit limits from the flask context
-    '''
-    return getattr(g, '_view_rate_limit', None)
+    """
+    return getattr(g, "_view_rate_limit", None)
 
 
 def on_over_limit(limit):
-    ''' 
+    """
         Set a nice and readable error message for over the limit requests.
-    '''
+    """
     raise TooManyRequests(
-        'You have exceeded your rate limit. See the X-RateLimit-* response headers for more ' \
-        'information on your current rate limit.')
+        "You have exceeded your rate limit. See the X-RateLimit-* response headers for more "
+        "information on your current rate limit."
+    )
+
+def _get_rate_limit_helper(
+    limit_type: Literal["per_ip", "per_token"],
+    _global: dict, _scope: dict = None, _local: dict = None
+) -> dict:
+    values = {}
+    if _local is not None and (local_limit := _local.get(limit_type)) is not None:
+        values["limit"] = local_limit
+    elif _scope is not None and (scope_limit := _scope.get(limit_type)) is not None:
+        values["limit"] = scope_limit
+    else:
+        values["limit"] = _global[limit_type]
+
+    if _local is not None and (local_window := _local.get("window")) is not None:
+        values["window"] = local_window
+    elif _scope is not None and (scope_window := _scope.get("window")) is not None:
+        values["window"] = scope_window
+    else:
+        values["window"] = _global["window"]
+
+    return values
 
 
-def check_limit_freshness():
-    '''
-        This function checks to see if the values we have cached in the current request context
-        are still fresh enough. If they've existed longer than the timeout value, refresh from
-        the cache. This allows us to not check the limits for each request, saving cache traffic.
-    '''
-
-    limits_timeout = getattr(g, '_' + ratelimit_timeout, 0)
-    if time.time() <= limits_timeout:
-        return
-
-    value = int(cache.get(ratelimit_per_token_key, namespace=ratelimit_cache_namespace) or '0')
-    if not value:
-        cache.set(ratelimit_per_token_key, ratelimit_per_token_default, expirein=0, namespace=ratelimit_cache_namespace)
-        value = ratelimit_per_token_default
-    setattr(g, '_' + ratelimit_per_token_key, value)
-
-    value = int(cache.get(ratelimit_per_ip_key, namespace=ratelimit_cache_namespace) or '0')
-    if not value:
-        cache.set(ratelimit_per_ip_key, ratelimit_per_ip_default, expirein=0, namespace=ratelimit_cache_namespace)
-        value = ratelimit_per_ip_default
-    setattr(g, '_' + ratelimit_per_ip_key, value)
-
-    value = int(cache.get(ratelimit_window_key, namespace=ratelimit_cache_namespace) or '0')
-    if not value:
-        cache.set(ratelimit_window_key, ratelimit_window_default, expirein=0, namespace=ratelimit_cache_namespace)
-        value = ratelimit_window_default
-    setattr(g, '_' + ratelimit_window_key, value)
-
-    setattr(g, '_' + ratelimit_timeout, int(time.time()) + ratelimit_refresh)
-
-
-def get_per_ip_limits():
-    '''
-        Fetch the per IP limits from context/cache
-    '''
-    check_limit_freshness()
-    return {
-            'limit':   getattr(g, '_' + ratelimit_per_ip_key),
-            'window' : getattr(g, '_' + ratelimit_window_key),
-           }
-
-
-def get_per_token_limits():
-    '''
-        Fetch the per token limits from context/cache
-    '''
-    check_limit_freshness()
-    return {
-            'limit':   getattr(g, '_' + ratelimit_per_token_key),
-            'window' : getattr(g, '_' + ratelimit_window_key),
-           }
-
-
-def get_rate_limit_data(request):
-    '''Fetch key for the given request. If an Authorization header is provided,
+def get_rate_limit_data(request, per_token_limit=None, per_ip_limit=None, window=None, scope=None):
+    """Fetch key for the given request. If an Authorization header is provided,
        the caller will get a better and personalized rate limit. If no header is provided,
        the caller will be rate limited by IP, which gets an overall lower rate limit.
        This should encourage callers to always provide the Authorization token
-    '''
+
+       Args:
+           request: The Flask request object
+           per_token_limit: Optional override for per-token limit (uses cache value if None)
+           per_ip_limit: Optional override for per-IP limit (uses cache value if None)
+           window: Optional override for rate limit window in seconds (uses cache value if None)
+           scope: Optional scope name to check for scope-specific limits in cache
+
+       Limit resolution order (first non-None value wins):
+           1. Decorator parameters (per_token_limit, per_ip_limit, window)
+           2. Scope-specific limits from cache (if scope is provided)
+           3. Global limits from cache
+    """
+    _global = get_rate_limits()
+    _scope = get_rate_limits(scope) if scope else None
+    _local = {
+        "per_token": per_token_limit,
+        "per_ip": per_ip_limit,
+        "window": window
+    }
 
     # If a user verification function is provided, parse the Authorization header and try to look up that user
     if ratelimit_user_validation:
-        auth_header = request.headers.get('Authorization')
+        auth_header = request.headers.get("Authorization")
         if auth_header:
             auth_token = auth_header[6:]
             is_valid = ratelimit_user_validation(auth_token)
             if is_valid:
-                values = get_per_token_limits()
-                values['key'] = auth_token
+                values = _get_rate_limit_helper(
+                    "per_token", _global=_global, _scope=_scope, _local=_local
+                )
+                values["key"] = auth_token
                 return values
-
 
     # no valid auth token provided. Look for a remote addr header provided a the proxy
     # or if that isn't available use the IP address from the header
-    ip = request.environ.get('REMOTE_ADDR', None)
+    ip = request.environ.get("REMOTE_ADDR", None)
     if not ip:
         ip = request.remote_addr
 
-    values = get_per_ip_limits()
-    values['key'] = ip
+    values = _get_rate_limit_helper(
+        "per_ip", _global=_global, _scope=_scope, _local=_local
+    )
+    values["key"] = ip
     return values
 
 
-def ratelimit():
-    '''
-        This is the decorator that should be applied to all view functions that should be 
+def ratelimit(per_token_limit=None, per_ip_limit=None, window=None, scope=None):
+    """
+        This is the decorator that should be applied to all view functions that should be
         rate limited.
-    '''
+
+        Args:
+            per_token_limit: Optional override for per-token limit (uses cache value if None)
+            per_ip_limit: Optional override for per-IP limit (uses cache value if None)
+            window: Optional override for rate limit window in seconds (uses cache value if None)
+            scope: Optional scope to isolate rate limits for different endpoints.
+                   If provided, the rate limit key will be scoped with this value,
+                   allowing different endpoints to have separate rate limit buckets..
+    """
     def decorator(f):
         def rate_limited(*args, **kwargs):
-            data = get_rate_limit_data(request)
-            rlimit = RateLimit(data['key'], data['limit'], data['window'])
+            data = get_rate_limit_data(
+                request,
+                per_token_limit=per_token_limit,
+                per_ip_limit=per_ip_limit,
+                window=window,
+                scope=scope
+            )
+            key = f"{scope}:{data['key']}" if scope else data["key"]
+            rlimit = RateLimit(key, data["limit"], data["window"])
             g._view_rate_limit = rlimit
             if rlimit.over_limit:
                 return on_over_limit(rlimit)
