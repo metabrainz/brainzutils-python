@@ -78,15 +78,7 @@ class RateLimit(object):
          def index():
              return '<html><body>test</body></html>'
 
-       You can also pass custom rate limit parameters directly to the decorator to override
-       the global/cached values::
-
-         @app.route('/expensive')
-         @ratelimit(per_token_limit=10, per_ip_limit=5, window=60)
-         def expensive_endpoint():
-             return 'This endpoint has stricter rate limits'
-
-       Use the scope parameter to isolate rate limits for different endpoints::
+       Use the scope parameter to isolate and apply custom rate limits for different endpoints::
 
          @app.route('/api/v1/search')
          @ratelimit(scope='search')
@@ -94,7 +86,7 @@ class RateLimit(object):
              return 'Search results'
 
          @app.route('/api/v1/upload')
-         @ratelimit(scope='upload', per_ip_limit=5, window=60)
+         @ratelimit(scope='upload')
          def upload():
              return 'Upload complete'
 
@@ -114,9 +106,8 @@ class RateLimit(object):
           set_rate_limits(per_token=10, per_ip=5, window=120, scope='upload')
 
        Limit resolution order (first non-None value wins):
-           1. Decorator parameters (per_token_limit, per_ip_limit, window)
-           2. Scope-specific limits from cache (if scope is provided)
-           3. Global limits from cache
+           1. Scope-specific limits from cache (if scope is provided)
+           2. Global limits from cache
 
     4. To enable token based rate limiting, callers need to pass the Authorization header (see above)
        and the application needs to provide a user validation function::
@@ -240,19 +231,16 @@ def on_over_limit(limit):
 
 def _get_rate_limit_helper(
     limit_type: Literal["per_ip", "per_token"],
-    _global: dict, _scope: dict = None, _local: dict = None
+    _global: dict,
+    _scope: dict = None
 ) -> dict:
     values = {}
-    if _local is not None and (local_limit := _local.get(limit_type)) is not None:
-        values["limit"] = local_limit
-    elif _scope is not None and (scope_limit := _scope.get(limit_type)) is not None:
+    if _scope is not None and (scope_limit := _scope.get(limit_type)) is not None:
         values["limit"] = scope_limit
     else:
         values["limit"] = _global[limit_type]
 
-    if _local is not None and (local_window := _local.get("window")) is not None:
-        values["window"] = local_window
-    elif _scope is not None and (scope_window := _scope.get("window")) is not None:
+    if _scope is not None and (scope_window := _scope.get("window")) is not None:
         values["window"] = scope_window
     else:
         values["window"] = _global["window"]
@@ -260,7 +248,7 @@ def _get_rate_limit_helper(
     return values
 
 
-def get_rate_limit_data(request, per_token_limit=None, per_ip_limit=None, window=None, scope=None):
+def get_rate_limit_data(request, scope=None):
     """Fetch key for the given request. If an Authorization header is provided,
        the caller will get a better and personalized rate limit. If no header is provided,
        the caller will be rate limited by IP, which gets an overall lower rate limit.
@@ -268,23 +256,14 @@ def get_rate_limit_data(request, per_token_limit=None, per_ip_limit=None, window
 
        Args:
            request: The Flask request object
-           per_token_limit: Optional override for per-token limit (uses cache value if None)
-           per_ip_limit: Optional override for per-IP limit (uses cache value if None)
-           window: Optional override for rate limit window in seconds (uses cache value if None)
            scope: Optional scope name to check for scope-specific limits in cache
 
        Limit resolution order (first non-None value wins):
-           1. Decorator parameters (per_token_limit, per_ip_limit, window)
-           2. Scope-specific limits from cache (if scope is provided)
+           1. Scope-specific limits from cache (if scope is provided)
            3. Global limits from cache
     """
     _global = get_rate_limits()
     _scope = get_rate_limits(scope) if scope else None
-    _local = {
-        "per_token": per_token_limit,
-        "per_ip": per_ip_limit,
-        "window": window
-    }
 
     # If a user verification function is provided, parse the Authorization header and try to look up that user
     if ratelimit_user_validation:
@@ -294,7 +273,7 @@ def get_rate_limit_data(request, per_token_limit=None, per_ip_limit=None, window
             is_valid = ratelimit_user_validation(auth_token)
             if is_valid:
                 values = _get_rate_limit_helper(
-                    "per_token", _global=_global, _scope=_scope, _local=_local
+                    "per_token", _global=_global, _scope=_scope
                 )
                 values["key"] = auth_token
                 return values
@@ -306,21 +285,18 @@ def get_rate_limit_data(request, per_token_limit=None, per_ip_limit=None, window
         ip = request.remote_addr
 
     values = _get_rate_limit_helper(
-        "per_ip", _global=_global, _scope=_scope, _local=_local
+        "per_ip", _global=_global, _scope=_scope
     )
     values["key"] = ip
     return values
 
 
-def ratelimit(per_token_limit=None, per_ip_limit=None, window=None, scope=None):
+def ratelimit(scope=None):
     """
         This is the decorator that should be applied to all view functions that should be
         rate limited.
 
         Args:
-            per_token_limit: Optional override for per-token limit (uses cache value if None)
-            per_ip_limit: Optional override for per-IP limit (uses cache value if None)
-            window: Optional override for rate limit window in seconds (uses cache value if None)
             scope: Optional scope to isolate rate limits for different endpoints.
                    If provided, the rate limit key will be scoped with this value,
                    allowing different endpoints to have separate rate limit buckets..
@@ -329,9 +305,6 @@ def ratelimit(per_token_limit=None, per_ip_limit=None, window=None, scope=None):
         def rate_limited(*args, **kwargs):
             data = get_rate_limit_data(
                 request,
-                per_token_limit=per_token_limit,
-                per_ip_limit=per_ip_limit,
-                window=window,
                 scope=scope
             )
             key = f"{scope}:{data['key']}" if scope else data["key"]

@@ -112,80 +112,18 @@ class RatelimitTestCase(unittest.TestCase):
         set_rate_limits(self.max_token_requests, self.max_ip_requests, self.ratelimit_window)
         self.make_requests(client, self.max_token_requests, token="Token %s" % valid_user)
 
-    def test_custom_ip_limit(self):
-        """Test that per_ip_limit parameter overrides global limit."""
-        custom_limit = 2
-
-        @self.app.route("/custom")
-        @ratelimit(per_ip_limit=custom_limit, window=60)
-        def custom_endpoint():
-            return "OK"
-
-        client = self.app.test_client()
-
-        # First request should succeed
-        response = client.get("/custom")
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.headers["X-RateLimit-Limit"], str(custom_limit))
-        self.assertEqual(response.headers["X-RateLimit-Remaining"], "1")
-
-        response = client.get("/custom")
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.headers["X-RateLimit-Remaining"], "0")
-
-        response = client.get("/custom")
-        self.assertEqual(response.status_code, 429)
-
-    def test_custom_window(self):
-        """Test that window parameter works correctly."""
-        @self.app.route("/short-window")
-        @ratelimit(per_ip_limit=1, window=2)
-        def short_window_endpoint():
-            return "OK"
-
-        client = self.app.test_client()
-
-        response = client.get("/short-window")
-        self.assertEqual(response.status_code, 200)
-        response = client.get("/short-window")
-        self.assertEqual(response.status_code, 429)
-
-        sleep(2.5)
-        response = client.get("/short-window")
-        self.assertEqual(response.status_code, 200)
-
-    def test_headers_contain_correct_values(self):
-        """Test that rate limit headers contain expected values."""
-        limit = 5
-        window = 30
-
-        @self.app.route("/headers")
-        @ratelimit(per_ip_limit=limit, window=window)
-        def headers_endpoint():
-            return "OK"
-
-        client = self.app.test_client()
-        response = client.get("/headers")
-
-        self.assertEqual(response.status_code, 200)
-        self.assertIn("X-RateLimit-Limit", response.headers)
-        self.assertIn("X-RateLimit-Remaining", response.headers)
-        self.assertIn("X-RateLimit-Reset-In", response.headers)
-
-        self.assertEqual(response.headers["X-RateLimit-Limit"], str(limit))
-        self.assertEqual(response.headers["X-RateLimit-Remaining"], str(limit - 1))
-        self.assertLessEqual(int(response.headers["X-RateLimit-Reset-In"]), window)
-        self.assertIn("X-RateLimit-Reset", response.headers)
-
     def test_scope_isolation(self):
         """Test that different scopes have independent rate limit buckets."""
+        set_rate_limits(per_token=100, per_ip=2, window=60, scope="scope_a")
+        set_rate_limits(per_token=100, per_ip=2, window=60, scope="scope_b")
+
         @self.app.route("/scope-a")
-        @ratelimit(scope="scope_a", per_ip_limit=2, window=60)
+        @ratelimit(scope="scope_a")
         def scope_a_endpoint():
             return "A"
 
         @self.app.route("/scope-b")
-        @ratelimit(scope="scope_b", per_ip_limit=2, window=60)
+        @ratelimit(scope="scope_b")
         def scope_b_endpoint():
             return "B"
 
@@ -245,13 +183,16 @@ class RatelimitTestCase(unittest.TestCase):
 
     def test_no_scope_vs_scoped(self):
         """Test that unscoped and scoped endpoints have separate buckets."""
+        set_rate_limits(per_token=100, per_ip=1, window=60)
+        set_rate_limits(per_token=100, per_ip=1, window=60, scope="my_scope")
+
         @self.app.route("/unscoped")
-        @ratelimit(per_ip_limit=1, window=60)
+        @ratelimit()
         def unscoped_endpoint():
             return "Unscoped"
 
         @self.app.route("/scoped")
-        @ratelimit(scope="my_scope", per_ip_limit=1, window=60)
+        @ratelimit(scope="my_scope")
         def scoped_endpoint():
             return "Scoped"
 
@@ -290,31 +231,7 @@ class RatelimitTestCase(unittest.TestCase):
         self.assertIsNotNone(result)
         self.assertEqual(result["per_token"], None)
         self.assertEqual(result["per_ip"], None)
-        self.assertEqual(result["window"], None
-                         )
-
-    def test_decorator_overrides_cache_scope_limits(self):
-        """Test that decorator parameters override scope limits from cache."""
-        scope = "override_scope"
-        set_rate_limits(per_token=100, per_ip=10, window=60, scope=scope)
-
-        @self.app.route("/override")
-        @ratelimit(scope=scope, per_ip_limit=2)
-        def override_endpoint():
-            return "OK"
-
-        client = self.app.test_client()
-
-        response = client.get("/override")
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.headers["X-RateLimit-Limit"], "2")
-
-        response = client.get("/override")
-        self.assertEqual(response.status_code, 200)
-
-        # 3rd request should fail (limit is 2, not 10)
-        response = client.get("/override")
-        self.assertEqual(response.status_code, 429)
+        self.assertEqual(result["window"], None)
 
     def test_scope_cache_values_stored_correctly(self):
         """Test that scope limits are stored in cache with correct keys."""
@@ -359,11 +276,6 @@ class RatelimitTestCase(unittest.TestCase):
         def scope_priority_endpoint():
             return "OK"
 
-        @self.app.route("/decorator-priority")
-        @ratelimit(scope=scope, per_ip_limit=2)
-        def decorator_priority_endpoint():
-            return "OK"
-
         client = self.app.test_client()
 
         response = client.get("/global")
@@ -373,7 +285,3 @@ class RatelimitTestCase(unittest.TestCase):
         response = client.get("/scope-priority")
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.headers["X-RateLimit-Limit"], "3")
-
-        response = client.get("/decorator-priority")
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.headers["X-RateLimit-Limit"], "2")
