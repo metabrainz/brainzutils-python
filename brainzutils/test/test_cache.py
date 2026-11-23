@@ -118,6 +118,26 @@ class CacheTestCase(unittest.TestCase):
         cache.set("a", 1, encode=False, expirein=0)
         self.assertEqual(cache.increment("a"), 2)
 
+    def test_increment_with_expireat(self):
+        expire_at = int(time() + 100)
+        with mock.patch.object(cache._r, "execute_command", wraps=cache._r.execute_command) as execute:
+            self.assertEqual(cache.increment("counter", expireat=expire_at), 1)
+        # INCR and PEXPIREAT go to Redis together, in one pipeline
+        execute.assert_not_called()
+        self.assertGreater(cache._r.pttl(cache._prep_key("counter")), 90 * 1000)
+        self.assertEqual(cache.increment("counter", expireat=expire_at), 2)
+
+    def test_init_sets_timeouts(self):
+        connection_kwargs = cache._r.connection_pool.connection_kwargs
+        self.assertIsNotNone(connection_kwargs["socket_timeout"])
+        self.assertIsNotNone(connection_kwargs["socket_connect_timeout"])
+
+        cache.init(host=self.host, port=self.port, namespace=self.namespace,
+                   socket_timeout=0.5, socket_connect_timeout=0.25)
+        connection_kwargs = cache._r.connection_pool.connection_kwargs
+        self.assertEqual(connection_kwargs["socket_timeout"], 0.5)
+        self.assertEqual(connection_kwargs["socket_connect_timeout"], 0.25)
+
     def test_increment_invalid_value(self):
         cache.set("a", "not a number", expirein=0)
         with self.assertRaises(redis.exceptions.ResponseError):

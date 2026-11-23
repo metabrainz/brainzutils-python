@@ -28,12 +28,18 @@ _r: redis.StrictRedis = None
 _glob_namespace: str = None
 
 NS_REGEX = re.compile('[a-zA-Z0-9_-]+$')
+
+# seconds; Redis answers in milliseconds, these only stop a hung or unreachable Redis from blocking callers forever
+DEFAULT_SOCKET_TIMEOUT = 2
+DEFAULT_SOCKET_CONNECT_TIMEOUT = 2
 CONTENT_ENCODING = "utf-8"
 ENCODING_ASCII = "ascii"
 
 
 def init(host: str = "localhost", port: int = 6379, db_number: int = 0,
-         namespace: str = "", client_name: str = None):
+         namespace: str = "", client_name: str = None,
+         socket_timeout: Optional[float] = DEFAULT_SOCKET_TIMEOUT,
+         socket_connect_timeout: Optional[float] = DEFAULT_SOCKET_CONNECT_TIMEOUT):
     """Initializes Redis client. Needs to be called before use.
 
     Namespace versions are stored in a local directory.
@@ -45,6 +51,9 @@ def init(host: str = "localhost", port: int = 6379, db_number: int = 0,
         namespace: Global namespace that will be prepended to all keys.
         client_name: The client name to assign to the redis connection. This value is used to identify which clients
           are connected to a server, and is only used for debugging purposes.
+        socket_timeout: Seconds to wait for Redis to answer a command before raising redis.exceptions.TimeoutError.
+          None waits forever.
+        socket_connect_timeout: Seconds to wait for a connection to Redis. None waits forever.
     """
 
     # The first priority in setting the client name is to set the user specified
@@ -62,7 +71,9 @@ def init(host: str = "localhost", port: int = 6379, db_number: int = 0,
         host=host,
         port=port,
         db=db_number,
-        client_name=client_name
+        client_name=client_name,
+        socket_timeout=socket_timeout,
+        socket_connect_timeout=socket_connect_timeout,
     )
 
     _glob_namespace = namespace + ":"
@@ -217,18 +228,26 @@ def delete_many(keys, namespace=None):
 
 
 @init_required
-def increment(key, amount=1, namespace=None):
+def increment(key, amount=1, namespace=None, expireat=None):
     """ Increment the value for given key using the INCR command.
 
     Args:
         key: Key of the item that needs to be incremented
         amount: the amount to increment the value by
         namespace: Namespace for the key
+        expireat: Optional number of seconds since the epoch when the item should expire. The expiry is set in
+          the same round trip to Redis as the increment.
 
     Returns:
         An integer equal to the value after increment
     """
-    return _r.incr(_prep_keys_list([key], namespace)[0], amount=amount)
+    prepared_key = _prep_keys_list([key], namespace)[0]
+    if expireat is None:
+        return _r.incr(prepared_key, amount=amount)
+    pipe = _r.pipeline(transaction=False)
+    pipe.incr(prepared_key, amount=amount)
+    pipe.pexpireat(prepared_key, expireat * 1000)
+    return pipe.execute()[0]
 
 
 @init_required
