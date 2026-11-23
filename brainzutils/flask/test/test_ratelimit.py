@@ -1,14 +1,19 @@
 import unittest
 import os
 from time import sleep
+from unittest import mock
+
+from redis.exceptions import ConnectionError as RedisConnectionError
 
 from brainzutils import flask, cache
+from brainzutils import ratelimit as ratelimit_module
 from brainzutils.ratelimit import (
     ratelimit,
     set_rate_limits,
     get_rate_limits,
     inject_x_rate_headers,
     set_user_validation_function,
+    set_fail_open,
     ratelimit_cache_namespace,
 )
 
@@ -37,6 +42,8 @@ class RatelimitTestCase(unittest.TestCase):
         )
         # Making sure there are no items in cache before we run each test
         cache.flush_all()
+        ratelimit_module.clear_rate_limits_cache()
+        set_fail_open(True)
 
         set_rate_limits(self.max_token_requests, self.max_ip_requests, self.ratelimit_window)
         self.app = flask.CustomFlask(__name__)
@@ -285,3 +292,52 @@ class RatelimitTestCase(unittest.TestCase):
         response = client.get("/scope-priority")
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.headers["X-RateLimit-Limit"], "3")
+
+    def _add_index(self):
+        @self.app.route("/")
+        @ratelimit()
+        def index():
+            return "OK"
+        return self.app.test_client()
+
+    def test_limits_are_read_from_cache_once(self):
+        """ The limits are kept in memory, not read from Redis on every request. """
+        client = self._add_index()
+        ratelimit_module.clear_rate_limits_cache()
+        with mock.patch.object(cache, "get_many", wraps=cache.get_many) as get_many:
+            self.assertEqual(client.get("/").status_code, 200)
+            self.assertEqual(client.get("/").status_code, 200)
+        self.assertEqual(get_many.call_count, 1)
+
+    def test_set_rate_limits_applies_at_once(self):
+        client = self._add_index()
+        self.assertEqual(client.get("/").headers["X-RateLimit-Limit"], str(self.max_ip_requests))
+
+        set_rate_limits(self.max_token_requests, 1, self.ratelimit_window)
+        self.assertEqual(client.get("/").headers["X-RateLimit-Limit"], "1")
+
+    def test_one_redis_round_trip_per_request(self):
+        client = self._add_index()
+        client.get("/")  # the first request also reads the limits
+        with mock.patch.object(cache._r, "execute_command", wraps=cache._r.execute_command) as execute, \
+                mock.patch.object(cache._r, "pipeline", wraps=cache._r.pipeline) as pipeline:
+            self.assertEqual(client.get("/").status_code, 200)
+        execute.assert_not_called()
+        self.assertEqual(pipeline.call_count, 1)
+
+    def test_redis_down_lets_requests_through(self):
+        client = self._add_index()
+        ratelimit_module.clear_rate_limits_cache()
+        with mock.patch.object(cache._r, "execute_command", side_effect=RedisConnectionError("down")), \
+                mock.patch.object(cache._r, "pipeline", side_effect=RedisConnectionError("down")):
+            response = client.get("/")
+        self.assertEqual(response.status_code, 200)
+        self.assertNotIn("X-RateLimit-Limit", response.headers)
+
+    def test_redis_down_fails_when_not_fail_open(self):
+        client = self._add_index()
+        set_fail_open(False)
+        with mock.patch.object(cache._r, "pipeline", side_effect=RedisConnectionError("down")):
+            with self.assertRaises(RedisConnectionError):
+                client.get("/")
+

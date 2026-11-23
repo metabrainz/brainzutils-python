@@ -4,18 +4,21 @@
 #
 # http://flask.pocoo.org/snippets/70/
 #
+import logging
 import time
 from functools import update_wrapper
 from typing import Literal
 
 from flask import request, g
+from redis.exceptions import RedisError
 from werkzeug.exceptions import TooManyRequests
 
 from brainzutils import cache
 
-# g key for the timeout when limits must be refreshed from cache
+logger = logging.getLogger(__name__)
+
+# how long the limits read from cache are kept in process memory before being read again
 ratelimit_refresh = 60 # in seconds
-ratelimit_timeout = "rate_limits_timeout"
 
 # Defaults
 ratelimit_defaults = {
@@ -35,6 +38,12 @@ ratelimit_cache_namespace = "rate_limit"
 
 # external functions
 ratelimit_user_validation = None
+
+# if True, requests are let through without a rate limit when Redis is unavailable
+ratelimit_fail_open = True
+
+# scope -> (time after which to read the limits from cache again, limits); None is the global scope
+_limits_in_memory = {}
 
 
 class RateLimit(object):
@@ -109,6 +118,9 @@ class RateLimit(object):
            1. Scope-specific limits from cache (if scope is provided)
            2. Global limits from cache
 
+       Each process keeps the limits in memory and reads them from cache again after ratelimit_refresh
+       seconds, so other processes pick up new limits within that time.
+
     4. To enable token based rate limiting, callers need to pass the Authorization header (see above)
        and the application needs to provide a user validation function::
 
@@ -120,6 +132,13 @@ class RateLimit(object):
               return False
 
          set_user_validation_function(validate_user)
+
+    5. If Redis is unavailable, requests are let through without a rate limit, so that an outage of Redis does
+       not take the application down with it. To make such requests fail instead, call::
+
+          from brainzutils.ratelimit import set_fail_open
+
+          set_fail_open(False)
 
     """
 
@@ -135,8 +154,8 @@ class RateLimit(object):
         self.key = key_prefix + str(self.reset)
         self.limit = limit
         self.per = per
-        self.current = cache.increment(self.key, namespace=ratelimit_cache_namespace)
-        cache.expireat(self.key, self.reset + self.expiration_window, namespace=ratelimit_cache_namespace)
+        self.current = cache.increment(self.key, namespace=ratelimit_cache_namespace,
+                                       expireat=self.reset + self.expiration_window)
 
     remaining = property(lambda x: max(x.limit - x.current, 0))
     over_limit = property(lambda x: x.current > x.limit)
@@ -151,11 +170,28 @@ def set_user_validation_function(func):
     ratelimit_user_validation = func
 
 
+def set_fail_open(fail_open):
+    """
+        Set whether requests are let through without a rate limit when Redis is unavailable (the default),
+        or fail with the Redis error.
+    """
+    global ratelimit_fail_open
+    ratelimit_fail_open = fail_open
+
+
+def clear_rate_limits_cache():
+    """
+        Forget the limits kept in memory, so the next request reads them from cache.
+    """
+    _limits_in_memory.clear()
+
+
 def set_rate_limits(per_token, per_ip, window, scope=None):
     """
         Update the current global rate limits. This will affect all new rate limiting windows
         and existing windows will not be changed. If a scope is provided, the limits will be
-        changed only for that scope.
+        changed only for that scope. The new limits apply at once in this process, and in
+        other processes within ratelimit_refresh seconds.
     """
     prefix = f"{scope}:" if scope else ""
     cache.set_many({
@@ -163,6 +199,20 @@ def set_rate_limits(per_token, per_ip, window, scope=None):
         f"{prefix}{ratelimit_per_ip_key}": per_ip,
         f"{prefix}{ratelimit_window_key}": window,
     }, expirein=0, namespace=ratelimit_cache_namespace)
+    _limits_in_memory[scope] = (time.time() + ratelimit_refresh,
+                                {"per_token": per_token, "per_ip": per_ip, "window": window})
+
+
+def _get_rate_limits_in_memory(scope=None):
+    """
+        The limits for the global or a specific scope, read from cache at most once every ratelimit_refresh
+        seconds.
+    """
+    refresh_at, limits = _limits_in_memory.get(scope, (0, None))
+    if time.time() >= refresh_at:
+        limits = get_rate_limits(scope)
+        _limits_in_memory[scope] = (time.time() + ratelimit_refresh, limits)
+    return limits
 
 
 def get_rate_limits(scope=None):
@@ -262,8 +312,8 @@ def get_rate_limit_data(request, scope=None):
            1. Scope-specific limits from cache (if scope is provided)
            3. Global limits from cache
     """
-    _global = get_rate_limits()
-    _scope = get_rate_limits(scope) if scope else None
+    _global = _get_rate_limits_in_memory()
+    _scope = _get_rate_limits_in_memory(scope) if scope else None
 
     # If a user verification function is provided, parse the Authorization header and try to look up that user
     if ratelimit_user_validation:
@@ -303,12 +353,18 @@ def ratelimit(scope=None):
     """
     def decorator(f):
         def rate_limited(*args, **kwargs):
-            data = get_rate_limit_data(
-                request,
-                scope=scope
-            )
-            key = f"{scope}:{data['key']}" if scope else data["key"]
-            rlimit = RateLimit(key, data["limit"], data["window"])
+            try:
+                data = get_rate_limit_data(
+                    request,
+                    scope=scope
+                )
+                key = f"{scope}:{data['key']}" if scope else data["key"]
+                rlimit = RateLimit(key, data["limit"], data["window"])
+            except RedisError:
+                if not ratelimit_fail_open:
+                    raise
+                logger.warning("Rate limiting skipped, Redis is unavailable", exc_info=True)
+                return f(*args, **kwargs)
             g._view_rate_limit = rlimit
             if rlimit.over_limit:
                 return on_over_limit(rlimit)
